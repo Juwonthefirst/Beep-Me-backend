@@ -26,5 +26,5 @@ urlpatterns = [
     path("account/", include("allauth.urls")),
     path("api/auth/social/google", GoogleLogin.as_view()),
     path("docs/", schema_view.with_ui("swagger", cache_timeout = 0), name = "open-api documentation"),
-    path("api/chat/", include("chat.urls"))
+    #path("api/chat/", include("chat.urls"))
 ]
