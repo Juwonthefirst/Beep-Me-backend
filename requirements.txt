@@ -1,0 +1,13 @@
+django==5.2.0
+channels==4.2.2
+channels_redis==4.2.1
+daphne
+argon2-cffi==23.1.0
+dj-rest-auth==7.0.1
+django-allauth==65.8.1
+django-cors-headers==4.7.0
+django-redis==5.4.0
+djangorestframework==3.16.0
+djangorestframework_simplejwt==5.5.0
+drf-yasg==1.21.10
+social-auth-app-django
