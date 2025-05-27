@@ -24,7 +24,7 @@ urlpatterns = [
     path("api/auth/", include("dj_rest_auth.urls")),
     path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
     path("account/", include("allauth.urls")),
-    path("api/social/google", GoogleLogin.as_view()),
+    path("api/auth/social/google", GoogleLogin.as_view()),
     path("docs/", schema_view.with_ui("swagger", cache_timeout = 0), name = "open-api documentation"),
     path("api/chat/", include("chat.urls"))
 ]
