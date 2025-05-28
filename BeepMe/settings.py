@@ -65,7 +65,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "allauth.account.middleware.AccountMiddleware",
 	'django.contrib.sites.middleware.CurrentSiteMiddleware',
-]f
+]
 
 ROOT_URLCONF = 'BeepMe.urls'
 
@@ -152,13 +152,14 @@ AUTHENTICATION_BACKENDS = [
 
 #ACCOUNT_USERNAME_REQUIRED = True
 #ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+#ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_UNIQUE_EMAIL = True
 
 SIGNUP_FIELDS["username"]["required"] = True
 SIGNUP_FIELDS["email"]["required"] = True
-
+ACCOUNT_LOGIN_METHODS = {"username", "email"}
+ACCOUNT_SIGNUP_FIELDS = ["username*","email*", "password1*", "password2*"]
 REST_USE_JWT = True
 
 REST_FRAMEWORK = {
