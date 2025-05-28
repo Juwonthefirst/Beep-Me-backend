@@ -94,18 +94,11 @@ DATABASES = {
     'default': dj_database_url.config(
         default=os.getenv("DATABASE_URL"),
         conn_max_age = 600,
-        conn_health_checks = True
-        engine_override = 'django_db_pool.backends.postgresql'
     )
 }
 
 DATABASES["default"]["OPTIONS"] = {
     "sslmode": "require",
-    "MAX_CONNS": 20,      
-    "MIN_CONNS": 5,         
-    "POOL_TIMEOUT": 30,     
-    "POOL_RECYCLE": 3600,  
-    "POOL_PRE_PING": True,
 }
 
 
@@ -145,7 +138,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
