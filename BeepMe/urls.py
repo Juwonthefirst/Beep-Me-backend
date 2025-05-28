@@ -3,7 +3,6 @@ from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from django.contrib import admin
 from django.urls import path, include
 from drf_yasg import openapi, views
-from . import home
 
 schema_view = views.get_schema_view(
     openapi.Info(
@@ -15,14 +14,14 @@ schema_view = views.get_schema_view(
         license = openapi.License(name = "MIT license"),
     ),
     public = True,
+    url="https://beep-me-api.onrender.com"
 )
 
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
     
 urlpatterns = [
-    path("", home.home),
-    path("googlef10182ad33636f0c.html", home.google_verify),
+    path("", include("home.urls"),
     path('admin/', admin.site.urls),
     path("api/auth/", include("dj_rest_auth.urls")),
     path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
