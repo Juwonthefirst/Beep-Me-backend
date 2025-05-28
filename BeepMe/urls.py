@@ -1,5 +1,4 @@
 from dj_rest_auth.registration.views import SocialLoginView
-from dj_rest_auth.jwt_auth import get_refresh_view
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from django.contrib import admin
 from django.urls import path, include
@@ -25,7 +24,6 @@ urlpatterns = [
     path("", include("home.urls")),
     path('admin/', admin.site.urls),
     path("api/auth/", include("dj_rest_auth.urls")),
-    path("api/auth/token/refresh", get_refresh_view().as_view(), name="token-refresh"),
     path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
     path("account/", include("allauth.urls")),
     path("api/auth/social/google/", GoogleLogin.as_view()),
