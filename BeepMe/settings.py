@@ -188,7 +188,9 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD =  os.getenv("EMAIL_HOST_PASSWORD")
 
 CORS_ALLOWED_ORIGINS = [
-    "*"
+    "https://beep-me-api.onrender.com",
+    "http://localhost:7700",
+    "http://localhost:8173"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
