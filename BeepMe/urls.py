@@ -22,6 +22,7 @@ class GoogleLogin(SocialLoginView):
     
 urlpatterns = [
     path("", home.home),
+    path("googlef10182ad33636f0c.html", home.google_verify),
     path('admin/', admin.site.urls),
     path("api/auth/", include("dj_rest_auth.urls")),
     path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
