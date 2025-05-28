@@ -21,7 +21,7 @@ class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
     
 urlpatterns = [
-    path("", include("home.urls"),
+    path("", include("home.urls")),
     path('admin/', admin.site.urls),
     path("api/auth/", include("dj_rest_auth.urls")),
     path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
