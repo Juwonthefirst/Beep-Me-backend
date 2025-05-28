@@ -156,8 +156,7 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_UNIQUE_EMAIL = True
 
-SIGNUP_FIELDS["username"]["required"] = True
-SIGNUP_FIELDS["email"]["required"] = True
+
 ACCOUNT_LOGIN_METHODS = {"username", "email"}
 ACCOUNT_SIGNUP_FIELDS = ["username*","email*", "password1*", "password2*"]
 REST_USE_JWT = True
