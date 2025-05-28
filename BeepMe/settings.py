@@ -29,6 +29,7 @@ ALLOWED_HOSTS = [os.getenv("HOST_NAME")]
 
 
 # Application definition
+TOKEN_MODEL = None
 
 INSTALLED_APPS = [
     "daphne",
@@ -159,7 +160,7 @@ ACCOUNT_LOGIN_METHODS = {"username", "email"}
 ACCOUNT_SIGNUP_FIELDS = ["username*","email*", "password1*", "password2*"]
 
 REST_USE_JWT = True
-TOKEN_MODEL = None
+
 
 REST_FRAMEWORK = {
 	"DEFAULT_AUTHENTICATION_CLASSES": (
