@@ -3,6 +3,7 @@ from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from django.contrib import admin
 from django.urls import path, include
 from drf_yasg import openapi, views
+from . import home
 
 schema_view = views.get_schema_view(
     openapi.Info(
@@ -20,7 +21,7 @@ class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
     
 urlpatterns = [
-    path("", BeepMe.home),
+    path("", home),
     path('admin/', admin.site.urls),
     path("api/auth/", include("dj_rest_auth.urls")),
     path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
