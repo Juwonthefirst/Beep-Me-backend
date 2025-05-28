@@ -13,7 +13,7 @@ DEBUG = False
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-ALLOWED_HOSTS = [os.getenv("HOST_NAME")]
+ALLOWED_HOSTS = [os.getenv("HOST_NAME"), localhost]
 
 
 # Application definition
@@ -193,8 +193,8 @@ CSRF_COOKIE_SECURE = True
 REST_AUTH = {
     "USE_JWT": True,
     "TOKEN_MODEL": None,
-    "JWT_AUTH_COOKIE": None,
-    "JWT_AUTH_REFRESH_COOKIE": None,
+    "JWT_AUTH_COOKIE": "access-token",
+    "JWT_AUTH_REFRESH_COOKIE": "refresh-token",
 }
 
 """CHANNEL_LAYERS={
