@@ -13,7 +13,7 @@ DEBUG = False
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-ALLOWED_HOSTS = [os.getenv("HOST_NAME"), localhost]
+ALLOWED_HOSTS = [os.getenv("HOST_NAME"), "localhost"]
 
 
 # Application definition
