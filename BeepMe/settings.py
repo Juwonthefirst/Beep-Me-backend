@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [os.getenv("hostname")]
 
 INSTALLED_APPS = [
     "daphne",
+    "channels",
     "django.contrib.sites",
     'django.contrib.admin',
     'django.contrib.auth',
@@ -50,8 +51,7 @@ INSTALLED_APPS = [
     "dj_rest_auth.registration",
     "corsheaders",
     "drf_yasg",
-    "channels",
-    "chat"
+    "chat",
 ]
 
 MIDDLEWARE = [
@@ -65,7 +65,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "allauth.account.middleware.AccountMiddleware",
 	'django.contrib.sites.middleware.CurrentSiteMiddleware',
-]
+]f
 
 ROOT_URLCONF = 'BeepMe.urls'
 
