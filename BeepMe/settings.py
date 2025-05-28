@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
+DEBUG = False
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -94,11 +94,18 @@ DATABASES = {
     'default': dj_database_url.config(
         default=os.getenv("DATABASE_URL"),
         conn_max_age = 600,
+        conn_health_checks = True
+        engine_override = 'django_db_pool.backends.postgresql'
     )
 }
 
 DATABASES["default"]["OPTIONS"] = {
-    "sslmode": "require"
+    "sslmode": "require",
+    "MAX_CONNS": 20,      
+    "MIN_CONNS": 5,         
+    "POOL_TIMEOUT": 30,     
+    "POOL_RECYCLE": 3600,  
+    "POOL_PRE_PING": True,
 }
 
 
