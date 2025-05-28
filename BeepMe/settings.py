@@ -71,7 +71,7 @@ ROOT_URLCONF = 'BeepMe.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backelnds.django.DjangoTemplates',
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
