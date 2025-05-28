@@ -13,3 +13,4 @@ drf-yasg==1.21.10
 social-auth-app-django
 dj-database-url>=1.0.0
 psycopg2
+whitenoise
