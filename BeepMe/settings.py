@@ -26,9 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
-ALLOWED_HOSTS = ["beep-me-api.onrender.com"]
+ALLOWED_HOSTS = [os.getenv("hostname")]
 
 
 # Application definition
@@ -52,7 +50,8 @@ INSTALLED_APPS = [
     "dj_rest_auth.registration",
     "corsheaders",
     "drf_yasg",
-    "channels"
+    "channels",
+    "chat"
 ]
 
 MIDDLEWARE = [
@@ -158,11 +157,14 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_UNIQUE_EMAIL = True
 
 REST_USE_JWT = True
+
 REST_FRAMEWORK = {
 	"DEFAULT_AUTHENTICATION_CLASSES": (
 		"rest_framework_simplejwt.authentication.JWTAuthentication",
 		"rest_framework.authentication.BasicAuthentication"
-	)
+	),
+	"DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+	"PAGE_SIZE": 50
 }
 
 PASSWORD_HASHERS = [
@@ -189,3 +191,4 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
