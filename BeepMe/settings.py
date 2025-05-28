@@ -197,17 +197,11 @@ REST_AUTH = {
     "JWT_AUTH_REFRESH_COOKIE": "refresh-token",
 }
 
-"""CHANNEL_LAYERS={
+CHANNEL_LAYERS={
     "default":{
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG":{
             "hosts":[os.getenv("REDIS_URL")],
         },
     }
-}"""
-
-CHANNEL_LAYERS = {
-       'default': {
-           'BACKEND': 'channels.layers.InMemoryChannelLayer'
-       }
-   }
+}
