@@ -193,6 +193,15 @@ CSRF_COOKIE_SECURE = True
 REST_AUTH = {
     "USE_JWT": True,
     "TOKEN_MODEL": None,
-    #"JWT_AUTH_COOKIE": "jwt-auth",
-    #"JWT_AUTH_REFRESH_COOKIE": None,
+    "JWT_AUTH_COOKIE": None,
+    "JWT_AUTH_REFRESH_COOKIE": None,
+}
+
+CHANNEL_LAYERS={
+    "default":{
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG":{
+            "hosts":[os.getenv("REDIS_URL")],
+        },
+    }
 }
