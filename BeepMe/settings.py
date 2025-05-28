@@ -157,8 +157,6 @@ ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_LOGIN_METHODS = {"username", "email"}
 ACCOUNT_SIGNUP_FIELDS = ["username*","email*", "password1*", "password2*"]
 
-REST_USE_JWT = True
-
 REST_FRAMEWORK = {
 	"DEFAULT_AUTHENTICATION_CLASSES": (
 		"rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -203,6 +201,8 @@ SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-DJ_REST_AUTH = {
+REST_AUTH = {
+    "USE_JWT": True,
     "TOKEN_MODEL": None,
+    "JWT_AUTH_COOKIE": "jwt-auth",
 }
