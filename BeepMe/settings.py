@@ -150,11 +150,14 @@ AUTHENTICATION_BACKENDS = [
     "all_auth.account.auth_backends.AuthenticationBackend",
 ]
 
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_EMAIL_REQUIRED = True
+#ACCOUNT_USERNAME_REQUIRED = True
+#ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_UNIQUE_EMAIL = True
+
+SIGNUP_FIELDS["username"]["required"] = True
+SIGNUP_FIELDS["email"]["required"] = True
 
 REST_USE_JWT = True
 
