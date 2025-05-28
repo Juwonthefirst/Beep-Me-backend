@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "rest_framework",
-    "rest_framework_simplejwt",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -204,3 +203,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+DJ_REST_AUTH = {
+    "TOKEN_MODEL": None,
+}
