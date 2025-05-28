@@ -146,7 +146,7 @@ SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "all_auth.account.auth_backends.AuthenticationBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 #ACCOUNT_USERNAME_REQUIRED = True
