@@ -167,6 +167,14 @@ SIMPLE_JWT ={
     "ROTATE_REFRESH_TOKENS": True
 }
 
+REST_AUTH = {
+    "USE_JWT": True,
+    "TOKEN_MODEL": None,
+    "JWT_AUTH_COOKIE": None,
+    "JWT_AUTH_REFRESH_COOKIE": None,
+    "JWT_AUTH_HTTPONLY": False
+}
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
@@ -190,13 +198,6 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-
-REST_AUTH = {
-    "USE_JWT": True,
-    "TOKEN_MODEL": None,
-    "JWT_AUTH_COOKIE": "access-token",
-    "JWT_AUTH_REFRESH_COOKIE": "refresh-token",
-}
 
 CHANNEL_LAYERS={
     "default":{
