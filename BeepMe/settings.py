@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -163,7 +164,6 @@ PASSWORD_HASHERS = [
 SIMPLE_JWT ={
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes = 60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days = 30),
-    "ROTATE_REFRESH_TOKENS": True
 }
 
 REST_AUTH = {
