@@ -19,7 +19,7 @@ schema_view = views.get_schema_view(
 urlpatterns = [
     path("", include("home.urls")),
     path('admin/', admin.site.urls),
-    path("api/auth", include("authentication.urls")),
+    path("api/auth/", include("authentication.urls")),
     path("docs/", schema_view.with_ui("swagger", cache_timeout = 0), name = "open-api documentation"),
     path("api/chat/", include("chat_room.urls")),
 ]
