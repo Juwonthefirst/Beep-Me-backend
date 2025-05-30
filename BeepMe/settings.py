@@ -183,9 +183,9 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD =  os.getenv("EMAIL_HOST_PASSWORD")
 
 CORS_ALLOWED_ORIGINS = [
-    os.getenv("HOST_NAME"),
+    "https://" + os.getenv("HOST_NAME"),
     "http://localhost:7700",
-    os.getenv("FRONTEND_HOST_NAME")
+    "https://" + os.getenv("FRONTEND_HOST_NAME")
 ]
 
 CORS_ALLOW_CREDENTIALS = True
