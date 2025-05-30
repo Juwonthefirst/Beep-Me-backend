@@ -23,7 +23,7 @@ async def GoogleLogin(request):
 	if request.method != "POST": 
 		return Response({"error": "This method is not allowed"}, status = bad_request)
 		
-	id_token = await request.data.get("token")
+	id_token = request.data.get("token")
 	if not id_token: 
 		return Response({"error": "token is required"}, status = bad_request)
 			
