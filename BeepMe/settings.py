@@ -13,7 +13,7 @@ DEBUG = False
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-ALLOWED_HOSTS = [os.getenv("HOST_NAME"), "localhost"]
+ALLOWED_HOSTS = [os.getenv("HOST_NAME"), "localhost", os.getenv("FRONTEND_HOST_NAME")]
 
 
 # Application definition
@@ -32,12 +32,11 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
     "dj_rest_auth",
     "dj_rest_auth.registration",
     "corsheaders",
     "drf_yasg",
-    "chat",
+    "chat_room",
 ]
 
 MIDDLEWARE = [
@@ -174,18 +173,6 @@ REST_AUTH = {
     "JWT_AUTH_COOKIE": None,
     "JWT_AUTH_REFRESH_COOKIE": None,
     "JWT_AUTH_HTTPONLY": False
-}
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
-    }
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
