@@ -5,7 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from channels.db import database_sync_to_async
 from secrets import token_hex
-from asigref.sync import sync_to_async
+from asgiref.sync import sync_to_async
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
