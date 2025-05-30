@@ -183,15 +183,15 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD =  os.getenv("EMAIL_HOST_PASSWORD")
 
 CORS_ALLOWED_ORIGINS = [
-    "https://beep-me-api.onrender.com",
+    os.getenv("HOST_NAME"),
     "http://localhost:7700",
-    "http://localhost:8173"
+    os.getenv("FRONTEND_HOST_NAME")
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://beep-me-api.onrender.com",
+    os.getenv("HOST_NAME"),
 ]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
