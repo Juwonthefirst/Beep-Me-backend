@@ -1,6 +1,3 @@
-from dj_rest_auth.registration.views import SocialLoginView
-from dj_rest_auth.social_serializers import GoogleLoginSerializer
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from django.contrib import admin
 from django.urls import path, include
 from drf_yasg import openapi, views
@@ -18,17 +15,11 @@ schema_view = views.get_schema_view(
     url="https://beep-me-api.onrender.com"
 )
 
-class GoogleLogin(SocialLoginView):
-    adapter_class = GoogleOAuth2Adapter
-    serializer_class = GoogleLoginSerializer
-    
+
 urlpatterns = [
     path("", include("home.urls")),
     path('admin/', admin.site.urls),
-    path("api/auth/", include("dj_rest_auth.urls")),
-    path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
-    path("account/", include("allauth.urls")),
-    path("api/auth/social/google/", GoogleLogin.as_view()),
+    path("api/auth", include("authentication.urls"))
     path("docs/", schema_view.with_ui("swagger", cache_timeout = 0), name = "open-api documentation"),
     path("api/chat/", include("chat.urls"))
 ]
