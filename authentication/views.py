@@ -21,7 +21,7 @@ def verify_id_token(token):
 
 class GoogleLoginView(APIView):
 	async def post(self, request):
-		id_token = request.data.get("token")
+		id_token = await request.data.get("token")
 		if not id_token: 
 			return Response({"error": "token is required"}, status = bad_request)
 			
