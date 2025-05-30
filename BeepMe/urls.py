@@ -1,4 +1,5 @@
 from dj_rest_auth.registration.views import SocialLoginView
+from dj_rest_auth.social_serializers import GoogleLoginSerializer
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from django.contrib import admin
 from django.urls import path, include
@@ -19,6 +20,7 @@ schema_view = views.get_schema_view(
 
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
+    serializer_class = GoogleLoginSerializer
     
 urlpatterns = [
     path("", include("home.urls")),
