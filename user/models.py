@@ -11,6 +11,6 @@ username_validator = RegexValidator(
 
 
 class CustomUser(AbstractUser): 
-	username = CharField(max_length = 60, unique = True, validators = [username_validator], error_messages = {"unique": "a user with this username already exists"})
+	username = models.CharField(max_length = 60, unique = True, validators = [username_validator], error_messages = {"unique": "a user with this username already exists"})
 	email = models.EmailField(unique = True)
 	friends = models.ManyToManyField("self", symmetrical = True)
