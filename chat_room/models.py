@@ -1,5 +1,5 @@
 from django.db import models
-import django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model
 
 
 class ChatRoom(models.Model):
@@ -8,7 +8,7 @@ class ChatRoom(models.Model):
 	members = models.ManyToManyField(get_user_model(), related_name = "rooms", on_delete = models.CASCADE, blank = True)
 	group = models.OneToOneField(group, related_name = "room", on_delete = models.CASCADE, blank = True)
 	
-	def create_with_members(name):
+	def create_with_members(self, name):
 		if not name.startswith("chat"): 
 			raise ValueError("create_with_members should only be called for one to one messages")
 			
