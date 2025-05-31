@@ -1,17 +1,22 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
-from chat_room.serializers import RoomMessagesSerializer
-from chat_room.permissions import IsMember
-from chat_room.models import ChatRoom
+from rest_framework.permissions import IsAuthenticated
+from .serializers import RoomMessagesSerializer
+from .models import ChatRoom
 
 class RoomMessagesView(ListAPIView):
 	serializer_class = RoomMessagesSerializer
-	permission_classes = [IsMember]
+	permission_classes = [IsAuthenticated, IsMember]
 	def get_queryset(self): 
 		room_id = self.kwargs["room_id"]
 		try: 
-			return ChatRoom.objects.get(id = room_id).messages.all().order_by("timestamp")
+			#checks if the user is a member of the room before returning messages
+			room = ChatRoom.objects.get(id = room_id)
+			if not room.members.filter(id = self.request.user.id).exists(): 
+				raise ChatRoom.DoesNotExist
+				
+			return room.messages.all().order_by("timestamp")
 		except ChatRoom.DoesNotExist: 
 			return ChatRoom.objects.none()
 	
