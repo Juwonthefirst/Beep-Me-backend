@@ -32,9 +32,11 @@ def googleLogin(request):
 				
 	try: 
 		user = User.objects.get(email = email)
+		if not user.is_active: 
+			return Response({"status": "User doesn't exist"})
 		new_user = False
 	except User.DoesNotExist:
-		user = User.objects.create_user(username = email.replace('@', "_"), email = email, password = f'pass_{token_hex(32)}')
+		user = User.objects.create_user(username = email.strip("@gmail.com"), email = email, password = f'pass_{token_hex(32)}')
 		new_user = True
 				
 	refresh_token = RefreshToken.for_user(user)

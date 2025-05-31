@@ -36,7 +36,9 @@ INSTALLED_APPS = [
     "dj_rest_auth.registration",
     "corsheaders",
     "drf_yasg",
+    "authentication",
     "chat_room",
+    "messages",
 ]
 
 MIDDLEWARE = [
@@ -199,7 +201,7 @@ SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-CHANNEL_LAYERS={
+CHANNEL_LAYERS = {
     "default":{
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG":{
