@@ -2,7 +2,7 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from chat_room.models import ChatRoom
-from messages.models import Message
+from message.models import Message
 
 @database_sync_to_async
 def save_message(room, sender, message):

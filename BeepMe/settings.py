@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "channels",
     "django.contrib.sites",
     'django.contrib.admin',
+    "django.contrib.messages",
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -39,7 +40,7 @@ INSTALLED_APPS = [
     "home",
     "user",
     "chat_room",
-    "messages",
+    "message",
     "group",
 ]
 
