@@ -1,15 +1,15 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from chat_room.models import ChatRoom
-from message.models import Message
 
 @database_sync_to_async
 def save_message(room, sender, message):
+    from message.models import Message
     return Message.objects.create(room = room, message = message, sender = sender)
     
 @database_sync_to_async
 def get_or_create_room(room_name):
+    from chat_room.models import ChatRoom
     try: 
         return ChatRoom.objects.get(name = room_name)
     except:
