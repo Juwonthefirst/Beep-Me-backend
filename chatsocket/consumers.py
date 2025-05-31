@@ -5,7 +5,7 @@ from channels.db import database_sync_to_async
 @database_sync_to_async
 def save_message(room, sender, message):
     from message.models import Message
-    return Message.objects.create(room = room, message = message, sender = sender)
+    return Message.objects.create(room = room, body = message, sender = sender)
     
 @database_sync_to_async
 def get_or_create_room(room_name):
