@@ -18,6 +18,7 @@ ALLOWED_HOSTS = [os.getenv("HOST_NAME"), "localhost", os.getenv("FRONTEND_HOST_N
 
 # Application definition
 INSTALLED_APPS = [
+    "user",
     "daphne",
     "channels",
     "django.contrib.sites",
@@ -38,7 +39,6 @@ INSTALLED_APPS = [
     "drf_yasg",
     "authentication",
     "home",
-    "user",
     "chat_room",
     "message",
     "group",
