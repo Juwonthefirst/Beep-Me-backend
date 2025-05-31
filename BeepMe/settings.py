@@ -91,7 +91,7 @@ DATABASES["default"]["OPTIONS"] = {
     "sslmode": "require",
 }
 
-
+AUTH_USER_MODEL = "user.CustomUser"
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
