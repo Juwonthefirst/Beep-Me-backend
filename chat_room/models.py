@@ -14,7 +14,7 @@ class ChatRoom(models.Model):
 			raise ValueError("create_with_members should only be called for one to one messages")
 			
 		users = name.split("_")[1:]
-		room = ChatRoom.objects.create(name)
+		room = ChatRoom.objects.create(name = name)
 		room.members.add(**users)
 		return room
 		
