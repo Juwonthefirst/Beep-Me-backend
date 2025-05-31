@@ -15,6 +15,6 @@ class ChatRoom(models.Model):
 			
 		users = name.split("_")[1:]
 		room = ChatRoom.objects.create(name = name)
-		room.members.add(**users)
+		room.members.add(*users)
 		return room
 		
