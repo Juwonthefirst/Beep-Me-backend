@@ -1,8 +1,8 @@
-from rest_framework import serializer
+from rest_framework import serializers
 from .models import ChatRoom
 
 
-class RoomMessagesSerializer(serializer.ModelSerializer):
+class RoomMessagesSerializer(serializers.ModelSerializer):
 	class Meta: 
 		model = ChatRoom
 		fields = ["__all__"]
