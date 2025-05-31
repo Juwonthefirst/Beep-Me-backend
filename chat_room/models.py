@@ -11,7 +11,7 @@ class ChatRoom(models.Model):
 		if not name.startswith("chat"): 
 			raise ValueError("create_with_members should only be called for one to one messages")
 			
-		users = name.split("-")[1:]
+		users = name.split("_")[1:]
 		room = ChatRoom.objects.create(name)
 		room.members.add(**users)
 		return room
