@@ -5,7 +5,7 @@ from chat_room.models import ChatRoom
 
 class Message(models.Model):
 	body = models.TextField()
-	timestamp = models.DateTimeField(auto_add_now = True)
+	timestamp = models.DateTimeField(auto_now_add = True)
 	sender = models.ForeignKey(get_user_model(), related_name = "messages", on_delete = models.CASCADE)
 	reply_to = models.ForeignKey("self", on_delete = models.DO_NOTHING, related_name = "replies", blank = True)
 	room = models.ForeignKey(ChatRoom, related_name = "messages", on_delete = models.CASCADE, db_index = True)
