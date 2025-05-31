@@ -37,8 +37,11 @@ INSTALLED_APPS = [
     "corsheaders",
     "drf_yasg",
     "authentication",
+    "home",
+    "user"
     "chat_room",
     "messages",
+    "group",
 ]
 
 MIDDLEWARE = [
