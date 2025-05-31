@@ -8,7 +8,7 @@ from .models import ChatRoom
 
 class RoomMessagesView(ListAPIView):
 	serializer_class = RoomMessagesSerializer
-	permission_classes = [IsAuthenticated]
+	#permission_classes = [IsAuthenticated]
 	def get_queryset(self): 
 		room_id = self.kwargs["room_id"]
 		try: 
