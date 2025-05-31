@@ -1,9 +1,9 @@
 from django.db import models
 from chat_room.models import ChatRoom
+from django.contrib.auth import get_user_model
 
 
 class Message(models.Model): 
-	from django.contrib.auth import get_user_model
 	
 	body = models.TextField()
 	timestamp = models.DateTimeField(auto_now_add = True)
