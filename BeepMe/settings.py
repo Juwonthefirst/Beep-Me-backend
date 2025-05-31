@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "authentication",
     "home",
-    "user"
+    "user",
     "chat_room",
     "messages",
     "group",
