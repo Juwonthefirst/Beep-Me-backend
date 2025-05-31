@@ -5,4 +5,4 @@ from .models import ChatRoom
 class RoomMessagesSerializer(serializers.ModelSerializer):
 	class Meta: 
 		model = ChatRoom
-		fields = ["__all__"]
+		fields = "__all__"
