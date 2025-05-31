@@ -1,9 +1,10 @@
 from django.db import models
-from django.contrib.auth import get_user_model
 from chat_room.models import ChatRoom
 
 
-class Message(models.Model):
+class Message(models.Model): 
+	from django.contrib.auth import get_user_model
+	
 	body = models.TextField()
 	timestamp = models.DateTimeField(auto_now_add = True)
 	sender = models.ForeignKey(get_user_model(), related_name = "messages", on_delete = models.CASCADE)
