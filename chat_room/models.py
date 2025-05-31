@@ -9,7 +9,10 @@ class ChatRoom(models.Model):
 	group = models.OneToOneField(group, related_name = "room", on_delete = models.CASCADE, blank = True)
 	
 	def create_with_members(name):
-		users = name.split(".")[1:]
+		if not name.startswith("chat"): 
+			raise ValueError("create_with_members should only be called for one to one messages")
+			
+		users = name.split(".")[]
 		room = ChatRoom.objects.create(name)
 		room.members.add(**users)
 		return room
