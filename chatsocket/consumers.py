@@ -13,7 +13,7 @@ def get_or_create_room(room_name):
     try: 
         return ChatRoom.objects.get(name = room_name)
     except:
-        return ChatRoom.objects.create_with_members(room_name)
+        return ChatRoom.create_with_members(room_name)
         
 
 class ChatConsumer(AsyncWebsocketConsumer):
