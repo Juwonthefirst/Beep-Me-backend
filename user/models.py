@@ -5,7 +5,7 @@ from django.core.validators import RegexValidator
 
 username_validator = RegexValidator(
 	regex = "^[a-zA-Z](?:[a-zA-Z0-9]*(?:[-_][a-zA-Z0-9])?)*[a-zA-Z0-9]+$",
-	message = "Your username should only have letters, number and non-repeating undersore and hyphen"
+	message = "Your username should only have letters, number and non-repeating undersore and hyphen",
 	code = "invalid_username"
 )
 
