@@ -6,7 +6,7 @@ class ChatRoom(models.Model):
 	name = models.CharField(max_length = 100, unique = True, db_index = True)
 	is_group = models.BooleanField(default = False)
 	members = models.ManyToManyField(get_user_model(), related_name = "rooms", blank = True)
-	group = models.OneToOneField(group, related_name = "room", on_delete = models.CASCADE, blank = True)
+	#group = models.OneToOneField(Group, related_name = "room", on_delete = models.CASCADE, blank = True)
 	
 	def create_with_members(self, name):
 		if not name.startswith("chat"): 
