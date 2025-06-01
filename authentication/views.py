@@ -33,7 +33,7 @@ def googleLogin(request):
 	try: 
 		user = User.objects.get(email = email)
 		if not user.is_active: 
-			return Response({"status": "User doesn't exist"})
+			raise User.DoesNotExist
 		new_user = False
 	except User.DoesNotExist:
 		user = User.objects.create_user(username = email.rstrip("@gmail.com"), email = email, password = f'pass_{token_hex(32)}')
