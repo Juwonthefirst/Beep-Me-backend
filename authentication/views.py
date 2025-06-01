@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from secrets import token_hex
 from google.oauth2 import id_token
 from google.auth.transport import requests
-
+from allauth.account.models import EmailAddress
 User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
 
@@ -37,6 +37,12 @@ def googleLogin(request):
 		new_user = False
 	except User.DoesNotExist:
 		user = User.objects.create_user(username = email.rstrip("@gmail.com"), email = email, password = f'pass_{token_hex(32)}')
+		EmailAddress.objects.create(
+			user = user,
+			email = email,
+			primary = True,
+			verified = True
+		)
 		new_user = True
 				
 	refresh_token = RefreshToken.for_user(user)
