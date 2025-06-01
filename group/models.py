@@ -10,8 +10,16 @@ class Group(models.Model):
 	avatar = models.CharField(max_length = 300, default = "default")
 	created_at = models.DateTimeField(auto_now_add = True)
 	
+	def user_is_admin(self, user):
+		try: 
+			return self.memberdetails_set.get(user = user).role == "admin"
+		except:
+			return False
+		
+		
 class MemberDetails(models.Model): 
 	member = models.ForeignKey(User, on_delete = models.CASCADE)
 	group = models.ForeignKey(Group, on_delete = models.CASCADE)
 	role = models.CharField(max_length = 200, default = "member")
 	joined_at = models.DateTimeField(auto_now_add = True)
+		

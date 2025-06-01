@@ -6,6 +6,7 @@ from rest_framework.generics import (
 	RetrieveUpdateAPIView, 
 	RetrieveUpdateDestroyAPIView
 )
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import Group, MemberDetails
@@ -39,13 +40,17 @@ class CreateGroupView(CreateAPIView):
 class GroupMemberRoleView(RetrieveUpdateAPIView): 
 	queryset = MemberDetails.objects.all()
 	serializer_class = GroupMemberSerializer
-	permission_classes = [IsAuthenticated]
+	permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def deleteGroupMember(request, pk, user_id):
 	try: 
 		group = Group.objects.get(id = pk)
+		#permission similar to IsAdminOrOwner
+		if not group.user_is_admin(request.user) and request.user.id != user_id: 
+			raise PermissionDenied
+			
 		group.members.remove(user_id)
 		return Response({"status": "user removed"})
 	except Group.DoesNotExist:
