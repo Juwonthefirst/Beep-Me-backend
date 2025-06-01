@@ -13,8 +13,8 @@ class RoomMessagesView(ListAPIView):
 		try: 
 			#checks if the user is a member of the room before returning messages
 			room = ChatRoom.objects.get(id = room_id)
-			if not room.members.filter(id = self.request.user.id).exists(): 
-				raise PermissionDenied
+			#if not room.members.filter(id = self.request.user.id).exists(): 
+			#	raise PermissionDenied
 				
 			return room.messages.all().order_by("timestamp")
 		except ChatRoom.DoesNotExist: 
