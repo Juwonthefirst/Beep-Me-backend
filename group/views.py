@@ -10,7 +10,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import Group, MemberDetails
-from .permissions import IsAdmin
+from .permissions import IsAdmin, IsAdminOrReadOnly
 from .serializers import (
 	UpdateGroupSerializer,
 	GroupMembersSerializer,
@@ -38,9 +38,15 @@ class CreateGroupView(CreateAPIView):
 	permission_classes = [IsAuthenticated]
 	
 class GroupMemberRoleView(RetrieveUpdateAPIView): 
-	queryset = MemberDetails.objects.all()
 	serializer_class = GroupMemberSerializer
 	permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
+	lookup_field = "user_id"
+	def get_queryset(self): 
+		group_id = self.kwargs["pk"]
+		try:
+			return Group.objects.get(id = group_id).memberdetails_set.all()
+		except Group.DoesNotExist:
+			return Group.objects.none()
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
