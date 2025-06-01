@@ -28,9 +28,9 @@ class GroupMembersView(ListAPIView):
 	def get_queryset(self): 
 		group_id = self.kwargs["group_id"]
 		try:
-			Group.objects.get(id = group_id).members.all()
+			return Group.objects.get(id = group_id).members.all()
 		except Group.DoesNotExist:
-			Group.objects.none()
+			return Group.objects.none()
 
 class CreateGroupView(CreateAPIView): 
 	queryset = Group.objects.all()
@@ -40,7 +40,7 @@ class CreateGroupView(CreateAPIView):
 class GroupMemberRoleView(RetrieveUpdateAPIView): 
 	serializer_class = GroupMemberSerializer
 	permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
-	lookup_field = "user_id"
+	lookup_field = "member_id"
 	def get_queryset(self): 
 		group_id = self.kwargs["pk"]
 		try:
@@ -50,14 +50,14 @@ class GroupMemberRoleView(RetrieveUpdateAPIView):
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def deleteGroupMember(request, pk, user_id):
+def deleteGroupMember(request, pk, member_id):
 	try: 
 		group = Group.objects.get(id = pk)
 		#permission similar to IsAdminOrOwner
-		if not group.user_is_admin(request.user) and request.user.id != user_id: 
+		if not group.user_is_admin(request.user) and request.user.id != member_id: 
 			raise PermissionDenied
 			
-		group.members.remove(user_id)
+		group.members.remove(member_id)
 		return Response({"status": "user removed"})
 	except Group.DoesNotExist:
 		return Response({"error": "This group does not exist"}, status = status.HTTP_400_BAD_REQUEST)
