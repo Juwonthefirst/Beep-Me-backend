@@ -7,14 +7,14 @@ from .models import ChatRoom
 
 class RoomMessagesView(ListAPIView):
 	serializer_class = RoomMessagesSerializer
-	#permission_classes = [IsAuthenticated]
+	permission_classes = [IsAuthenticated]
 	def get_queryset(self): 
 		room_id = self.kwargs["room_id"]
 		try: 
 			#checks if the user is a member of the room before returning messages
 			room = ChatRoom.objects.get(id = room_id)
-			#if not room.members.filter(id = self.request.user.id).exists(): 
-			#	raise PermissionDenied
+			if not room.members.filter(id = self.request.user.id).exists(): 
+				raise PermissionDenied
 				
 			return room.messages.all().order_by("timestamp")
 		except ChatRoom.DoesNotExist: 
@@ -22,7 +22,7 @@ class RoomMessagesView(ListAPIView):
 	
 class RoomMembersView(ListAPIView): 
 	serializer_class = RoomMembersSerializer
-	#permission_classes = [IsAuthenticated]
+	permission_classes = [IsAuthenticated]
 	def get_queryset(self): 
 		room_id = self.kwargs["room_id"]
 		try: 
@@ -34,4 +34,4 @@ class RoomMembersView(ListAPIView):
 class RoomDetailsView(RetrieveUpdateDestroyAPIView): 
 	queryset = ChatRoom.objects.all()
 	serializer_class = RoomDetailsSerializer
-	#permission_classes = [IsAuthenticated]
+	permission_classes = [IsAuthenticated]
