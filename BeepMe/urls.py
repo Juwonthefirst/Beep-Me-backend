@@ -22,4 +22,5 @@ urlpatterns = [
     path("api/auth/", include("authentication.urls")),
     path("docs/", schema_view.with_ui("swagger", cache_timeout = 0), name = "open-api documentation"),
     path("api/chat/", include("chat_room.urls")),
+    path("api/group/", include("group.urls")),
 ]

@@ -36,7 +36,7 @@ def googleLogin(request):
 			raise User.DoesNotExist
 		new_user = False
 	except User.DoesNotExist:
-		user = User.objects.create_user(username = email.rstrip("@gmail.com"), email = email, password = f'pass_{token_hex(32)}')
+		user = User.objects.create_user(username = email.rstrip("@gmail.com") + str(token_hex(8)), email = email, password = f'pass_{token_hex(32)}')
 		EmailAddress.objects.create(
 			user = user,
 			email = email,
@@ -54,6 +54,8 @@ def googleLogin(request):
 			"id": user.id,
 			"username": user.username,
 			"email": user.email,
+			"firstname": user.firstname,
+			"lastname": user.lastname
 		},
 		"new_user": new_user
 	})
