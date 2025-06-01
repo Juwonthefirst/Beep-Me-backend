@@ -7,7 +7,7 @@ User = get_user_model()
 
 class RoomMessagesSerializer(serializers.ModelSerializer):
 	class Meta: 
-		model = Messages
+		model = Message
 		fields = "__all__"
 		
 class RoomMembersSerializer(serializers.ModelSerializer): 
