@@ -2,8 +2,10 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-	path("", views.CreateGroupView),
+	path("", views.CreateGroupView.as_view()),
 	path("<int:pk>/", views.UpdateGroupView.as_view()),
 	path("<int:pk>/members/", views.GroupMembersView.as_view()),
-	path("<int:pk>/members/<int:pk>/")
+	path("<int:pk>/members/<int:user_id>/", views.GroupMemberRoleView.as_view()),
+	path("<int:pk>/members/<int:user_id>/", views.deleteGroupMember),
+
 ]
