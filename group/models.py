@@ -34,15 +34,24 @@ class MemberDetails(models.Model):
 	
 	@classmethod
 	def add(cls, group, member_ids, role = "member"):
-		if not isinstance(list, member_ids): 
+		if not isinstance(member_ids, list): 
 			raise ValueError
 		member_rows = [cls(group = group, member_id = member_id, role = role) for member_id in member_ids]
 		return cls.objects.bulk_create(member_rows)
 		
 	@classmethod
 	def update_role(cls, group, role, member_ids): 
-		return cls.objects.filter(group = group, user_id__in = member_ids).update(role = role)
+		if not isinstance(member_ids, list): 
+			raise ValueError
+		return cls.objects.filter(group = group, member_id__in = member_ids).update(role = role)
 		
 	@classmethod
 	def delete(cls, group, member_ids): 
-		return cls.objects.filter(group = group, user_id__in = member_ids).delete()
+		if not isinstance(member_ids, list): 
+			raise ValueError
+		return cls.objects.filter(group = group, member_id__in = member_ids).delete()
+		
+	class Meta: 
+		constraints = [
+			models.UniqueConstraint(fields = ["member", "group"], name = "unique-group-member")
+		]

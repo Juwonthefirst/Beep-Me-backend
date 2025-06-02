@@ -71,6 +71,9 @@ def delete_group_members(request, pk):
 		return Response({"status": "success"})
 	except Group.DoesNotExist:
 		return Response({"error": "This group does not exist"}, status = bad_request)
+	except ValueError: 
+		return Response({"error": "user ids should be in a list"}, status = bad_request)
+		
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
 def add_group_members(request, pk): 
@@ -89,3 +92,7 @@ def add_group_members(request, pk):
 		return Response({"status": "success"})
 	except Group.DoesNotExist:
 		return Response({"error": "This group does not exist"}, status = bad_request)
+	except ValueError: 
+		return Response({"error": "user ids should be in a list"}, status = bad_request)
+	except IntegrityError: 
+		return Response({"error": "user_id does not exist"})
