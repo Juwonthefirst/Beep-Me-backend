@@ -1,12 +1,5 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
-class IsAdmin(BasePermission): 
-	"""
-	permission to make sure any one editing the group is an admin
-	"""
-	def has_object_permission(self, request, view, obj):
-		return obj.user_is_admin(request.user)
-		
 class IsAdminOrReadOnly(BasePermission):
 	"""
 	permission to make sure any one editing the group is an admin or grant read only access

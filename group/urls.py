@@ -7,5 +7,4 @@ urlpatterns = [
 	path("<int:pk>/members/", views.GroupMembersView.as_view()),
 	path("<int:pk>/members/<int:member_id>/", views.GroupMemberRoleView.as_view()),
 	path("<int:pk>/members/<int:member_id>/", views.deleteGroupMember),
-
 ]

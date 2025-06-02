@@ -6,21 +6,24 @@ from rest_framework.generics import (
 	RetrieveUpdateAPIView, 
 	RetrieveUpdateDestroyAPIView
 )
+from django.contrib.auth import get_user_model
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import Group, MemberDetails
-from .permissions import IsAdmin, IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly
 from .serializers import (
 	UpdateGroupSerializer,
 	GroupMembersSerializer,
 	CreateGroupSerializer
 )
 
+User = get_user_model()
+
 class UpdateGroupView(RetrieveUpdateDestroyAPIView): 
 	queryset = Group.objects.all()
 	serializer_class =  UpdateGroupSerializer
-	permission_classes = [IsAuthenticated, IsAdmin]
+	permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
 	
 class GroupMembersView(ListAPIView): 
 	serializer_class = GroupMembersSerializer
@@ -30,7 +33,7 @@ class GroupMembersView(ListAPIView):
 		try:
 			return Group.objects.get(id = group_id).members.all()
 		except Group.DoesNotExist:
-			return Group.objects.none()
+			return User.objects.none()
 
 class CreateGroupView(CreateAPIView): 
 	queryset = Group.objects.all()
@@ -46,7 +49,7 @@ class GroupMemberRoleView(RetrieveUpdateAPIView):
 		try:
 			return Group.objects.get(id = group_id).memberdetails_set.all()
 		except Group.DoesNotExist:
-			return Group.objects.none()
+			return MemberDetails.objects.none()
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
