@@ -18,12 +18,10 @@ class GroupSerializer(serializers.ModelSerializer):
 	    group = Group.objects.create(**validated_data)
 	    
 	    #makes the first member an admin as the first member is always the creator
-	    member_rows = [MemberDetails(group = group, member_id = member_ids[0], role = "admin")]
+	    group.add_members([member_ids[0]], role = admin)
 	    
 	    #the rest are regular members unless updated by the admin
-		member_rows.extend([MemberDetails(group = group, member_id = member_id) for member_id in member_ids[1:]])
-		
-		MemberDetails.objects.bulk_create(member_rows)
+		group.add_members(member_ids[1:])
 		ChatRoom.objects.create(name = f"group.{group.id}", is_group = True, group = group)
 		return group
 		
@@ -40,5 +38,5 @@ class GroupMemberSerializer(serializers.ModelSerializer):
            }
        }
        
-class DeleteGroupMembers(serializers.Serializer): 
+class GroupMemberChangeSerializer(serializers.Serializer): 
 	member_ids = serializers.ListField(child = serailizer.IntegerField(min_value = 0), required = True)

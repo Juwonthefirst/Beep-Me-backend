@@ -14,7 +14,8 @@ from .models import Group, MemberDetails
 from .permissions import IsAdminOrReadOnly
 from .serializers import (
 	GroupMemberSerializer,
-	GroupSerializer
+	GroupSerializer,
+	GroupMemberChangeSerializer
 )
 
 User = get_user_model()
@@ -51,24 +52,10 @@ class GroupMemberRoleView(RetrieveUpdateAPIView):
 		except Group.DoesNotExist:
 			return MemberDetails.objects.none()
 
-@api_view(["DELETE"])
-@permission_classes([IsAuthenticated])
-def delete_group_member(request, pk, member_id):
-	try: 
-		group = Group.objects.get(id = pk)
-		#permission similar to IsAdminOrOwner
-		if not group.user_is_admin(request.user) and request.user.id != member_id: 
-			raise PermissionDenied
-		MemberDetails.objects.filter(group = group, user_id = member_id).delete()
-		return Response({"status": "user removed"})
-	except Group.DoesNotExist:
-		return Response({"error": "This group does not exist"}, status = bad_request)
-		
-
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
 def delete_group_members(request, pk):
-	data = DeleteGroupMembers(data = request.data)
+	data = GroupMemberChangeSerializer(data = request.data)
 	if not data.is_valid(): 
 		return Response(serializers.errors, status = bad_request)
 	try: 
@@ -78,12 +65,27 @@ def delete_group_members(request, pk):
 		#permission similar to IsAdmin
 		if not group.user_is_admin(request.user): 
 			raise PermissionDenied
-		MemberDetails.objects.filter(group = group, user_id__in = member_ids).delete()
-		return Response({"status": "user removed"})
+			
+		group.delete_members(member_ids)
+		return Response({"status": "success"})
 	except Group.DoesNotExist:
 		return Response({"error": "This group does not exist"}, status = bad_request)
 		
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
 def add_group_members(request, pk): 
-	
+	data = GroupMemberChangeSerializer(data = request.data)
+	if not data.is_valid(): 
+		return Response(serializers.errors, status = bad_request)
+	try: 
+		member_ids = data.validated_data.get("member_ids")
+		group = Group.objects.get(id = pk)
+		
+		#permission similar to IsAdmin
+		if not group.user_is_admin(request.user): 
+			raise PermissionDenied
+			
+		group.add_members(member_ids)	
+		return Response({"status": "success"})
+	except Group.DoesNotExist:
+		return Response({"error": "This group does not exist"}, status = bad_request)

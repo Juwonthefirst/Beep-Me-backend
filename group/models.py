@@ -15,6 +15,15 @@ class Group(models.Model):
 			return self.memberdetails_set.get(user = user).role == "admin"
 		except:
 			return False
+			
+	def add_members(self, member_ids, role = "members"): 
+		return MemberDetails.add(self, member_ids, role)
+		
+	def update_members_role(self, role, member_ids): 
+		return MemberDetails.update_role(self, role, member_ids)
+		
+	def delete_members(self, member_ids): 
+		return MemberDetails.delete(self, member_ids)
 		
 		
 class MemberDetails(models.Model): 
@@ -22,3 +31,16 @@ class MemberDetails(models.Model):
 	group = models.ForeignKey(Group, on_delete = models.CASCADE)
 	role = models.CharField(max_length = 200, default = "member")
 	joined_at = models.DateTimeField(auto_now_add = True)
+	
+	@classmethod
+	def add(cls, group, member_ids, role = "member"): 
+		member_rows = [cls(group = group, member_id = member_id, role = role) for member_id in member_ids]
+		return cls.objects.bulk_create(member_rows)
+		
+	@classmethod
+	def update_role(cls, group, role, member_ids): 
+		return cls.objects.filter(group = group, user_id__in = member_ids).update(role = role)
+		
+	@classmethod
+	def delete(cls, group, member_ids): 
+		return cls.objects.filter(group = group, user_id__in = member_ids).delete()
