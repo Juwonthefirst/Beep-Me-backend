@@ -33,7 +33,9 @@ class MemberDetails(models.Model):
 	joined_at = models.DateTimeField(auto_now_add = True)
 	
 	@classmethod
-	def add(cls, group, member_ids, role = "member"): 
+	def add(cls, group, member_ids, role = "member"):
+		if not isinstance(list, member_ids): 
+			raise ValueError
 		member_rows = [cls(group = group, member_id = member_id, role = role) for member_id in member_ids]
 		return cls.objects.bulk_create(member_rows)
 		

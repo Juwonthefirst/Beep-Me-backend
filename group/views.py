@@ -6,6 +6,7 @@ from rest_framework.generics import (
 	RetrieveUpdateAPIView, 
 	RetrieveUpdateDestroyAPIView
 )
+from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -70,7 +71,6 @@ def delete_group_members(request, pk):
 		return Response({"status": "success"})
 	except Group.DoesNotExist:
 		return Response({"error": "This group does not exist"}, status = bad_request)
-		
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
 def add_group_members(request, pk): 
