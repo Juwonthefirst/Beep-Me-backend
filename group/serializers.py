@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import Group, MemberDetails
+from chat_room.models import ChatRoom
+
 
 class GroupSerializer(serializers.ModelSerializer): 
 	class Meta: 
@@ -10,6 +12,9 @@ class GroupSerializer(serializers.ModelSerializer):
 		        "read_only": True
 		    }
 		}
+	
+	def create(self, validated_data): 
+	    Group.objects.
 		
 class GroupMemberSerializer(serializers.ModelSerializer): 
    member_id = serializers.IntegerField(source = "member.username", read_only = True)
@@ -23,3 +28,6 @@ class GroupMemberSerializer(serializers.ModelSerializer):
                "read_only": True
            }
        }
+       
+class DeleteGroupMembers(serializers.Serializer): 
+	member_ids = serializers.ListField(child = serailizer.IntegerField(min_value = 0), required = True)
