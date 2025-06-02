@@ -28,6 +28,7 @@ class TestGroupModel(APITestCase):
 		group = Group(name = "test")
 		group.save()
 		self.assertIsNotNone(group.created_at)
+		
 	def test_model_method_user_is_admin(self):
 		self.assertTrue(self.group.user_is_admin(self.user))
 		self.assertTrue(not self.group.user_is_admin(self.user1))
