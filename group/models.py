@@ -22,4 +22,3 @@ class MemberDetails(models.Model):
 	group = models.ForeignKey(Group, on_delete = models.CASCADE)
 	role = models.CharField(max_length = 200, default = "member")
 	joined_at = models.DateTimeField(auto_now_add = True)
-		

@@ -13,31 +13,30 @@ from rest_framework import status
 from .models import Group, MemberDetails
 from .permissions import IsAdminOrReadOnly
 from .serializers import (
-	UpdateGroupSerializer,
-	GroupMembersSerializer,
-	CreateGroupSerializer
+	GroupMemberSerializer,
+	GroupSerializer
 )
 
 User = get_user_model()
 
 class UpdateGroupView(RetrieveUpdateDestroyAPIView): 
 	queryset = Group.objects.all()
-	serializer_class =  UpdateGroupSerializer
+	serializer_class =  GroupSerializer
 	permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
 	
 class GroupMembersView(ListAPIView): 
-	serializer_class = GroupMembersSerializer
+	serializer_class = GroupMemberSerializer
 	permission_classes = [IsAuthenticated]
 	def get_queryset(self): 
 		group_id = self.kwargs["group_id"]
 		try:
-			return Group.objects.get(id = group_id).members.all()
+			return Group.objects.get(id = group_id).memberdetails_set.all()
 		except Group.DoesNotExist:
 			return User.objects.none()
 
 class CreateGroupView(CreateAPIView): 
 	queryset = Group.objects.all()
-	serializer_class = CreateGroupSerializer
+	serializer_class = GroupSerializer
 	permission_classes = [IsAuthenticated]
 	
 class GroupMemberRoleView(RetrieveUpdateAPIView): 
