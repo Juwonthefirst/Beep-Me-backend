@@ -53,7 +53,7 @@ class GroupMemberRoleView(RetrieveUpdateAPIView):
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def deleteGroupMember(request, pk, member_id):
+def delete_group_member(request, pk, member_id):
 	try: 
 		group = Group.objects.get(id = pk)
 		#permission similar to IsAdminOrOwner
@@ -67,7 +67,7 @@ def deleteGroupMember(request, pk, member_id):
 
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
-def deleteGroupMembers(request, pk):
+def delete_group_members(request, pk):
 	data = DeleteGroupMembers(data = request.data)
 	if not data.is_valid(): 
 		return Response(serializers.errors, status = bad_request)
@@ -83,3 +83,7 @@ def deleteGroupMembers(request, pk):
 	except Group.DoesNotExist:
 		return Response({"error": "This group does not exist"}, status = bad_request)
 		
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def add_group_members(request, pk): 
+	
