@@ -4,7 +4,7 @@ from chat_room.models import ChatRoom
 
 
 class GroupSerializer(serializers.ModelSerializer): 
-	members = GroupMemberSerializer(many = True, )
+	members = GroupMemberSerializer(many = True)
 	class Meta: 
 		model = Group
 		fields = "__all__"
