@@ -2,6 +2,7 @@ from rest_framework.test import APITestCase
 from group.serializers import GroupSerializer, GroupMemberSerializer, GroupMemberChangeSerializer
 from rest_framework.serializers import ValidationError
 from django.contrib.auth import get_user_model
+from group.models import Group, MemberDetails
 
 User = get_user_model()
 

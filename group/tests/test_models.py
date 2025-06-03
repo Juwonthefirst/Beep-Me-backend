@@ -31,7 +31,7 @@ class TestGroupModel(APITestCase):
 		
 	def test_model_method_user_is_admin(self):
 		self.assertTrue(self.group.user_is_admin(self.user))
-		self.assertTrue(not self.group.user_is_admin(self.user1))
+		self.assertFalse(self.group.user_is_admin(self.user1))
 		
 	def test_model_method_add_members(self):
 		self.group.add_members([self.user.id])

@@ -39,4 +39,4 @@ class GroupMemberSerializer(serializers.ModelSerializer):
        }
        
 class GroupMemberChangeSerializer(serializers.Serializer): 
-	member_ids = serializers.ListField(child = serializers.IntegerField(min_value = 0), required = True)
+	member_ids = serializers.ListField(child = serializers.IntegerField(min_value = 0), allow_empty = False)

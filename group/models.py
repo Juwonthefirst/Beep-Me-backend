@@ -12,7 +12,7 @@ class Group(models.Model):
 	
 	def user_is_admin(self, user):
 		try: 
-			return self.memberdetails_set.get(user = user).role == "admin"
+			return self.memberdetails_set.get(member = user).role == "admin"
 		except:
 			return False
 			
