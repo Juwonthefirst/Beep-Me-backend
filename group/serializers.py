@@ -15,7 +15,7 @@ class GroupSerializer(serializers.ModelSerializer):
 	
 	def create(self, validated_data): 
 		member_ids = validated_data.pop("members")
-	    group = Group.objects.create(**validated_data)
+		group = Group.objects.create(**validated_data)
 	    
 	    #makes the first member an admin as the first member is always the creator
 	    group.add_members([member_ids[0]], role = "admin")
