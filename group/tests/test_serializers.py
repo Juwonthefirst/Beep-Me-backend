@@ -1,6 +1,9 @@
 from rest_framework.test import APITestCase
 from group.serializers import GroupSerializer, GroupMemberSerializer, GroupMemberChangeSerializer
 from rest_framework.serializers import ValidationError
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class TestGroupSerializer(APITestCase):
 	def setUp(self): 
