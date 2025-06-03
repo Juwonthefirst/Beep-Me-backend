@@ -19,9 +19,9 @@ class TestGroupSerializer(APITestCase):
 			"members": [self.user.id, self.user1.id]
 		}
 		serializer = GroupSerializer(data = data)
-		print("***********" + serializer)
+		print("***********" + str(serializer))
 		self.assertTrue(serializer.is_valid())
-		print("***********" + serializer.validated_data)
+		print("***********" + str(serializer.validated_data))
 		group = serializer.save()
 		self.assertEqual(group.name, data["name"])
 		self.assertIsNotNone(group.created_at)
