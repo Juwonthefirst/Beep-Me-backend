@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-
+from group.models import Group
 class ChatRoom(models.Model):
 	name = models.CharField(max_length = 100, unique = True, db_index = True)
 	is_group = models.BooleanField(default = False)
