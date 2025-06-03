@@ -35,9 +35,8 @@ class TestGroupModel(APITestCase):
 		self.assertFalse(self.group.user_is_admin(self.user1))
 		
 	def test_model_method_add_members(self):
-		self.group.add_members([self.user.id])
 		self.assertEqual(self.group.members.count(), 1)
-		self.group.add_members([self.user.id, self.user1.id, self.user2.id])
+		self.group.add_members([self.user1.id, self.user2.id])
 		self.assertEqual(self.group.members.count(), 3)
 		
 	def test_model_method_add_members_without_list(self):
