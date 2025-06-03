@@ -1,5 +1,5 @@
 from rest_framework.test import APITestCase
-from .serializers import GroupSerializer, GroupMemberSerializer, GroupMemberChangeSerializer
+from group.serializers import GroupSerializer, GroupMemberSerializer, GroupMemberChangeSerializer
 from rest_framework.serializers import ValidationError
 
 class TestGroupSerializer(APITestCase):
@@ -7,7 +7,7 @@ class TestGroupSerializer(APITestCase):
 		self.user = User.objects.create_user(username = "test", email = "test@test.com", password = "testing123")
 		self.user1 = User.objects.create_user(username = "test1", email = "test1@test.com", password = "testing123")
 		self.group = Group.objects.create(name = "test")
-		self.adminMember = MemberDetails.objects.create(group = self.group, user = self.user, role = "admin")
+		self.adminMember = MemberDetails.objects.create(group = self.group, member = self.user, role = "admin")
 		
 	def test_create_method_with_valid_input(self):
 		data = {
@@ -56,7 +56,7 @@ class TestGroupMemberSerializer(APITestCase):
 	def setUp(self): 
 		self.user = User.objects.create_user(username = "test", email = "test@test.com", password = "testing123")
 		self.group = Group.objects.create(name = "test")
-		self.adminMember = MemberDetails.objects.create(group = self.group, user = self.user, role = "admin")
+		self.adminMember = MemberDetails.objects.create(group = self.group, member = self.user, role = "admin")
 		
 	def test_update_method_with_valid_input(self):
 		data = {
