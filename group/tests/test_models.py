@@ -44,7 +44,6 @@ class TestGroupModel(APITestCase):
 			self.group.add_members(self.user.id)
 			
 	def test_model_method_add_members_duplicate_users(self):
-		self.group.add_members([self.user.id])
 		with self.assertRaises(IntegrityError):	
 			self.group.add_members([self.user.id])
 			
@@ -53,17 +52,15 @@ class TestGroupModel(APITestCase):
 			self.group.add_members([9999])
 			
 	def test_model_method_update_members_role(self):
-		self.group.add_members([self.user.id])
+		self.assertEqual(self.group.members.get(id = 1).role, "admin")
+		self.group.update_members_role("member", [self.user.id])
 		self.assertEqual(self.group.members.get(user_id = 1).role, "member")
-		self.group.update_members_role("admin", [self.user.id])
-		self.assertEqual(self.group.members.get(user_id = 1).role, "admin")
 		
 	def test_model_method_update_members_role_without_list(self):
 		with self.assertRaises(ValueError): 
 			self.group.update_members_role("admin", self.user.id)
 			
 	def test_model_method_delete_members(self):
-		self.group.add_members([self.user.id,self.user1.id,self.user2.id])
 		self.assertEqual(self.group.members.count(), 3)
 		self.group.delete_members([self.user.id, self.user1.id])
 		self.assertEqual(self.group.members.count(), 1)
