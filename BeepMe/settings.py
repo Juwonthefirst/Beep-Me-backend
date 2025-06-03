@@ -88,9 +88,9 @@ DATABASES = {
     )
 }
 
-DATABASES["default"]["OPTIONS"] = {
+"""DATABASES["default"]["OPTIONS"] = {
     "sslmode": "require",
-}
+}"""
 
 AUTH_USER_MODEL = "user.CustomUser"
 # Password validation
