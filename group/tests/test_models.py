@@ -21,7 +21,7 @@ class TestGroupModel(APITestCase):
 			group.full_clean()
 		
 	def test_model_maxlength(self): 
-		group = Group(name = "3"*100, description = "3"*100)
+		group = Group(name = "3"*200, description = "3"*500)
 		with self.assertRaises(ValidationError): 
 			group.full_clean()
 	
