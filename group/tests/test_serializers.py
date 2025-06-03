@@ -1,6 +1,5 @@
 from rest_framework.test import APITestCase
 from group.serializers import GroupSerializer, GroupMemberSerializer, GroupMemberChangeSerializer
-from rest_framework.serializers import ValidationError
 from django.contrib.auth import get_user_model
 from group.models import Group, MemberDetails
 
@@ -20,7 +19,9 @@ class TestGroupSerializer(APITestCase):
 			"members": [self.user.id, self.user1.id]
 		}
 		serializer = GroupSerializer(data = data)
+		print("***********" + serializer)
 		self.assertTrue(serializer.is_valid())
+		print("***********" + serializer.validated_data)
 		group = serializer.save()
 		self.assertEqual(group.name, data["name"])
 		self.assertIsNotNone(group.created_at)

@@ -2,6 +2,7 @@ from rest_framework.test import APITestCase
 from group.models import Group, MemberDetails
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+from django.db.utils import IntegrityError
 
 User = get_user_model()
 
@@ -60,7 +61,7 @@ class TestGroupModel(APITestCase):
 		
 	def test_model_method_update_members_role_without_list(self):
 		with self.assertRaises(ValueError): 
-			self.group.update_members_role(self.user.id)
+			self.group.update_members_role("admin", self.user.id)
 			
 	def test_model_method_delete_members(self):
 		self.group.add_members([self.user.id,self.user1.id,self.user2.id])

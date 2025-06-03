@@ -13,7 +13,8 @@ class GroupSerializer(serializers.ModelSerializer):
 		    }
 		}
 	
-	def create(self, validated_data): 
+	def create(self, validated_data):
+		print("*****************" + validated_data)
 		member_ids = validated_data.pop("members")
 		group = Group.objects.create(**validated_data)
 		
