@@ -10,6 +10,9 @@ class GroupSerializer(serializers.ModelSerializer):
 		extra_kwargs = {
 		    "created_at": {
 		        "read_only": True
+		    },
+		    "members": {
+		    	"read_only": False
 		    }
 		}
 	
