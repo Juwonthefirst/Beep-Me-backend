@@ -47,7 +47,7 @@ class TestGroupSerializer(APITestCase):
 		data = {
 			"name": "TF, am i even doing",
 			"description": "I'm testing",
-			"members": [self.user.id, self.user1.id],
+			"members": [{"id": self.user.id,"username": self.user.username, "role": "admin"}, {"id": self.user1.id,"username": self.user1.username, "role": "member"}],
 			"created_at": "one day"
 			
 		}
