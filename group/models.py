@@ -3,6 +3,12 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+def create_member_rows(cls, member): 
+	if isinstance(member, dict): 
+		return cls(group = group, **new_member)
+	return cls(group = group, member_id = new_member)
+	
+	
 class Group(models.Model): 
 	name = models.CharField(max_length = 100)
 	description = models.CharField(max_length = 200, blank = True)
@@ -34,10 +40,10 @@ class MemberDetails(models.Model):
 	
 	@classmethod
 	def add(cls, group, new_members):
-		print("************"+str(new_members))
 		if not isinstance(new_members, list): 
 			raise ValueError
-		member_rows = [cls(group = group, **new_member) for new_member in new_members]
+		
+		member_rows = map(lambda member: create_member_rows(cls, member), members)
 		return cls.objects.bulk_create(member_rows)
 		
 	@classmethod
