@@ -16,7 +16,7 @@ class TestGroupSerializer(APITestCase):
 		data = {
 			"name": "test",
 			"description": "I'm testing",
-			"members": [{"member": self.user.id, "role": "admin"}, {"member": self.user1.id, "role": "member"}],
+			"members": [{"member_id": self.user.id, "role": "admin"}, {"member_id": self.user1.id, "role": "member"}],
 		}
 		serializer = GroupSerializer(data = data)
 		self.assertTrue(serializer.is_valid())
@@ -30,7 +30,7 @@ class TestGroupSerializer(APITestCase):
 	def test_create_method_with_bad_input(self):
 		data = {
 			"description": "I'm testing",
-			"members": [{"member": self.user.id, "role": "admin"}, {"member": self.user1.id, "role": "member"}],
+			"members": [{"member_id": self.user.id, "role": "admin"}, {"member_id": self.user1.id, "role": "member"}],
 		}
 		serializer = GroupSerializer(data = data)
 		self.assertFalse(serializer.is_valid())
@@ -38,7 +38,7 @@ class TestGroupSerializer(APITestCase):
 	def test_serializer_description_field_blank_constraint(self):
 		data = {
 			"name": "juwon",
-			"members": [{"member": self.user.id, "role": "admin"}, {"member": self.user1.id, "role": "member"}],
+			"members": [{"member_id": self.user.id, "role": "admin"}, {"member_id": self.user1.id, "role": "member"}],
 		}
 		serializer = GroupSerializer(data = data)
 		self.assertTrue(serializer.is_valid())
@@ -47,7 +47,7 @@ class TestGroupSerializer(APITestCase):
 		data = {
 			"name": "TF, am i even doing",
 			"description": "I'm testing",
-			"members": [{"member": self.user.id, "role": "admin"}, {"member": self.user1.id, "role": "member"}],
+			"members": [{"member_id": self.user.id, "role": "admin"}, {"member_id": self.user1.id, "role": "member"}],
 			"created_at": "one day"
 			
 		}
