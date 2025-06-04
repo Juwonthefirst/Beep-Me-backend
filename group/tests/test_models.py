@@ -2,7 +2,7 @@ from rest_framework.test import APITestCase
 from group.models import Group, MemberDetails
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
-from django.db.utils import IntegrityError
+from django.db import IntegrityError
 
 User = get_user_model()
 
