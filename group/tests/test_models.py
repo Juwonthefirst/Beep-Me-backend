@@ -49,7 +49,7 @@ class TestGroupModel(APITestCase):
 			
 	def test_model_method_add_members_uncreated_user(self):
 		with self.assertRaises(IntegrityError):
-			self.group.add_members([9999])
+			self.group.add_members([999])
 			
 	def test_model_method_update_members_role(self):
 		self.assertTrue(self.group.user_is_admin(user = self.user))
