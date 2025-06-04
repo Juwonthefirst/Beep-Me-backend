@@ -13,7 +13,7 @@ class RoomMessagesSerializer(serializers.ModelSerializer):
 class RoomMembersSerializer(serializers.ModelSerializer): 
 	class Meta: 
 		model = User
-		fields = ["id", "username", "email", "firstname", "lastname"]
+		fields = ["id", "username", "email"]
 		
 class RoomDetailsSerializer(serializers.ModelSerializer): 
 	class Meta: 
