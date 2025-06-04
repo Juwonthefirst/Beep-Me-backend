@@ -3,8 +3,8 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-def create_member_rows(cls, member): 
-	if isinstance(member, dict): 
+def create_member_rows(cls, new_member): 
+	if isinstance(new_member, dict): 
 		return cls(group = group, **new_member)
 	return cls(group = group, member_id = new_member)
 	
@@ -43,7 +43,7 @@ class MemberDetails(models.Model):
 		if not isinstance(new_members, list): 
 			raise ValueError
 		
-		member_rows = map(lambda member: create_member_rows(cls, member), members)
+		member_rows = map(lambda member: create_member_rows(cls, new_member), new_members)
 		return cls.objects.bulk_create(member_rows)
 		
 	@classmethod
