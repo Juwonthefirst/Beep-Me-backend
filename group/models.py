@@ -44,7 +44,7 @@ class MemberDetails(models.Model):
 			raise ValueError
 		
 		member_rows = map(lambda new_member: create_member_rows(cls, group, new_member), new_members)
-		return cls.objects.bulk_create(member_rows)
+		return cls.objects.bulk_create(member_rows, ignore_conflicts = False)
 		
 	@classmethod
 	def update_role(cls, group, role, member_ids): 
