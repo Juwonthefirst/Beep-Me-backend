@@ -3,7 +3,7 @@ from group.models import Group, MemberDetails
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
-
+from psycopg2.errors import ForeignKeyViolation
 User = get_user_model()
 
 class TestGroupModel(APITestCase):
@@ -48,7 +48,7 @@ class TestGroupModel(APITestCase):
 			self.group.add_members([self.user.id])
 			
 	def test_model_method_add_members_uncreated_user(self):
-		with self.assertRaises(IntegrityError):
+		with self.assertRaises((ForeignKeyViolation, IntegrityError)):
 			self.group.add_members([999])
 			
 	def test_model_method_update_members_role(self):
