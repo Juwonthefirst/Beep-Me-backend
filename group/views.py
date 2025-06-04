@@ -27,7 +27,6 @@ class UpdateGroupView(RetrieveUpdateDestroyAPIView):
 	serializer_class =  GroupSerializer
 	permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
 
-#we may delete this later since we can just get the group and see all the members details there	
 class GroupMembersView(ListAPIView): 
 	serializer_class = GroupMemberSerializer
 	permission_classes = [IsAuthenticated]
