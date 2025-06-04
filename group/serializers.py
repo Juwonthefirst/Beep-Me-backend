@@ -27,12 +27,14 @@ class GroupSerializer(serializers.ModelSerializer):
 		}
 		
 	def create(self, validated_data):
+		print("***********" + str(validated_data))
 		members = validated_data.pop("members")
+		print("***********" + str(members))
 		
 		group = Group.objects.create(**validated_data)
 		
 		#makes the first member an admin as the first member is always the creator
-		group.add_members([members[0]])
+		group.add_members(members[:1])
 		if len(member_ids) > 1: 
 			#the rest are regular members unless updated by the admin
 			group.add_members(members[1:])
