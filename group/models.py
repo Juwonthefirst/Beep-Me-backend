@@ -16,8 +16,8 @@ class Group(models.Model):
 		except:
 			return False
 			
-	def add_members(self, member_ids, role = "members"): 
-		return MemberDetails.add(self, member_ids, role)
+	def add_members(self, new_members): 
+		return MemberDetails.add(self, new_members)
 		
 	def update_members_role(self, role, member_ids): 
 		return MemberDetails.update_role(self, role, member_ids)
@@ -33,10 +33,10 @@ class MemberDetails(models.Model):
 	joined_at = models.DateTimeField(auto_now_add = True)
 	
 	@classmethod
-	def add(cls, group, member_ids, role = "member"):
-		if not isinstance(member_ids, list): 
+	def add(cls, group, new_members):
+		if not isinstance(new_members, list): 
 			raise ValueError
-		member_rows = [cls(group = group, member_id = member_id, role = role) for member_id in member_ids]
+		member_rows = [cls(group = group, **new_member) for new_member in new_members]
 		return cls.objects.bulk_create(member_rows)
 		
 	@classmethod

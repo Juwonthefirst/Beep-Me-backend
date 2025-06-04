@@ -32,10 +32,10 @@ class GroupSerializer(serializers.ModelSerializer):
 		group = Group.objects.create(**validated_data)
 		
 		#makes the first member an admin as the first member is always the creator
-		group.add_members([member_ids[0]], role = "admin")
+		group.add_members([members[0]])
 		if len(member_ids) > 1: 
 			#the rest are regular members unless updated by the admin
-			group.add_members(member_ids[1:])
+			group.add_members(members[1:])
 		ChatRoom.objects.create(name = f"group.{group.id}", is_group = True, group = group)
 		return group
 		
