@@ -54,8 +54,8 @@ def googleLogin(request):
 			"id": user.id,
 			"username": user.username,
 			"email": user.email,
-			"firstname": user.firstname,
-			"lastname": user.lastname
+			"firstname": user.first_name,
+			"lastname": user.last_name
 		},
 		"new_user": new_user
 	})
