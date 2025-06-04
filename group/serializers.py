@@ -25,7 +25,7 @@ class GroupSerializer(serializers.ModelSerializer):
 		        "read_only": True
 		    }
 		}
-	
+		
 	def create(self, validated_data):
 		members = validated_data.pop("members")
 		

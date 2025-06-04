@@ -16,7 +16,7 @@ class TestGroupSerializer(APITestCase):
 		data = {
 			"name": "test",
 			"description": "I'm testing",
-			"members": [self.user.id, self.user1.id]
+			"members": [{"member": self.user.id, "role": "admin"}, {"member": self.user1.id, "role": "member"}],
 		}
 		serializer = GroupSerializer(data = data)
 		self.assertTrue(serializer.is_valid())
@@ -30,7 +30,7 @@ class TestGroupSerializer(APITestCase):
 	def test_create_method_with_bad_input(self):
 		data = {
 			"description": "I'm testing",
-			"members": [self.user.id, self.user1.id]
+			"members": [{"member": self.user.id, "role": "admin"}, {"member": self.user1.id, "role": "member"}],
 		}
 		serializer = GroupSerializer(data = data)
 		self.assertFalse(serializer.is_valid())
