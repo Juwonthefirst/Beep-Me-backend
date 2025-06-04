@@ -34,6 +34,7 @@ class MemberDetails(models.Model):
 	
 	@classmethod
 	def add(cls, group, new_members):
+		print("************"+str(new_members)
 		if not isinstance(new_members, list): 
 			raise ValueError
 		member_rows = [cls(group = group, **new_member) for new_member in new_members]
