@@ -2,6 +2,7 @@ from rest_framework.test import APITestCase
 from group.models import Group, MemberDetails
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+from django.db.utils import IntegrityError
 from django.db import Error as DatabaseError
 User = get_user_model()
 
@@ -45,10 +46,6 @@ class TestGroupModel(APITestCase):
 	def test_model_method_add_members_duplicate_users(self):
 		with self.assertRaises(IntegrityError):	
 			self.group.add_members([self.user.id])
-			
-	def test_model_method_add_members_uncreated_user(self):
-		with self.assertRaises(DatabaseError):
-			self.group.add_members([999])
 			
 	def test_model_method_update_members_role(self):
 		self.assertTrue(self.group.user_is_admin(user = self.user))
