@@ -7,7 +7,7 @@ class MembersSerializer(serializers.Serializer):
    role = serializers.CharField(max_length = 100)
        
 class GroupSerializer(serializers.ModelSerializer): 
-	members = GroupMemberSerializer(many = True)
+	members = MembersSerializer(many = True)
 	class Meta: 
 		model = Group
 		fields = "__all__"
