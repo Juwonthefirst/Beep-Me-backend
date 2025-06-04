@@ -43,7 +43,7 @@ class MemberDetails(models.Model):
 		if not isinstance(new_members, list): 
 			raise ValueError
 		
-		member_rows = map(lambda member: create_member_rows(cls, new_member), new_members)
+		member_rows = map(lambda new_member: create_member_rows(cls, new_member), new_members)
 		return cls.objects.bulk_create(member_rows)
 		
 	@classmethod
