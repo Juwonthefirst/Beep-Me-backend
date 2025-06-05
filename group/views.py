@@ -31,7 +31,7 @@ class GroupMembersView(ListAPIView):
 	serializer_class = GroupMemberSerializer
 	permission_classes = [IsAuthenticated]
 	def get_queryset(self): 
-		group_id = self.kwargs["group_id"]
+		group_id = self.kwargs["pk"]
 		try:
 			return Group.objects.get(id = group_id).memberdetails_set.all()
 		except Group.DoesNotExist:
