@@ -4,7 +4,7 @@ from chat_room.models import ChatRoom
 
 class MembersSerializer(serializers.Serializer): 
    member_id = serializers.IntegerField()
-   role = serializers.CharField(max_length = 100)
+   role = serializers.CharField(max_length = 100, required = False)
        
 class GroupSerializer(serializers.ModelSerializer): 
 	members = MembersSerializer(many = True, write_only = True)
@@ -38,4 +38,4 @@ class GroupMemberSerializer(serializers.ModelSerializer):
        }
        
 class GroupMemberChangeSerializer(serializers.Serializer): 
-	member_ids = serializers.ListField(child = serializers.IntegerField(min_value = 0), allow_empty = False)
+	member_ids = serializers.ListField(child = serializers.IntegerField(min_value = 1), allow_empty = False)
