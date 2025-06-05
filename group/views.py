@@ -58,7 +58,7 @@ class GroupMemberRoleView(RetrieveUpdateAPIView):
 def delete_group_members(request, pk):
 	data = GroupMemberChangeSerializer(data = request.data)
 	if not data.is_valid(): 
-		return Response(serializers.errors, status = bad_request)
+		return Response(data.errors, status = bad_request)
 	try: 
 		member_ids = data.validated_data.get("member_ids")
 		group = Group.objects.get(id = pk)
