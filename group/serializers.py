@@ -7,7 +7,7 @@ class MembersSerializer(serializers.Serializer):
    role = serializers.CharField(max_length = 100)
        
 class GroupSerializer(serializers.ModelSerializer): 
-	members = MembersSerializer(many = True)
+	members = MembersSerializer(many = True, write_only = True)
 	class Meta: 
 		model = Group
 		fields = "__all__"
@@ -20,8 +20,6 @@ class GroupSerializer(serializers.ModelSerializer):
 	def create(self, validated_data):
 		members = validated_data.pop("members")
 		group = Group.objects.create(**validated_data)
-		
-		#makes the first member an admin as the first member is always the creator
 		group.add_members(members)
 		ChatRoom.objects.create(name = f"group.{group.id}", is_group = True, group = group)
 		return group

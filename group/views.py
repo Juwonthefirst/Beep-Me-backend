@@ -35,7 +35,7 @@ class GroupMembersView(ListAPIView):
 		try:
 			return Group.objects.get(id = group_id).memberdetails_set.all()
 		except Group.DoesNotExist:
-			return User.objects.none()
+			return MemberDetails.objects.none()
 
 class CreateGroupView(CreateAPIView): 
 	queryset = Group.objects.all()
