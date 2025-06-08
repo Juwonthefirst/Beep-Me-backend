@@ -197,6 +197,8 @@ CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://" + os.getenv("HOST_NAME"),
+    "http://localhost:7700",
+    "https://" + os.getenv("FRONTEND_HOST_NAME")
 ]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
