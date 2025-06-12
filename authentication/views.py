@@ -8,6 +8,8 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from allauth.account.models import EmailAddress
 from authlib.integrations.requests_client import OAuth2Session
+import os
+
 
 User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
