@@ -93,7 +93,7 @@ def googleLoginByCode(request):
 		
 	token = client.fetch_token("https://oauth2.googleapis.com/token", code = code)
 	id_token = token.get("id_token")
-	id_info = client.parse_id_token(id_token)
+	id_info = verify_id_token(id_token)
 	email = id_info.get("email")
 	first_name = id_info.get("given_name")
 	last_name = id_info.get("family_name")
