@@ -11,9 +11,10 @@ from authlib.integrations.requests_client import OAuth2Session
 
 User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
-client = OAuth2Session(google_client_id, google_client_secret, redirect_uri = "postmessage")
 google_client_id = os.getenv("GOOGLE_CLIENT_ID")
 google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+client = OAuth2Session(google_client_id, google_client_secret, redirect_uri = "postmessage")
+
 
 def verify_id_token(token):
 	try:
