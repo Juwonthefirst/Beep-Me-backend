@@ -41,7 +41,14 @@ def googleLoginByIdToken(request):
 			raise User.DoesNotExist
 		new_user = False
 	except User.DoesNotExist:
-		user = User.objects.create_user(username = email.rstrip("@gmail.com") + str(token_hex(8)), email = email, password = f'pass_{token_hex(32)}')
+		user = User.objects.create_user(
+			username = email.rstrip("@gmail.com") + str(token_hex(8)), 
+			email = email, 
+			password = f'pass_{token_hex(32)}',
+			first_name = first_name,
+			last_name = last_name
+		)
+		
 		EmailAddress.objects.create(
 			user = user,
 			email = email,
@@ -54,6 +61,13 @@ def googleLoginByIdToken(request):
 			
 	response = Response({
 		"access": str(refresh_token.access_token),
+		"user" : {
+			"id": user.id,
+			"username": user.username,
+			"email": user.email,
+			"firstname": user.first_name,
+			"lastname": user.last_name
+		},
 		"new_user": new_user
 	})
 	
@@ -79,6 +93,8 @@ def googleLoginByCode(request):
 	id_token = token.get("id_token")
 	id_info = client.parse_id_token(id_token)
 	email = id_info.get("email")
+	first_name = id_info.get("given_name")
+	last_name = id_info.get("family_name")
 	
 	if not email:
 		return Response({"error": "Unable to get email"}, status = bad_request)
@@ -89,7 +105,14 @@ def googleLoginByCode(request):
 			raise User.DoesNotExist
 		new_user = False
 	except User.DoesNotExist:
-		user = User.objects.create_user(username = email.rstrip("@gmail.com") + str(token_hex(8)), email = email, password = f'pass_{token_hex(32)}')
+		user = User.objects.create_user(
+			username = email.rstrip("@gmail.com") + str(token_hex(8)), 
+			email = email, 
+			password = f'pass_{token_hex(32)}',
+			first_name = first_name,
+			last_name = last_name
+		)
+		
 		EmailAddress.objects.create(
 			user = user,
 			email = email,
@@ -99,9 +122,15 @@ def googleLoginByCode(request):
 		new_user = True
 				
 	refresh_token = RefreshToken.for_user(user)
-			
 	response = Response({
 		"access": str(refresh_token.access_token),
+		"user" : {
+			"id": user.id,
+			"username": user.username,
+			"email": user.email,
+			"firstname": user.first_name,
+			"lastname": user.last_name
+		},
 		"new_user": new_user
 	})
 	
