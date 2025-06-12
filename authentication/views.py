@@ -11,7 +11,7 @@ from authlib.integrations.requests_client import OAuth2Session
 
 User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
-
+client = OAuth2Session(google_client_id, google_client_secret, redirect_uri = "postmessage")
 google_client_id = os.getenv("GOOGLE_CLIENT_ID")
 google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
 
@@ -88,7 +88,6 @@ def googleLoginByCode(request):
 	if not code: 
 		return Response({"error": "No code provided"}, status = bad_request)
 		
-	client = OAuth2Session(google_client_id, google_client_secret, redirect_uri = "postmessage")
 	token = client.fetch_token("https://oauth2.googleapis.com/token", code = code)
 	id_token = token.get("id_token")
 	id_info = client.parse_id_token(id_token)
