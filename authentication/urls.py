@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
 	path("", include("dj_rest_auth.urls")),
 	path("login/", views.CustomLoginView.as_view()),
-	path("logout/", views.logoutView)
+	path("logout/", views.logoutView),
     path("registration/", include("dj_rest_auth.registration.urls")),
     path("social/google/ID/", views.googleLoginByIdToken),
     path("social/google/code/", views.googleLoginByCode),
