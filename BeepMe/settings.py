@@ -176,8 +176,8 @@ REST_AUTH = {
     "USE_JWT": True,
     "TOKEN_MODEL": None,
     "JWT_AUTH_COOKIE": None,
-    "JWT_AUTH_REFRESH_COOKIE": None,
-    "JWT_AUTH_HTTPONLY": False
+    "JWT_AUTH_REFRESH_COOKIE": "refresh_token",
+    "JWT_AUTH_HTTPONLY": True
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
