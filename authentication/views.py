@@ -177,7 +177,7 @@ class CustomLoginView(LoginView):
 @csrf_protect
 @api_view(["GET"])	    
 def logoutView(request):
-	refresh_token = request.cookies.get("refresh_token")
+	refresh_token = request.COOKIES.get("refresh_token")
 	if not refresh_token: 
 			return Response({"error": "You don't have permission to use this view"}, status = status.HTTP_401_UNAUTHORIZED)
 	try: 
@@ -195,7 +195,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 	serializer_class = TokenRefreshSerializer
 	
 	def post(self, request, *ags, **kwargs):
-		refresh_token = request.cookies.get("refresh_token")
+		refresh_token = request.COOKIES.get("refresh_token")
 		if not refresh_token:
 			return Response({"error": "You don't have permission to use this view"}, status = status.HTTP_401_UNAUTHORIZED)
 			
