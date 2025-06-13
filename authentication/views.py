@@ -1,7 +1,11 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.decorators.crsf import ensure_crsf_cookie
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView
+rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from dj_rest_auth.views import LoginView
 from django.contrib.auth import get_user_model
 from secrets import token_hex
 from google.oauth2 import id_token
@@ -146,3 +150,45 @@ def googleLoginByCode(request):
 	)
 	
 	return response
+	
+@ensure_crsf_cookie	
+class CustomLoginView(LoginView): 
+	def get_response(self): 
+		original_response = super().get_response()
+		refresh_token = original_response.data.pop("refresh")
+		original_response.set_cookie(
+		    key = "refresh_token",
+		    value = refresh_token,
+		    secure = True,
+		    httponly = True,
+		    max_age = 60 * 60 * 24 * 30,
+		    samesite = 'None'
+		)
+		return original_response
+
+
+@api_view(["GET"])	    
+def logoutView(request):
+	refresh_token = request.cookies.get("refresh_token")
+	try: 
+		token = RefreshToken(refresh_token)
+		token.blacklist()
+		response = Response(status = status.HTTP_205_RESET_CONTENT)
+		response.delete_cookie("refresh_token")
+		return response
+	except:
+		return Response({"error": "invalid token"}, status = bad_request)
+		
+
+class CustomTokenRefreshView(TokenRefreshView): 
+	serializer_class = TokenRefreshSerializer
+	
+	def post(self, request, *ags, **kwargs):
+		refresh_token = request.cookies.get("refresh_token")
+		if not refresh_token:
+			return Response({"error": "You don't have permission to use this view"}, status = status.HTTP_401_UNAUTHORIZED)
+			
+		serializer = self.get_serializer(data = {"refresh": refresh_token})
+		serializer.is_valid(raise_exception = True)
+		access_token = serializer.validated_data.get("access")
+		return Response({"access": access_token})
