@@ -3,10 +3,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
-from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from dj_rest_auth.views import LoginView
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
+from django.utils.datastructures import MultiValueDict
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from secrets import token_hex
 from google.oauth2 import id_token
@@ -192,14 +192,21 @@ def logoutView(request):
 		
 @method_decorator(csrf_protect, name = "dispatch")
 class CustomTokenRefreshView(TokenRefreshView): 
-	serializer_class = TokenRefreshSerializer
-	
-	def post(self, request, *ags, **kwargs):
+	def post(self, request, *args, **kwargs):
 		refresh_token = request.COOKIES.get("refresh_token")
-		if not refresh_token:
+		if not refresh_token: 
 			return Response({"error": "You don't have permission to use this view"}, status = status.HTTP_401_UNAUTHORIZED)
+		request._full_data = MultiValueDict({"refresh": [refresh_token]})
+		response = super().post(request, *args, **kwargs)
+		if "refresh" in response.data: 
+			new_refresh_token = response.data.pop("refresh")
+			response.set_cookie(
+			    key = "refresh_token",
+			    value = new_refresh_token,
+			    secure = True,
+			    httponly = True,
+			    max_age = 60 * 60 * 24 * 30,
+			    samesite = 'None'
+			)
 			
-		serializer = self.get_serializer(data = {"refresh": refresh_token})
-		serializer.is_valid(raise_exception = True)
-		access_token = serializer.validated_data.get("access")
-		return Response({"access": access_token})
+			return response
