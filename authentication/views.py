@@ -178,6 +178,8 @@ class CustomLoginView(LoginView):
 @api_view(["GET"])	    
 def logoutView(request):
 	refresh_token = request.cookies.get("refresh_token")
+	if not refresh_token: 
+			return Response({"error": "You don't have permission to use this view"}, status = status.HTTP_401_UNAUTHORIZED)
 	try: 
 		token = RefreshToken(refresh_token)
 		token.blacklist()
