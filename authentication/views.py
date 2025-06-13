@@ -7,7 +7,7 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from dj_rest_auth.views import LoginView
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
-from django.views.decorators.crsf import ensure_crsf_cookie, crsf_protect
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from secrets import token_hex
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -30,9 +30,9 @@ def verify_id_token(token):
 		return None
 
 
-@ensure_crsf_cookie
+@ensure_csrf_cookie
 @api_view(["POST"])		
-def googleLoginByIdTok=en(request):
+def googleLoginByIdToken(request):
 	id_token = request.data.get("token")
 	if not id_token: 
 		return Response({"error": "token is required"}, status = bad_request)
@@ -42,8 +42,11 @@ def googleLoginByIdTok=en(request):
 		return Response({"error": "Invalid token"}, status = bad_request)
 			
 	email = data.get("email")
+	first_name = data.get("given_name")
+	last_name = dat.get("family_name")
+	
 	if not email:
-		return Response({"error": "Unable to get email"}, status = bad_request)
+		return Response({"error": "Unable to get email from Google account"}, status = bad_request)
 				
 	try: 
 		user = User.objects.get(email = email)
@@ -92,7 +95,7 @@ def googleLoginByIdTok=en(request):
 	
 	return response
 
-@ensure_crsf_cookie
+@ensure_csrf_cookie
 @api_view(["POST"])	
 def googleLoginByCode(request): 
 	code = request.data.get("code")
@@ -107,7 +110,7 @@ def googleLoginByCode(request):
 	last_name = id_info.get("family_name")
 	
 	if not email:
-		return Response({"error": "Unable to get email"}, status = bad_request)
+		return Response({"error": "Unable to get email from Google account"}, status = bad_request)
 				
 	try: 
 		user = User.objects.get(email = email)
@@ -155,7 +158,7 @@ def googleLoginByCode(request):
 	
 	return response
 	
-@method_decorator(ensure_crsf_cookie, name = "dispatch")
+@method_decorator(ensure_csrf_cookie, name = "dispatch")
 class CustomLoginView(LoginView): 
 	def get_response(self): 
 		original_response = super().get_response()
@@ -171,7 +174,7 @@ class CustomLoginView(LoginView):
 		return original_response
 
 
-@crsf_protect
+@csrf_protect
 @api_view(["GET"])	    
 def logoutView(request):
 	refresh_token = request.cookies.get("refresh_token")
@@ -185,7 +188,7 @@ def logoutView(request):
 		return Response({"error": "invalid token"}, status = bad_request)
 
 		
-@method_decorator(crsf_protect, name = "dispatch")
+@method_decorator(csrf_protect, name = "dispatch")
 class CustomTokenRefreshView(TokenRefreshView): 
 	serializer_class = TokenRefreshSerializer
 	
