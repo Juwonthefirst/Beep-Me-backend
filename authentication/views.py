@@ -1,12 +1,13 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.decorators.crsf import ensure_crsf_cookie
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
-rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from dj_rest_auth.views import LoginView
 from django.contrib.auth import get_user_model
+from django.utils.decorators import method_decorator
+from django.views.decorators.crsf import ensure_crsf_cookie, crsf_protect
 from secrets import token_hex
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -28,8 +29,10 @@ def verify_id_token(token):
 	except:
 		return None
 
+
+@ensure_crsf_cookie
 @api_view(["POST"])		
-def googleLoginByIdToken(request):
+def googleLoginByIdTok=en(request):
 	id_token = request.data.get("token")
 	if not id_token: 
 		return Response({"error": "token is required"}, status = bad_request)
@@ -89,6 +92,7 @@ def googleLoginByIdToken(request):
 	
 	return response
 
+@ensure_crsf_cookie
 @api_view(["POST"])	
 def googleLoginByCode(request): 
 	code = request.data.get("code")
@@ -151,7 +155,7 @@ def googleLoginByCode(request):
 	
 	return response
 	
-@ensure_crsf_cookie	
+@method_decorator(ensure_crsf_cookie, name = "dispatch")
 class CustomLoginView(LoginView): 
 	def get_response(self): 
 		original_response = super().get_response()
@@ -167,6 +171,7 @@ class CustomLoginView(LoginView):
 		return original_response
 
 
+@crsf_protect
 @api_view(["GET"])	    
 def logoutView(request):
 	refresh_token = request.cookies.get("refresh_token")
@@ -178,8 +183,9 @@ def logoutView(request):
 		return response
 	except:
 		return Response({"error": "invalid token"}, status = bad_request)
-		
 
+		
+@method_decorator(crsf_protect, name = "dispatch")
 class CustomTokenRefreshView(TokenRefreshView): 
 	serializer_class = TokenRefreshSerializer
 	
