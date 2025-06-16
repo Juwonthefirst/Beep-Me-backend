@@ -22,7 +22,15 @@ google_client_id = os.getenv("GOOGLE_CLIENT_ID")
 google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
 client = OAuth2Session(google_client_id, google_client_secret, redirect_uri = "postmessage")
 
-
+@api_view(["GET"])
+def get_csrf(request):
+	csrf_token = request.COOKIE.get("csrftoken")
+	if csrf_token: 
+		return Response({"csrf_token": csrf_token})
+	
+	return Response({"error": "no csrf token found"}, status = bad_request)
+	
+	
 def verify_id_token(token):
 	try:
 		return id_token.verify_oauth2_token(token, requests.Request())
