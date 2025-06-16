@@ -17,4 +17,6 @@ class ChatRoom(models.Model):
 		room = ChatRoom.objects.create(name = name)
 		room.members.add(*users)
 		return room
-		
+	
+	def get_last_message(self):
+		return self.messages.filter().last()

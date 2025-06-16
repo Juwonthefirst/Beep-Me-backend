@@ -35,7 +35,7 @@ class Group(models.Model):
 class MemberDetails(models.Model): 
 	member = models.ForeignKey(User, on_delete = models.CASCADE)
 	group = models.ForeignKey(Group, on_delete = models.CASCADE)
-	role = models.CharField(max_length = 200, default = "member")
+	role = models.ForeignKey(Role)
 	joined_at = models.DateTimeField(auto_now_add = True)
 	
 	@classmethod
@@ -62,3 +62,11 @@ class MemberDetails(models.Model):
 		constraints = [
 			models.UniqueConstraint(fields = ["member", "group"], name = "unique-group-member")
 		]
+
+class Role(models.Model): 
+	name = models.CharField(max_length = 200)
+	permissions = models.ManyToManyField(Permission)
+	group = models.ForeignKey(Group, on_delete = models.CASCADE, related_name = "roles")
+	
+class Permission(models.Model): 
+	pass

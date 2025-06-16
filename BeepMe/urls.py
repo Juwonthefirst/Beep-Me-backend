@@ -21,6 +21,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/auth/", include("authentication.urls")),
     path("docs/", schema_view.with_ui("swagger", cache_timeout = 0), name = "open-api documentation"),
-    path("api/chat/", include("chat_room.urls")),
-    path("api/group/", include("group.urls")),
+    path("api/chats/", include("chat_room.urls")),
+    path("api/groups/", include("group.urls")),
+    path("api/users/", include("user.urls"))
 ]
