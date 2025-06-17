@@ -24,7 +24,7 @@ client = OAuth2Session(google_client_id, google_client_secret, redirect_uri = "p
 
 @api_view(["GET"])
 def get_csrf(request):
-	csrf_token = request.COOKIE.get("csrftoken")
+	csrf_token = request.COOKIES.get("csrftoken")
 	if csrf_token: 
 		return Response({"csrf_token": csrf_token})
 	
