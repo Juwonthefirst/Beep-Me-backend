@@ -51,7 +51,7 @@ def googleLoginByIdToken(request):
 			
 	email = data.get("email")
 	first_name = data.get("given_name")
-	last_name = dat.get("family_name")
+	last_name = data.get("family_name")
 	
 	if not email:
 		return Response({"error": "Unable to get email from Google account"}, status = bad_request)
