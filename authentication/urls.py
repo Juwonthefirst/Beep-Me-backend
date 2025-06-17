@@ -9,6 +9,6 @@ urlpatterns = [
     path("social/google/ID/", views.googleLoginByIdToken),
     path("social/google/code/", views.googleLoginByCode),
 	path("token/refresh/", views.CustomTokenRefreshView.as_view()),
-	path("user/csrf/", views.get_csrf)
+	path("user/csrf/", views.get_csrf),
 	path("", include("dj_rest_auth.urls")),
 ]
