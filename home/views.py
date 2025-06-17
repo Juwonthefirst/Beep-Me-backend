@@ -4,7 +4,7 @@ from django.http import HttpResponse
 
 
 # Create your views here.
-@api_view(["GET"])
+@api_view(["GET", "HEAD"])
 def home(request):
 	return Response({"status": "hello"})
 	
