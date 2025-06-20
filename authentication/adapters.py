@@ -1,4 +1,5 @@
 from allauth.account.adapter import DefaultAccountAdapter
+import os
 
 class EmailAdapter(DefaultAccountAdapter): 
 	def send_mail(self, template_prefix, email, context): 
