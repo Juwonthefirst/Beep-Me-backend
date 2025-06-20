@@ -63,7 +63,7 @@ def googleLoginByIdToken(request):
 		new_user = False
 	except User.DoesNotExist:
 		user = User.objects.create_user(
-			username = email.rstrip("@gmail.com") + str(token_hex(8)), 
+			username = email.rstrip("@gmail.com"), 
 			email = email, 
 			password = f'pass_{token_hex(32)}',
 			first_name = first_name,
@@ -127,7 +127,7 @@ def googleLoginByCode(request):
 		new_user = False
 	except User.DoesNotExist:
 		user = User.objects.create_user(
-			username = email.rstrip("@gmail.com") + str(token_hex(8)), 
+			username = email.rstrip("@gmail.com"), 
 			email = email, 
 			password = f'pass_{token_hex(32)}',
 			first_name = first_name,
