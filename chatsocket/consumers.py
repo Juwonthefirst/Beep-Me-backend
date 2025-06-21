@@ -25,7 +25,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
         
     async def disconnect(self, close_code):
-        for room in rooms:
+        for room in self.joined_rooms:
             await self.channel_layer.group_discard(
                 room, self.channel_name
             )
@@ -91,7 +91,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         
         await self.accept()
         
-    async def disconnect(self):
+    async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
             self.room_name, self.channel_name
         )
@@ -106,27 +106,27 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         
     async def notification_chat(self, event):
         notification_detail = event.get("notification")
-        self.send(text_data = json.dumps({
+        await self.send(text_data = json.dumps({
             "type": "chat_notification",
             "sender": notification_detail.get("sender"),
             "receiver": notification_detail.get("receiver"),
-            "message" notification_detail.get("message"),
+            "message": notification_detail.get("message"),
             "time": timezone.now(),
         }))
         
     async def notification_friend(self, event):
         notification_detail = event.get("notification")
-        self.send(text_data = json.dumps({
-            "type": "friend_notification"
+        await self.send(text_data = json.dumps({
+            "type": "friend_notification",
             "initiator": notification_detail.get("initiator"),
             "time": timezone.now(),
         }))
         
     async def notification_group(arg):
         notification_detail = event.get("notification")
-        self.send(text_data = json.dumps({
+        await self.send(text_data = json.dumps({
             "initiator": "group_notification",
-            "action" notification_detail.get("action"),
+            "action":  notification_detail.get("action"),
             "group": notification_detail.get("group"),
             "time": timezone.now(),
         }))
