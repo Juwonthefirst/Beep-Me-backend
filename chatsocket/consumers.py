@@ -77,3 +77,42 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room_name = event.get("room")
         await self.send(text_data = json.dumps({"room": room_name, "typing": True}))
         
+        
+class NotificationConsumer(AsyncWebsocketConsumer): 
+    async def connect(self):
+        user = self.scope["user"]
+        if not user:
+            await self.close(code=4001)
+        self.room_name = f"user_{user.id}_notifications"
+        
+        await self.channel_layer.group_add(
+            self.room_name, self.channel_name
+        )
+        
+        await self.accept()
+        
+    async def disconnect(self):
+        await self.channel_layer.group_discard(
+            self.room_name, self.channel_name
+        )
+        
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        action = data.get("action")
+        
+        await self.channel_layer.group_send(
+            self.room_name, {"type": f"notification.{action}","notification": notification}
+        )
+        
+    async def notification_chat(self, event):
+        notification = event.get("notification")
+        self.send(text_data = json.dumps({
+            "sender": ,
+            "to": ,
+            "message" ,
+            "time": ,
+        }))
+        
+    async def notification_friend(self, event):
+        pass
+    
