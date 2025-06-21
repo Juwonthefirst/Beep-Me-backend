@@ -7,6 +7,7 @@ dj-rest-auth==7.0.1
 django-allauth==65.8.1
 django-cors-headers==4.7.0
 django-redis==5.4.0
+django-storages
 djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.0
 drf-yasg==1.21.10
@@ -16,3 +17,4 @@ psycopg2
 whitenoise
 google-auth
 authlib
+boto3
