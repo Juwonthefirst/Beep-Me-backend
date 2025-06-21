@@ -18,29 +18,62 @@ def get_or_create_room(room_name):
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_group_name = self.scope["url_route"]["kwargs"]["room_name"]
         if not self.scope["user"]:
             await self.close(code=4001)
             
-        await self.channel_layer.group_add(
-            self.room_group_name, self.channel_name
-        )
+        self.joined_rooms = set()
         await self.accept()
-        self.room = await get_or_create_room(self.room_group_name)
         
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.room_group_name, self.channel_name
+        for room in rooms:
+            await self.channel_layer.group_discard(
+                room, self.channel_name
+            )
+        self.joined_rooms.clear()
+        
+    async def group_join(self, room_name): 
+        await self.channel_layer.group_add(
+            room_name, self.channel_name
         )
+        self.joined_rooms.add(room_name)
+        await get_or_create_room(room_name)
+        
+    async def group_leave(self, room_name):
+        await self.channel_layer.group_discard(
+            room_name, self.channel_name
+        )
+        self.joined_rooms.discard(room_name)
         
     async def receive(self, text_data):
         data = json.loads(text_data)
-        message = data["message"]
-        await self.channel_layer.group_send(
-            self.room_group_name, {"type": "chat.message", "message": message}
-        )
-        await save_message(room = self.room, message = message, sender = self.scope["user"])
+        message = data.get("message")
+        room_name = data.get("room")
+        action = data.get("action")
+        match(action): 
+            case "group_join": 
+                await self.group_join(room_name)
+                
+            case "group_leave": 
+                await self.group_leave(room_name)
+                
+            case "typing": 
+                await self.channel_layer.group_send(
+                    room_name, {"type": "chat.typing", "room": room_name}
+                )
+                
+            case "chat": 
+                await self.channel_layer.group_send(
+                    room_name, {"type": "chat.message", "room": room_name, "message": message}
+                )
+                await save_message(room = room_name, message = message, sender = self.scope["user"])
+
         
     async def chat_message(self, event):
-        message = event["message"]
-        await self.send(text_data = json.dumps({"message": message}))
+        room_name = event.get("room")
+        message = event.get("message")
+        await self.send(text_data = json.dumps({"room": room_name,"message": message}))
+        
+    async def chat_typing(self, event):
+        room_name = event.get("room")
+        await self.send(text_data = json.dumps({"room": room_name, "typing": True}))
+        
