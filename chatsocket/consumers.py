@@ -99,20 +99,35 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get("action")
-        
+        notification_detail = data.get("notification")
         await self.channel_layer.group_send(
-            self.room_name, {"type": f"notification.{action}","notification": notification}
+            self.room_name, {"type": f"notification.{action}", "notification": notification_detail}
         )
         
     async def notification_chat(self, event):
-        notification = event.get("notification")
+        notification_detail = event.get("notification")
         self.send(text_data = json.dumps({
-            "sender": ,
-            "to": ,
-            "message" ,
-            "time": ,
+            "type": "chat_notification",
+            "sender": notification_detail.get("sender"),
+            "receiver": notification_detail.get("receiver"),
+            "message" notification_detail.get("message"),
+            "time": timezone.now(),
         }))
         
     async def notification_friend(self, event):
-        pass
+        notification_detail = event.get("notification")
+        self.send(text_data = json.dumps({
+            "type": "friend_notification"
+            "initiator": notification_detail.get("initiator"),
+            "time": timezone.now(),
+        }))
+        
+    async def notification_group(arg):
+        notification_detail = event.get("notification")
+        self.send(text_data = json.dumps({
+            "initiator": "group_notification",
+            "action" notification_detail.get("action"),
+            "group": notification_detail.get("group"),
+            "time": timezone.now(),
+        }))
     
