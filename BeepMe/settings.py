@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     "chat_room",
     "message",
     "group",
+    "notification",
+    "upload"
 ]
 
 MIDDLEWARE = [
