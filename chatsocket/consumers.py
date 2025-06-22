@@ -91,7 +91,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data = json.dumps({"room": room_name, "typing": True}))
         
     async def user_online(self, event): 
-        await 
+        pass
         
 class NotificationConsumer(AsyncWebsocketConsumer): 
     async def connect(self):

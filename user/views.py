@@ -4,7 +4,8 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from .serializers import UsersSerializer, RetrieveUsersSerializer
+from .serializers import UsersSerializer, RetrieveUsersSerializer, UserNotificationsSerializer
+
 User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
 not_found = status.HTTP_404_NOT_FOUND
@@ -20,19 +21,22 @@ class RetrieveUserView(RetrieveAPIView):
 	permission_classes = [IsAuthenticated]
 	serializer_class = RetrieveUsersSerializer
 	
-@api_view(["GET"])
-def get_user_chat_rooms(request): 
-	user_id = request.kwargs.get("pk")
-	if not user_id: 
-		return Response({"error": "user_id was not provided"}, status = bad_request)
-		
-	try: 
-		user = User.objects.get(id = user_id)
-		if not user.is_active: 
-			raise User.DoesNotExist
-			
-	except User.DoesNotExist:
-		return Response({"error": "user does not exist"}, status = not_found)
+class GetUserChatRooms(ListAPIView): 
+	permission_classes = [IsAuthenticated]
+	serializer_class = UserChatRoomSerializer
+	def get_queryset(self):
+		user = self.request.user
+		user_chat_rooms = user.rooms
+		user_chat_rooms.annotate(
+			last_message_time = Max("messages_timestamp")
+		).order_by("-last_message_time")
 	
+	
+class GetUserNotifications(ListAPIView): 
+	permission_classes = [IsAuthenticated]
+	serializer_class = UserNotificationsSerializer
+	def get_queryset(self):
+		user = self.request.user
+		return user.notifications.all()
 	
 	

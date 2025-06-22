@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-
+from notification.models import Notification
+from chat_room.models import ChatRoom
+from chat_room.serializers import RoomMessagesSerializer
 User = get_user_model()
 
 class UsersSerializer(serializers.ModelSerializer): 
@@ -17,4 +19,17 @@ class RetrieveUsersSerializer(serializers.ModelSerializer):
 		        "write_only": True
 		    }
 		}
+class UserChatRoomSerializer(serializers.ModelSerializer): 
+	last_message = serializers.SerializerMethodField()
+	class Meta: 
+		model = ChatRoom
+		fields = "__all__"
 		
+	def get_last_message(self, obj): 
+		last_message_object = obj.get_last_message()
+		return RoomMessagesSerializer(last_message_object).data
+		
+class UserNotificationsSerializer(serializers.ModelSerializer): 
+	class Meta: 
+		model = Notification
+		fields = "__all__"
