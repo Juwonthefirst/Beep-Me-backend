@@ -14,8 +14,11 @@ username_validator = RegexValidator(
 class CustomUser(AbstractUser): 
 	last_online = models.DateTimeField()
 	username = models.CharField(max_length = 60, unique = True, validators = [username_validator], error_messages = {"unique": "a user with this username already exists"}, db_index = True)
-	friends = models.ManyToManyField("self", symmetrical = False, null = True)
+	following = models.ManyToManyField("self", symmetrical = False, null = True, related_name = "followers")
 		
 	def mark_offline(self): 
 		self.last_online = timezone.now()
 		self.save(updated_fields = ["last_online"])
+		
+	def is_friend(self, user_id): 
+		return self.followers.filter(id = user_id).exists() and self.following.filter(id = user_id).exists()

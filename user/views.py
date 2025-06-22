@@ -27,7 +27,7 @@ class GetUserChatRooms(ListAPIView):
 	def get_queryset(self):
 		user = self.request.user
 		user_chat_rooms = user.rooms
-		user_chat_rooms.annotate(
+		return user_chat_rooms.annotate(
 			last_message_time = Max("messages_timestamp")
 		).order_by("-last_message_time")
 	
