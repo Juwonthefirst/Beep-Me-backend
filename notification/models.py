@@ -11,5 +11,3 @@ class Notification(models.Model):
 	initiator = models.ForeignKey(User, on_delete = models.SET_NULL, null = True)
 	receiver = models.ForeignKey(User, on_delete = models.CASCADE, related_name = "notifications")
 	group = models.ForeignKey(Group, on_delete = models.SET_NULL, related_name = "notifications", null = True)
-	
-	def 

@@ -23,5 +23,6 @@ urlpatterns = [
     path("docs/", schema_view.with_ui("swagger", cache_timeout = 0), name = "open-api documentation"),
     path("api/chats/", include("chat_room.urls")),
     path("api/groups/", include("group.urls")),
-    path("api/users/", include("user.urls"))
+    path("api/users/", include("user.urls")),
+    path("api/uploads/", include("upload.urls"))
 ]
