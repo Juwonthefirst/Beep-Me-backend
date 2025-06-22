@@ -18,7 +18,7 @@ class UploadProfilePicture(APIView):
 		return Response({"status": "success"})
 
 		
-class getProfilePicture(APIView): 
+class GetProfilePicture(APIView): 
 	permission_classes = [IsAuthenticated]
 	
 	def get(self, request, pk):
