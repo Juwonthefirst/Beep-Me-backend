@@ -19,6 +19,7 @@ class RetrieveUsersSerializer(serializers.ModelSerializer):
 		        "write_only": True
 		    }
 		}
+		
 class UserChatRoomSerializer(serializers.ModelSerializer): 
 	last_message = serializers.SerializerMethodField()
 	class Meta: 

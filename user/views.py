@@ -31,6 +31,7 @@ class GetUserChatRooms(ListAPIView):
 			last_message_time = Max("messages_timestamp")
 		).order_by("-last_message_time")
 	
+class GetUserFollowing(ListAPIView): 
 	
 class GetUserNotifications(ListAPIView): 
 	permission_classes = [IsAuthenticated]

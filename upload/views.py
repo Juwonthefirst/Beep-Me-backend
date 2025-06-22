@@ -34,4 +34,8 @@ class GetProfilePicture(APIView):
 			filename = f"user_{pk}'s picture"
 		)
 	
+class UploadAttachment(APIView): 
+	parser_classes = [MultiPartParser]
 	
+	def post(self, request):
+		
