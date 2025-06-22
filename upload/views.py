@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django.http import FileResponse
 from django.core.files.storage import default_storage
 from .models import ProfilePicture
-
+from .serializers import UploadAttachmentSerializer
 # Create your views here.
 
 class UploadProfilePicture(APIView): 
@@ -36,6 +36,6 @@ class GetProfilePicture(APIView):
 	
 class UploadAttachment(APIView): 
 	parser_classes = [MultiPartParser]
-	
+	serializer_class = UploadAttachmentSerializer
 	def post(self, request):
 		
