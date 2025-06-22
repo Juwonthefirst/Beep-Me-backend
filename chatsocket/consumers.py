@@ -14,8 +14,18 @@ def get_or_create_room(room_name):
         return ChatRoom.objects.get(name = room_name)
     except:
         return ChatRoom.create_with_members(room_name)
-        
 
+@database_sync_to_async
+def create_notification(notification_type, notification): 
+    from notification.models import Notification
+    return Notification.objects.create(
+        notification_type = notification_type, 
+        notification = notification, 
+        initiator = initiator,
+        receiver = receiver,
+        
+    )
+    
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         if not self.scope["user"]:
@@ -60,7 +70,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.group_send(
                     room_name, {"type": "chat.typing", "room": room_name}
                 )
-                
+            case "is_online": 
+                await self.channel_layer.group_send(
+                    room_name, {"type": "user.online"}
+                )
             case "chat": 
                 await self.channel_layer.group_send(
                     room_name, {"type": "chat.message", "room": room_name, "message": message}
@@ -77,6 +90,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room_name = event.get("room")
         await self.send(text_data = json.dumps({"room": room_name, "typing": True}))
         
+    async def user_online(self, event): 
+        await 
         
 class NotificationConsumer(AsyncWebsocketConsumer): 
     async def connect(self):
