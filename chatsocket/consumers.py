@@ -48,8 +48,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room_name, self.channel_name
         )
         self.joined_rooms.add(room_name)
-        cache.add_user_to_group(user_id, room_name)
-        await get_or_create_room(room_name)
+        cache.add_active_members(user_id, room_name)
         
     async def group_leave(self, room_name):
         await self.channel_layer.group_discard(

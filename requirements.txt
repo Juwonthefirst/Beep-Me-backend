@@ -18,4 +18,3 @@ whitenoise
 google-auth
 authlib
 boto3
-redis
