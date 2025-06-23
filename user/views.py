@@ -38,7 +38,10 @@ class GetUserChatRooms(ListAPIView):
 			last_message_time = Max("messages_timestamp")
 		).order_by("-last_message_time")
 
-			
+	def get_serializer_context(self): 
+		context = super().get_serializer_context()
+		context["user"] = self.request.user
+		return context
 	
 class GetUserNotifications(ListAPIView): 
 	permission_classes = [IsAuthenticated]

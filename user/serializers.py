@@ -35,7 +35,7 @@ class UserChatRoomSerializer(serializers.ModelSerializer):
 	def get_parent(self, obj): 
 		if obj.is_group: 
 			return GroupSerializer(obj.group).data
-			
+		user_id = self	
 		other_member = obj.members.exclude(id = user_id)
 		return UsersSerializer(other_member).data
 			
