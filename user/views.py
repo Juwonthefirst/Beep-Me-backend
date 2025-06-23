@@ -8,8 +8,7 @@ from django.contrib.auth import get_user_model
 from notification.serializers import NotificationSerializer
 from .serializers import (
 	UsersSerializer, 
-	RetrieveUsersSerializer, 
-	UserNotificationsSerializer,
+	RetrieveUsersSerializer,
 	UserChatRoomSerializer
 )
 
