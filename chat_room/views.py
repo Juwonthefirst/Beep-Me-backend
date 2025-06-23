@@ -2,12 +2,17 @@ from rest_framework.response import Response
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.pagination import PageNumberPagination
 from .serializers import RoomMessagesSerializer, RoomMembersSerializer, RoomDetailsSerializer
 from .models import ChatRoom
 
+class MessagePagination(PageNumberPagination): 
+	page_size = 50
+	
 class RoomMessagesView(ListAPIView):
 	serializer_class = RoomMessagesSerializer
 	permission_classes = [IsAuthenticated]
+	pagination_class = MessagePagination
 	def get_queryset(self): 
 		room_id = self.kwargs["room_id"]
 		try: 

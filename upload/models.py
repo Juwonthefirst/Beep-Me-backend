@@ -5,7 +5,7 @@ User = get_user_model()
 # Create your models here.
 class ProfilePicture(models.Model): 
 	file = models.ImageField(upload_to = "upload/profile/")
-	uploader = models.OneToOneField(User, related_name = "profile_picture")
+	uploader = models.OneToOneField(User, related_name = "profile_picture", on_delete = models.CASCADE)
 	uploaded_at = models.DateTimeField(auto_now_add = True)
 	
 	def save(self, *args, **kwargs): 
