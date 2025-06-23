@@ -1,6 +1,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from BeepMe.cache import cache
 
 @database_sync_to_async
 def save_message(room, sender, message):
@@ -28,7 +29,8 @@ def create_notification(notification_type, notification):
     
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        if not self.scope["user"]:
+        self.user = self.scope.get("user")
+        if not self.user:
             await self.close(code=4001)
             
         self.joined_rooms = set()
@@ -46,6 +48,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room_name, self.channel_name
         )
         self.joined_rooms.add(room_name)
+        cache.add_user_to_group()
         await get_or_create_room(room_name)
         
     async def group_leave(self, room_name):
@@ -78,7 +81,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.group_send(
                     room_name, {"type": "chat.message", "room": room_name, "message": message}
                 )
-                await save_message(room = room_name, message = message, sender = self.scope["user"])
+                await save_message(room = room_name, message = message, sender = self.user)
 
         
     async def chat_message(self, event):
@@ -91,7 +94,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data = json.dumps({"room": room_name, "typing": True}))
         
     async def user_online(self, event): 
-        pass
+        user_id = self.user.id
+        await cache.set_user_online(user_id)
         
 class NotificationConsumer(AsyncWebsocketConsumer): 
     async def connect(self):
