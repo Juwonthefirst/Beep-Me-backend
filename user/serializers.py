@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from notification.models import Notification
 from chat_room.models import ChatRoom
 from chat_room.serializers import RoomMessagesSerializer
 from group.serializers import GroupSerializer
@@ -38,9 +37,3 @@ class UserChatRoomSerializer(serializers.ModelSerializer):
 		user_id = self.context.get("user_id")
 		other_member = obj.members.exclude(id = user_id)
 		return UsersSerializer(other_member).data
-			
-		
-class UserNotificationsSerializer(serializers.ModelSerializer): 
-	class Meta: 
-		model = Notification
-		fields = "__all__"

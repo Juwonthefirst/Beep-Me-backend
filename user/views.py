@@ -5,6 +5,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
+from notification.serializers import NotificationSerializer
 from .serializers import (
 	UsersSerializer, 
 	RetrieveUsersSerializer, 
@@ -28,7 +29,7 @@ class RetrieveUserView(RetrieveAPIView):
 	permission_classes = [IsAuthenticated]
 	serializer_class = RetrieveUsersSerializer
 	
-class GetUserChatRooms(ListAPIView): 
+class UserChatRoomsView(ListAPIView): 
 	permission_classes = [IsAuthenticated]
 	serializer_class = UserChatRoomSerializer
 	def get_queryset(self):
@@ -43,14 +44,14 @@ class GetUserChatRooms(ListAPIView):
 		context["user_id"] = self.request.user.id
 		return context
 	
-class GetUserNotifications(ListAPIView): 
+class UserNotificationsView(ListAPIView): 
 	permission_classes = [IsAuthenticated]
-	serializer_class = UserNotificationsSerializer
+	serializer_class = NotificationSerializer
 	def get_queryset(self):
 		user = self.request.user
 		return user.notifications.all()
 	
-class DoesUsernameExist(APIView): 
+class DoesUsernameExistView(APIView): 
     permission_classes = [IsAuthenticated]
     def post(self, request): 
         requested_username = request.data.get("username")
