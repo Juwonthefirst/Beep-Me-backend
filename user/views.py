@@ -5,7 +5,12 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from .serializers import UsersSerializer, RetrieveUsersSerializer, UserNotificationsSerializer
+from .serializers import (
+	UsersSerializer, 
+	RetrieveUsersSerializer, 
+	UserNotificationsSerializer,
+	UserChatRoomSerializer
+)
 
 User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
