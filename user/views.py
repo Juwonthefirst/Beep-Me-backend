@@ -15,6 +15,7 @@ class UsersView(ListAPIView):
 	queryset = User.objects.all()
 	permission_classes = [IsAuthenticated]
 	serializer_class = UsersSerializer
+	search_fields = ["username"]
 	
 class RetrieveUserView(RetrieveAPIView): 
 	"""View to get a particular user in the database """
@@ -31,6 +32,8 @@ class GetUserChatRooms(ListAPIView):
 		return user_chat_rooms.annotate(
 			last_message_time = Max("messages_timestamp")
 		).order_by("-last_message_time")
+
+			
 	
 class GetUserNotifications(ListAPIView): 
 	permission_classes = [IsAuthenticated]

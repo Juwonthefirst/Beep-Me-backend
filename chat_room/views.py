@@ -5,6 +5,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from .serializers import RoomMessagesSerializer, RoomMembersSerializer, RoomDetailsSerializer
 from .models import ChatRoom
+from BeepMe.cache import cache
 
 class MessagePagination(PageNumberPagination): 
 	page_size = 50
