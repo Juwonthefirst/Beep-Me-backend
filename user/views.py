@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
@@ -38,4 +39,11 @@ class GetUserNotifications(ListAPIView):
 		user = self.request.user
 		return user.notifications.all()
 	
-	
+class DoesUsernameExist(APIView): 
+    permission_classes = [IsAuthenticated]
+    def post(self, request): 
+        requested_username = request.data.get("username")
+        username_taken = User.objects.filter(username = requested_username).exists()
+        if username_taken:
+        	return Response({"exists": username_taken}, status = bad_request)
+        return Response({"exists": username_taken})
