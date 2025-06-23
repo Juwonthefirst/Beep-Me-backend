@@ -1,4 +1,5 @@
 import redis.asyncio as async_redis
+import os
 
 class Cache: 
 	def __init__(self):
