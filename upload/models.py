@@ -20,7 +20,7 @@ class Attachment(models.Model):
 	source_message = models.OneToOneField(Message, related_name = "attachment", on_delete = models.CASCADE)
 	content_type = models.CharField(max_length = 200)
 	uploaded_at = models.DateTimeField(auto_now_add = True)
-	sender = models.ForeignKey(User, )
+	sender = models.ForeignKey(User, on_delete = models.CASCADE, related_name = "attachment")
 	
 	def save(self, *args, **kwargs): 
 		if self.file: 
