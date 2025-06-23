@@ -40,7 +40,7 @@ class GetUserChatRooms(ListAPIView):
 
 	def get_serializer_context(self): 
 		context = super().get_serializer_context()
-		context["user"] = self.request.user
+		context["user_id"] = self.request.user.id
 		return context
 	
 class GetUserNotifications(ListAPIView): 
