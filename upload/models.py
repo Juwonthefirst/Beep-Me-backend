@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from message.models import Message
+
 User = get_user_model()
 # Create your models here.
 class ProfilePicture(models.Model): 
