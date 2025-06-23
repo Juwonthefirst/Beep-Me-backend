@@ -37,12 +37,12 @@ class Cache:
 		return await self.redis.smembers(f"{room_name}_online_members")
 		
 	async def remove_from_group(self, arg):
-		await
+		pass
 		
 	async def user_in_group(self, user, group):
-		await
+		pass
 	
-	async def (self, arg):
-		# Tab to edit	
+	async def f(self, arg):
+		pass
 		
 cache = Cache()
