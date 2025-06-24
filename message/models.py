@@ -11,7 +11,6 @@ class Message(models.Model):
 	reply_to = models.ForeignKey("self", on_delete = models.SET_NULL, related_name = "replies", null = True)
 	room = models.ForeignKey(ChatRoom, related_name = "messages", on_delete = models.CASCADE, db_index = True)
 	is_deleted = models.BooleanField(default = False)
-	attachment = models.CharField(max_length = 100, blank = True)
 	edited = models.BooleanField(default = False)
 	sent = models.BooleanField(default = False)
 	read = models.BooleanField(default = False)
