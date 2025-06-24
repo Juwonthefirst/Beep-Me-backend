@@ -54,7 +54,10 @@ class Cache:
 	async def is_user_active_member(self, room_name, *user_id):
 		return await self.redis.sismember(room_name, *user_id)
 	
-	async def f(self, arg):
-		pass
+	async def get_online_inactive_members(self, room_name, user_ids):
+		online_members_id = await self.is_user_online(room_name, *members_id)
+		active_group_members_id = await self.is_user_active_member(room_name, *online_members_id)
+		online_inactive_members_id = await self.sdiff(online_members_id, active_group_members_id, sender_id)
+		return online_inactive_members_id
 		
 cache = Cache()
