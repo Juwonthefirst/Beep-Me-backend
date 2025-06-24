@@ -19,3 +19,4 @@ google-auth
 authlib
 boto3
 PILLOW
+celery

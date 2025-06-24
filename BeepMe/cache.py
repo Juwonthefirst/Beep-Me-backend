@@ -25,21 +25,29 @@ class Cache:
 		return await self.redis.lrange(key, 0, -1)
 		
 	async def set_user_online(self, user_id):
-		await self.redis.incrby(f"user_{user_id}_is_online")
-		await self.redis.expire(f"user_{user_id}_is_online", 30)
-		
+		#await self.redis.incrby(f"user_{user_id}_is_online")
+		#await self.redis.expire(f"user_{user_id}_is_online", 30)
+		await self.redis.sadd("online_users", user_id)
+	
+	async def remove_user_online(self, user_id):
+		await self.redis.srem("online_users", user_id)
+	
 	async def is_user_online(self, user_id):
-		await self.redis.exists(f"user_{user_id}_is_online")
+		#await self.redis.exists(f"user_{user_id}_is_online")
+		await self.redis.sismember("online_users", user_id)
 		
-	async def add_active_members(self, user_id, room_name):
+	async def get_online_users(self, user_id_list):
+		return self.redis.sinter("online_users", *user_id_list)
+		
+	async def add_active_member(self, user_id, room_name):
 		await self.redis.sadd(f"{room_name}_online_members", user_id)
 	
 	async def get_active_members(self, room_name):
 		return await self.redis.smembers(f"{room_name}_online_members")
 		
-	async def remove_from_group(self, arg):
-		pass
-		
+	async def remove_active_member(self, user_id, room_name):
+		await self.redis.srem(f"{room_name}_online_members", user_id)
+
 	async def user_in_group(self, user, group):
 		pass
 	
