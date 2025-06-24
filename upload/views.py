@@ -6,6 +6,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.http import FileResponse
 from django.core.files.storage import default_storage
 from .models import ProfilePicture, Attachment
+from PIL import Image
 # Create your views here.
 
 class UploadProfilePicture(APIView): 
