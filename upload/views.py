@@ -6,7 +6,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.http import FileResponse
 from django.core.files.storage import default_storage
 from .models import ProfilePicture, Attachment
-from PIL import Image
+from .tasks import resize_and_save
 # Create your views here.
 
 class UploadProfilePicture(APIView): 
@@ -15,8 +15,7 @@ class UploadProfilePicture(APIView):
 	
 	def post(self, request):
 		file = request.FILES.get("file")
-		profile = ProfilePicture(file = file, uploader = request.user)
-		profile.save()
+		resize_and_save.delay(file, request.user)
 		return Response({"status": "success"})
 
 		

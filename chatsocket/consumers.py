@@ -3,7 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from BeepMe.cache import cache
 from django.utils import timezone
-
+from notification.tasks import send_notification
 
 @database_sync_to_async
 def save_message(room, sender, message):
@@ -86,14 +86,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.group_send(
                     room_name, {"type": "chat.message", "room": room_name, "message": message}
                 )
-                await save_message(room = room_name, message = message, sender = self.user)
         
     async def chat_message(self, event):
         room_name = event.get("room")
         message = event.get("message")
         room = self.joined_rooms[room_name]
         await self.send(text_data = json.dumps({"room": room_name,"message": message}))
-        await save_message(room = room, sender = sender, message = message)
+        send_notification.delay()
+        await save_message(room = room_name, message = message, sender = self.user)
         
     async def chat_typing(self, event):
         room_name = event.get("room")
