@@ -1,8 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import RegexValidator
-from datetime import timezone
-# Create your models here.
+from django.utils import timezone
 
 username_validator = RegexValidator(
 	regex = "^[a-zA-Z](?:[a-zA-Z0-9]*(?:[-_][a-zA-Z0-9])?)*[a-zA-Z0-9]+$",
@@ -22,3 +21,8 @@ class CustomUser(AbstractUser):
 		
 	def is_friend(self, user_id): 
 		return self.followers.filter(id = user_id).exists() and self.following.filter(id = user_id).exists()
+		
+	def get_friends(self): 
+		followers_id = self.followers.related_name("id").all()
+		friends = self.following.filter(id__in = followers_id)
+		return friends

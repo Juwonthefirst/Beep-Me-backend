@@ -64,11 +64,10 @@ class MemberDetails(models.Model):
 			models.UniqueConstraint(fields = ["member", "group"], name = "unique-group-member")
 		]
 
-"""class Role(models.Model): 
+class Role(models.Model): 
 	name = models.CharField(max_length = 200)
 	permissions = models.ManyToManyField(Permission)
 	group = models.ForeignKey(Group, on_delete = models.CASCADE, related_name = "roles")
 	
 class Permission(models.Model): 
 	pass
-"""

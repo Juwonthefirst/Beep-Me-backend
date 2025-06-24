@@ -7,6 +7,6 @@ urlpatterns = [
 	path("<int:pk>/", views.RetrieveUserView.as_view()),
 	path("exists/", views.DoesUsernameExistView.as_view()),
 	path("rooms/", views.UserChatRoomsView.as_view()),
-	path("notifications/", views.UserNotificationsView.as_view())
-	
+	path("notifications/", views.UserNotificationsView.as_view()),
+	path("friends/", views.FriendListView.as_view())
 ]

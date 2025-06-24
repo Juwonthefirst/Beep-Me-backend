@@ -32,6 +32,7 @@ class UpdateGroupView(RetrieveUpdateDestroyAPIView):
 class GroupMembersView(ListAPIView): 
 	serializer_class = GroupMemberSerializer
 	permission_classes = [IsAuthenticated]
+	search_fields = ["member__username", "role"]
 	def get_queryset(self): 
 		group_id = self.kwargs["pk"]
 		try:

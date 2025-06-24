@@ -31,6 +31,7 @@ class RetrieveUserView(RetrieveAPIView):
 class UserChatRoomsView(ListAPIView): 
 	permission_classes = [IsAuthenticated]
 	serializer_class = UserChatRoomSerializer
+	search_fields = ["members__username", "group__name"]
 	def get_queryset(self):
 		user = self.request.user
 		user_chat_rooms = user.rooms
@@ -46,6 +47,7 @@ class UserChatRoomsView(ListAPIView):
 class UserNotificationsView(ListAPIView): 
 	permission_classes = [IsAuthenticated]
 	serializer_class = NotificationSerializer
+	search_fields = ["notification"]
 	def get_queryset(self):
 		user = self.request.user
 		return user.notifications.all()
@@ -58,3 +60,17 @@ class DoesUsernameExistView(APIView):
         if username_taken:
         	return Response({"exists": username_taken}, status = bad_request)
         return Response({"exists": username_taken})
+        
+
+class FriendListView(ListAPIView): 
+	serializer_class = UsersSerializer
+	permission_classes = [IsAuthenticated]
+	def get_queryset(self): 
+		user = self.request.user
+		return user.get_friends()
+		
+class SentFriendRequestView(ListAPIView): 
+	serializer_class = UsersSerializer
+	permission_classes = [IsAuthenticated]
+	def get_queryset(self): 
+		user = self.request.user
