@@ -92,7 +92,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = event.get("message")
         room = self.joined_rooms[room_name]
         await self.send(text_data = json.dumps({"room": room_name,"message": message}))
-        send_notification.delay()
+        send_chat_notification.delay(room, message, sender_id = self.user.id)
         await save_message(room = room_name, message = message, sender = self.user)
         
     async def chat_typing(self, event):
@@ -132,6 +132,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             "sender": notification_detail.get("sender"),
             "receiver": notification_detail.get("receiver"),
             "message": notification_detail.get("message"),
+            "is_group": notification_detail.get("is_group"),
             "time": timezone.now(),
         }))
         

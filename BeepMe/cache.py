@@ -15,6 +15,9 @@ class Cache:
 		
 	async def get(self, key):
 		return await self.redis.get(key)
+		
+	async def sdiff(self, set1, set2):
+		return await self.redis.sdiff(set1, set2)
 	
 	async def cache_message(self, room_name, *messages):
 		cached_messages_length = await self.redis.rpush(room_name, *messages)
@@ -34,7 +37,7 @@ class Cache:
 	
 	async def is_user_online(self, user_id):
 		#await self.redis.exists(f"user_{user_id}_is_online")
-		await self.redis.sismember("online_users", user_id)
+		return await self.redis.sismember("online_users", user_id)
 		
 	async def get_online_users(self, user_id_list):
 		return self.redis.sinter("online_users", *user_id_list)
@@ -48,8 +51,8 @@ class Cache:
 	async def remove_active_member(self, user_id, room_name):
 		await self.redis.srem(f"{room_name}_online_members", user_id)
 
-	async def user_in_group(self, user, group):
-		pass
+	async def is_user_active_member(self, room_name, *user_id):
+		return await self.redis.sismember(room_name, *user_id)
 	
 	async def f(self, arg):
 		pass
