@@ -19,14 +19,14 @@ def get_or_create_room(room_name):
         return ChatRoom.create_with_members(room_name)
 
 @database_sync_to_async
-def create_notification(notification_type, notification): 
+def create_notification(notification_type, notification, receiver, time, group_id = None): 
     from notification.models import Notification
     return Notification.objects.create(
         notification_type = notification_type, 
-        notification = notification, 
-        initiator = initiator,
+        notification = notification,
         receiver = receiver,
-        
+        timestamp = time
+        group_id = group_id,
     )
     
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -120,13 +120,13 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get("action")
-        notification_detail = data.get("notification")
+        notification_detail = data.get("notification_detail")
         await self.channel_layer.group_send(
-            self.room_name, {"type": f"notification.{action}", "notification": notification_detail}
+            self.room_name, {"type": f"notification.{action}", "notification_detail": notification_detail}
         )
         
     async def notification_chat(self, event):
-        notification_detail = event.get("notification")
+        notification_detail = event.get("notification_detail")
         await self.send(text_data = json.dumps({
             "type": "chat_notification",
             "sender": notification_detail.get("sender"),
@@ -136,25 +136,25 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         }))
         
     async def notification_friend(self, event):
-        notification_detail = event.get("notification")
-        initiator = notification_detail.get("initiator"),
+        notification_detail = event.get("notification_detail")
+        notification = notification_detail.get("notification"),
         time = timezone.now()
         await self.send(text_data = json.dumps({
             "type": "friend_notification",
-            "initiator": initiator,
+            "notification": notification,
             "time": time,
         }))
-        await create_notification("friend_notification", initiator, time)
+        await create_notification("friend_notification", notification, self.user, time)
         
     async def notification_group(self, event):
         notification_detail = event.get("notification")
-        action = notification_detail.get("action")
-        group = notification_detail.get("group")
+        notification = notification_detail.get("notification")
+        group_id = notification_detail.get("group_id")
         time = timezone.now()
         await self.send(text_data = json.dumps({
             "initiator": "group_notification",
-            "action":  action,
-            "group": group,
+            "notification":  notification,
+            "group_id": group_id,
             "time": time,
         }))
-        await create_notification("group_notification", action, group, time)
+        await create_notification("group_notification", notification, self.user, time, group_id = group)
