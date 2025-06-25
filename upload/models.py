@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from group.models import Group
 from message.models import Message
 
 User = get_user_model()
@@ -7,12 +8,15 @@ User = get_user_model()
 class ProfilePicture(models.Model): 
 	file = models.ImageField(upload_to = "upload/profile/")
 	thumbnail = models.imageField(upload_to = "upload/profile/thumbnail/")
-	uploader = models.OneToOneField(User, related_name = "profile_picture", on_delete = models.CASCADE)
+	uploader = models.OneToOneField(User, related_name = "profile_picture", on_delete = models.CASCADE, null = True)
+	group = models.OneToOneField(Group, related_name = "profile_picture", on_delete = models.CASCADE, null = True)
 	uploaded_at = models.DateTimeField(auto_now_add = True)
 	
 	def save(self, *args, **kwargs): 
-		if self.file: 
+		if self.file and self.uploader: 
 			self.file.name = self.uploader.id
+		elif self.file and self.group:
+			self.file.name = self.group.id
 		super().save(*args, **kwargs)
 	
 class Attachment(models.Model): 

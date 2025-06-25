@@ -15,7 +15,7 @@ class CustomUser(AbstractUser):
 	username = models.CharField(max_length = 60, unique = True, validators = [username_validator], error_messages = {"unique": "a user with this username already exists"}, db_index = True)
 	following = models.ManyToManyField("self", symmetrical = False, related_name = "followers")
 		
-	def mark_offline(self): 
+	def mark_last_online(self): 
 		self.last_online = timezone.now()
 		self.save(updated_fields = ["last_online"])
 		

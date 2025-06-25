@@ -35,6 +35,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not self.user:
             await self.close(code=4001)
         self.joined_rooms = {}
+        await user.mark_last_online()
         await self.accept()
         
     async def disconnect(self, close_code):
@@ -42,9 +43,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(
                 self.joined_rooms[room], self.channel_name
             )
+            cache.remove_active_member(user_id, room)
         self.joined_rooms.clear()
         cache.remove_user_online(self.user.id)
-        
         
     async def group_join(self, room_name): 
         await self.channel_layer.group_add(
@@ -59,6 +60,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room_name, self.channel_name
         )
         del self.joined_rooms[room_name]
+        self.remove_active_members(user_id, room)
         
     async def user_online(self): 
         user_id = self.user.id
@@ -155,9 +157,9 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         group_id = notification_detail.get("group_id")
         time = timezone.now()
         await self.send(text_data = json.dumps({
-            "initiator": "group_notification",
+            "type": "group_notification",
             "notification":  notification,
             "group_id": group_id,
             "time": time,
         }))
-        await create_notification("group_notification", notification, self.user, time, group_id = group)
+        await create_notification("group_notification", notification, self.user, time, group_id = group_id)

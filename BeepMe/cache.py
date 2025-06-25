@@ -60,7 +60,5 @@ class Cache:
 		online_inactive_members_id = await self.sdiff(online_members_id, active_group_members_id, sender_id)
 		return online_inactive_members_id
 		
-	async def set_user_inactive_in_all_rooms(self, rooms, user_id):
-		
 		
 cache = Cache()

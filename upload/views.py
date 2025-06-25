@@ -9,7 +9,7 @@ from .models import ProfilePicture, Attachment
 from .tasks import resize_and_save
 # Create your views here.
 
-class UploadProfilePicture(APIView): 
+class UploadProfilePictureView(APIView): 
 	parser_classes = [MultiPartParser]
 	permission_classes = [IsAuthenticated]
 	
@@ -19,7 +19,7 @@ class UploadProfilePicture(APIView):
 		return Response({"status": "success"})
 
 		
-class GetProfilePicture(APIView): 
+class GetProfilePictureView(APIView): 
 	permission_classes = [IsAuthenticated]
 	
 	def get(self, request, user_id):
@@ -33,10 +33,27 @@ class GetProfilePicture(APIView):
 		return FileResponse(
 			file,
 			as_attachment = False,
-			filename = f"user_{pk}'s picture"
+			filename = f"user_{user_id}'s picture"
+		)
+		
+class GetGroupPictureView(APIView): 
+	permission_classes = [IsAuthenticated]
+	
+	def get(self, request, group_id):
+		file_path = "upload/profile/0" #default profile picture 
+		try: 
+			profile_picture = ProfilePicture.objects.get(group_id = group_id)
+			file = profile_picture.file
+		except ProfilePicture.DoesNotExist: 
+			file = default_storage.open(file_path)
+			
+		return FileResponse(
+			file,
+			as_attachment = False,
+			filename = f"group_{group_id}'s picture"
 		)
 	
-class GetAttachmentFile(APIView): 
+class GetAttachmentFileView(APIView): 
 	permission_classes = [IsAuthenticated]
 	
 	def get(self, request, message_id):
@@ -46,7 +63,7 @@ class GetAttachmentFile(APIView):
 			return FileResponse(
 				file,
 				as_attachment = False,
-				filename = f"user_{pk}'s picture"
+				filename = f"message_{message_id}'s attachment"
 			)
 		except Attachment.DoesNotExist: 
 			return Response({"error": "File not found"}, status = HTTP_400_BAD_REQUEST)
