@@ -6,10 +6,10 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from notification.serializers import NotificationSerializer
+from chat_room.serializers import UserChatRoomSerializer
 from .serializers import (
 	UsersSerializer, 
-	RetrieveUsersSerializer,
-	UserChatRoomSerializer
+	RetrieveUsersSerializer
 )
 
 User = get_user_model()

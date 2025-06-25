@@ -17,7 +17,8 @@ async def send_chat_notification(room, message, sender_id):
 					"sender": sender_id,
 					"receiver": room.group.name,
 					"message": message,
-					"is_group": True
+					"is_group": True,
+					"room_id": room.id
 					}
 				}
 			)
@@ -48,3 +49,6 @@ async def send_group_notification(room, notification):
 				}
 			}
 		)
+		
+@shared_task
+def send_online_notification

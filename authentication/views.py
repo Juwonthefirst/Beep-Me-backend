@@ -40,7 +40,7 @@ def verify_id_token(token):
 
 @ensure_csrf_cookie
 @api_view(["POST"])		
-def googleLoginByIdToken(request):
+def google_login_by_id_token(request):
 	id_token = request.data.get("token")
 	if not id_token: 
 		return Response({"error": "token is required"}, status = bad_request)
@@ -105,7 +105,7 @@ def googleLoginByIdToken(request):
 
 @ensure_csrf_cookie
 @api_view(["POST"])	
-def googleLoginByCode(request): 
+def google_login_by_code_token(request): 
 	code = request.data.get("code")
 	if not code: 
 		return Response({"error": "No code provided"}, status = bad_request)

@@ -111,3 +111,4 @@ def add_group_members(request, pk):
 		return Response({"error": "user ids should be in a list"}, status = bad_request)
 	except IntegrityError: 
 		return Response({"error": "user_id does not exist or user already a member"}, status = bad_request)
+		

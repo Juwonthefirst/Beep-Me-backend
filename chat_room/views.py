@@ -41,3 +41,5 @@ class RoomDetailsView(RetrieveUpdateDestroyAPIView):
 	queryset = ChatRoom.objects.all()
 	serializer_class = RoomDetailsSerializer
 	permission_classes = [IsAuthenticated]
+	
+class Room
