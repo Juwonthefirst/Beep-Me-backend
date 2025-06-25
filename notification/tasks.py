@@ -51,4 +51,5 @@ async def send_group_notification(room, notification):
 		)
 		
 @shared_task
-def send_online_notification
+def send_online_notification(user_object): 
+	friends = 

@@ -3,7 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from BeepMe.cache import cache
 from django.utils import timezone
-from notification.tasks import send_notification
+from notification.tasks import send_online_notification, send_chat_notification, send_group_notification
 
 @database_sync_to_async
 def save_message(room, sender, message):
@@ -35,8 +35,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not self.user:
             await self.close(code=4001)
         self.joined_rooms = {}
-        await user.mark_last_online()
         await self.accept()
+        await user.mark_last_online()
+        send_online_notification.delay(self.user)
         
     async def disconnect(self, close_code):
         for room in self.joined_rooms:
