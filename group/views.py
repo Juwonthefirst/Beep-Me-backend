@@ -19,7 +19,9 @@ from .permissions import IsAdminOrReadOnly
 from .serializers import (
 	GroupMemberSerializer,
 	GroupSerializer,
-	GroupMemberChangeSerializer
+	GroupMemberChangeSerializer,
+	PermissionSerializer,
+	RoleSerializer
 )
 
 User = get_user_model()
@@ -134,3 +136,12 @@ class EditRolesView(RetrieveUpdateDestroyAPIView):
 			return Group.objects.get(id = group_id).roles.all()
 		except Group.DoesNotExist:
 			return Role.objects.none()
+			
+class PermissionsView(ListAPIView): 
+	queryset = Permission.objects.all()
+	serializer_class = PermissionSerializer
+	permission_classes = [IsAuthenticated]
+	
+	
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])

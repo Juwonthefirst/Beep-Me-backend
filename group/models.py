@@ -31,14 +31,24 @@ class Group(models.Model):
 	def delete_members(self, member_ids): 
 		return MemberDetails.delete(self, member_ids)
 		
-		
+class Role(models.Model): 
+	name = models.CharField(max_length = 200)
+	permissions = models.ManyToManyField(Permission)
+	group = models.ForeignKey(Group, on_delete = models.CASCADE, related_name = "roles")
+	created_at = models.DateTimeField(auto_now_add = True)
+	
+	
 class MemberDetails(models.Model): 
 	member = models.ForeignKey(User, on_delete = models.CASCADE)
 	group = models.ForeignKey(Group, on_delete = models.CASCADE)
-	#role = models.ForeignKey(Role)
-	role = models.CharField(max_length = 200)
+	role = models.ForeignKey(Role, on_delete = models.SET_NULL, null = True)
 	joined_at = models.DateTimeField(auto_now_add = True)
 	
+	class Meta: 
+		constraints = [
+			models.UniqueConstraint(fields = ["member", "group"], name = "unique-group-member")
+		]
+		
 	@classmethod
 	def add(cls, group, new_members):
 		if not isinstance(new_members, list): 
@@ -48,10 +58,10 @@ class MemberDetails(models.Model):
 		return cls.objects.bulk_create(member_rows, ignore_conflicts = False)
 		
 	@classmethod
-	def update_role(cls, group, role, member_ids): 
+	def update_role(cls, group, role_id, member_ids): 
 		if not isinstance(member_ids, list): 
 			raise ValueError
-		return cls.objects.filter(group = group, member_id__in = member_ids).update(role = role)
+		return cls.objects.filter(group = group, member_id__in = member_ids).update(role_id = role_id)
 		
 	@classmethod
 	def delete(cls, group, member_ids): 
@@ -59,15 +69,7 @@ class MemberDetails(models.Model):
 			raise ValueError
 		return cls.objects.filter(group = group, member_id__in = member_ids).delete()
 		
-	class Meta: 
-		constraints = [
-			models.UniqueConstraint(fields = ["member", "group"], name = "unique-group-member")
-		]
-
-class Role(models.Model): 
-	name = models.CharField(max_length = 200)
-	permissions = models.ManyToManyField(Permission)
-	group = models.ForeignKey(Group, on_delete = models.CASCADE, related_name = "roles")
+	
 	
 class Permission(models.Model): 
 	action = models.CharField(max_length = 200)
