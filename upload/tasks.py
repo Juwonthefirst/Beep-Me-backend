@@ -8,7 +8,7 @@ def resize_and_save(image_file, user):
 	file = Image.open(image_file)
 	file.load()
 	file.resize(512, 512)
-	profile_picture = BytesIO
+	profile_picture = BytesIO()
 	file.save(profile_picture, format = file.format)
 	profile_picture.seek(0)
 	

@@ -24,8 +24,8 @@ class Attachment(models.Model):
 	uploaded_at = models.DateTimeField(auto_now_add = True)
 	sender = models.ForeignKey(User, on_delete = models.CASCADE, related_name = "attachment")
 	
-	def save(self, *args, **kwargs): 
+	"""def save(self, *args, **kwargs): 
 		if self.file: 
 			self.file.name = source_message.id
-			
-		super().save(*args, **kwargs)
+		
+		super().save{(*args, **kwargs)}"""

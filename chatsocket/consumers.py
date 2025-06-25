@@ -43,6 +43,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.joined_rooms[room], self.channel_name
             )
         self.joined_rooms.clear()
+        cache.remove_user_online(self.user.id)
+        
         
     async def group_join(self, room_name): 
         await self.channel_layer.group_add(
