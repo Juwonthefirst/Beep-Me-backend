@@ -23,6 +23,6 @@ class CustomUser(AbstractUser):
 		return self.followers.filter(id = user_id).exists() and self.following.filter(id = user_id).exists()
 		
 	def get_friends(self): 
-		followers_id = self.followers.related_name("id").all()
+		followers_id = self.followers.values_list("id", flat = True)
 		friends = self.following.filter(id__in = followers_id)
 		return friends

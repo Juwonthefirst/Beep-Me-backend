@@ -4,6 +4,7 @@ from notification.serializers import NotificationSerializer
 from rest_framework.generics import (
 	ListAPIView,
 	CreateAPIView,
+	ListCreateAPIView,
 	RetrieveUpdateAPIView, 
 	RetrieveUpdateDestroyAPIView
 )
@@ -12,7 +13,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from .models import Group, MemberDetails
+from .models import Group, MemberDetails, Role
 from notification.models import Notification
 from .permissions import IsAdminOrReadOnly
 from .serializers import (
@@ -112,3 +113,24 @@ def add_group_members(request, pk):
 	except IntegrityError: 
 		return Response({"error": "user_id does not exist or user already a member"}, status = bad_request)
 		
+class RolesView(ListCreateAPIView): 
+	permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
+	serializer_class = RoleSerializer
+	search_fields = ["name"]
+	def get_queryset(self):
+		group_id = self.kwargs.get("pk")
+		try:
+			return Group.objects.get(id = group_id).roles.all()
+		except Group.DoesNotExist:
+			return Role.objects.none()
+
+class EditRolesView(RetrieveUpdateDestroyAPIView): 
+	permission_classes = [IsAdminOrReadOnly, IsAuthenticated]
+	serializer_class = RoleSerializer
+	lookup_field = "room_id"
+	def get_queryset(self):
+		group_id = self.kwargs.get("pk")
+		try:
+			return Group.objects.get(id = group_id).roles.all()
+		except Group.DoesNotExist:
+			return Role.objects.none()

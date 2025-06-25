@@ -9,4 +9,6 @@ urlpatterns = [
 	path("<int:pk>/members/delete/", views.delete_group_members),
 	path("<int:pk>/members/add/", views.add_group_members),
 	path("<int:pk>/members/<int:member_id>/", views.GroupMemberRoleView.as_view()),
+	path("<int:pk>/roles/", views.RolesView.as_view()),
+	path("<int:pk>/roles/<int:role_id>/", views.EditRolesView.as_view()),
 ]
