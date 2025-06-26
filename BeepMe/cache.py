@@ -35,9 +35,9 @@ class Cache:
 	async def remove_user_online(self, user_id):
 		await self.redis.srem("online_users", user_id)
 	
-	async def is_user_online(self, user_id):
+	async def is_user_online(self, *user_id):
 		#await self.redis.exists(f"user_{user_id}_is_online")
-		return await self.redis.sismember("online_users", user_id)
+		return await self.redis.sismember("online_users", *user_id)
 		
 	async def get_online_users(self, user_id_list):
 		return self.redis.sinter("online_users", *user_id_list)
@@ -55,9 +55,9 @@ class Cache:
 		return await self.redis.sismember(room_name, *user_id)
 	
 	async def get_online_inactive_members(self, room_name, user_ids):
-		online_members_id = await self.is_user_online(room_name, *members_id)
+		online_members_id = await self.is_user_online(*members_id)
 		active_group_members_id = await self.is_user_active_member(room_name, *online_members_id)
-		online_inactive_members_id = online_members_id - (active_group_members_id - sender_id)
+		online_inactive_members_id = online_members_id - active_group_members_id
 		return online_inactive_members_id
 		
 		

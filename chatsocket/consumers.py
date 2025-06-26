@@ -6,16 +6,16 @@ from django.utils import timezone
 from notification import tasks
 
 @database_sync_to_async
-def save_message(room, sender, message):
+def save_message(room, sender_id, message):
     from message.models import Message
-    return Message.objects.create(room_id = room_id, body = message, sender = sender)
+    return Message.objects.create(room_id = room_id, body = message, sender_id = sender_id)
     
 @database_sync_to_async
 def get_or_create_room(room_name):
     from chat_room.models import ChatRoom
     try: 
         return ChatRoom.objects.get(name = room_name)
-    except:
+    except ChatRoom.DoesNotExist:
         return ChatRoom.create_with_members(room_name)
 
 @database_sync_to_async
@@ -25,7 +25,7 @@ def create_notification(notification_type, notification, receiver, time, group_i
         notification_type = notification_type, 
         notification = notification,
         receiver = receiver,
-        timestamp = time
+        timestamp = time,
         group_id = group_id,
     )
     
@@ -37,7 +37,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.joined_rooms = {}
         await self.accept()
         await user.mark_last_online()
-        tasks.send_online_notification.delay(self.user)
+        tasks.send_online_status_notification.delay(self.user, True)
         
     async def disconnect(self, close_code):
         for room in self.joined_rooms:
@@ -45,8 +45,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.joined_rooms[room], self.channel_name
             )
             cache.remove_active_member(user_id, room)
+        self.user.mark_last_online()
         self.joined_rooms.clear()
         cache.remove_user_online(self.user.id)
+        tasks.send_online_status_notification.delay(self.user, False)
         
     async def group_join(self, room_name): 
         await self.channel_layer.group_add(
@@ -69,6 +71,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
     async def receive(self, text_data):
         data = json.loads(text_data)
+        sender_id = data.get("sender_id")
         message = data.get("message")
         room_name = data.get("room")
         action = data.get("action")
@@ -81,7 +84,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 
             case "typing": 
                 await self.channel_layer.group_send(
-                    room_name, {"type": "chat.typing", "room": room_name}
+                    room_name, {"type": "chat.typing", "room": room_name, "sender_id": sender_id}
                 )
                 
             case "is_online": 
@@ -95,14 +98,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         room_name = event.get("room")
         message = event.get("message")
+        sender_id = event.get("sender_id")
         room = self.joined_rooms[room_name]
-        await self.send(text_data = json.dumps({"room": room_name,"message": message}))
-        tasks.send_chat_notification.delay(room, message, sender_id = self.user.id)
-        await save_message(room = room_name, message = message, sender = self.user)
+        await self.send(text_data = json.dumps({"room": room_name,"message": message, "sender_id": sender_id}))
+        tasks.send_chat_notification.delay(room, message, sender_id = sender_id)
+        await save_message(room = room_name, message = message, sender_id = sender_id)
         
     async def chat_typing(self, event):
         room_name = event.get("room")
-        await self.send(text_data = json.dumps({"room": room_name, "typing": True}))
+        sender_id = event.get("sender_id")
+        await self.send(text_data = json.dumps({"room": room_name, "typing": True, "sender_id": sender_id }))
         
 class NotificationConsumer(AsyncWebsocketConsumer): 
     async def connect(self):
@@ -138,6 +143,15 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             "receiver": notification_detail.get("receiver"),
             "message": notification_detail.get("message"),
             "is_group": notification_detail.get("is_group"),
+            "time": timezone.now(),
+        }))
+        
+    async def notification_online(self, event):
+        notification_detail = event.get("notification_detail")
+        await self.send(text_data = json.dumps({
+            "type": "online_status_notification",
+            "user": notification_detail.get("user"),
+            "status" notification_detail.get("status"),
             "time": timezone.now(),
         }))
         
