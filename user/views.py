@@ -75,8 +75,17 @@ class SentFriendRequestView(ListAPIView):
 	permission_classes = [IsAuthenticated]
 	def get_queryset(self): 
 		user = self.request.user
+		return user.get_unmutual_following()
 
-@api_view(["POST"])	
+class receivedFriendRequestView(ListAPIView): 
+	serializer_class = UsersSerializer
+	permission_classes = [IsAuthenticated]
+	def get_queryset(self): 
+		user = self.request.user
+		return user.get_unmutual_followers()
+
+
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def sendFriendRequest(request): 
 	serializer = UserIDSerializer(data = request.data)
@@ -84,4 +93,4 @@ def sendFriendRequest(request):
 		user_ids = serializer.validated_data.get("user_ids")
 		request.user.following.add(*user_ids)
 		return Response({"status": "okay"})
-	return Response({"error": serializer.errors})
+	return Response({"error": serializer.errors}, status = bad_request)

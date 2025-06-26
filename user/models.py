@@ -23,6 +23,12 @@ class CustomUser(AbstractUser):
 		return self.followers.filter(id = user_id).exists() and self.following.filter(id = user_id).exists()
 		
 	def get_friends(self): 
-		followers_id = self.followers.values_list("id", flat = True)
-		friends = self.following.filter(id__in = followers_id)
-		return friends
+		return self.following.filter(id__in = self.followers.values_list("id", flat = True))
+		
+	def get_unmutual_following(self): 
+		friends = self.get_friends().values_list("id", flat = True)
+		return set(self.user.following.values_list("id", flat = True)) - set(friends)
+	
+	def get_unmutual_followers(self): 
+		friends = self.get_friends().values_list("id", flat = True)
+		return set(self.user.followers.values_list("id", flat = True)) - set(friends)
