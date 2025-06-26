@@ -68,5 +68,13 @@ def send_online_status_notification(user, status):
 		})
 		
 @shared_task
-def send_friend_notification():
-	
+def send_friend_request_notification(user_id, friend_id, action):
+	if async_to_sync(cache.is_user_online)(friend_id): 
+		async_to_sync(channel_layer.group_send)(
+			f"user_{friend_id}_notifications", {"type": "notification.friend", "notification_detail": {
+				"sender": user_id,
+				"receiver": receiver_id,
+				"action": action,
+				}
+			}
+		)l

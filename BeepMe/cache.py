@@ -15,9 +15,6 @@ class Cache:
 		
 	async def get(self, key):
 		return await self.redis.get(key)
-		
-	async def sdiff(self, set1, set2):
-		return await self.redis.sdiff(set1, set2)
 	
 	async def cache_message(self, room_name, *messages):
 		cached_messages_length = await self.redis.rpush(room_name, *messages)

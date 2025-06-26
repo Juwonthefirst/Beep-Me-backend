@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
-
+from time import sleep
 User = get_user_model()
 
 class TestUserModel(APITestCase):
@@ -27,5 +27,25 @@ class TestUserModel(APITestCase):
 		assertEqual(self.user.following.count(), 2)
 		
 	def test_get_unmutual_following_method(self):
-		unmutual_followers = self.user.get_unmutual_following()
+		unmutual_following = self.user.get_unmutual_following()
+		self.assertEqual(len(unmutual_following), 3)
+		self.user1.following.add(self.user)
+		self.assertEqual(len(unmutual_following), 2)
+		self.user1.following.clear()
 		
+	def test_get_unmutual_followers_method(self):
+		unmutual_followers = self.user1.get_unmutual_following()
+		self.assertEqual(len(unmutual_followers), 1)
+		self.user1.following.add(self.user)
+		self.assertEqual(len(unmutual_followers), 0)
+		self.user1.following.clear()
+		
+	def test_mark_last_online_method_is_updating(self):
+		self.user.mark_last_online()
+		old_last_online = self.user.last_online
+		self.assertIsNotNone(old_last_online)
+		sleep(1)
+		self.user.mark_last_online()
+		new_last_online = self.user.last_online
+		
+		assertTrue(new_last_online > old_last_online)
