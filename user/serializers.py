@@ -19,3 +19,5 @@ class RetrieveUsersSerializer(serializers.ModelSerializer):
 		    }
 		}
 		
+class UserIDSerializer(serializers.Serializer): 
+	user_ids = serializers.ListField(child = serializers.IntegerField(min_value = 1), allow_empty = False)

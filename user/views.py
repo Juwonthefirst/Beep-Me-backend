@@ -9,7 +9,8 @@ from notification.serializers import NotificationSerializer
 from chat_room.serializers import UserChatRoomSerializer
 from .serializers import (
 	UsersSerializer, 
-	RetrieveUsersSerializer
+	RetrieveUsersSerializer,
+	UserIDSerializer
 )
 
 User = get_user_model()
@@ -74,3 +75,13 @@ class SentFriendRequestView(ListAPIView):
 	permission_classes = [IsAuthenticated]
 	def get_queryset(self): 
 		user = self.request.user
+
+@api_view(["POST"])	
+@permission_classes([IsAuthenticated])
+def sendFriendRequest(request): 
+	serializer = UserIDSerializer(data = request.data)
+	if serializer.is_valid: 
+		user_ids = serializer.validated_data.get("user_ids")
+		request.user.following.add(*user_ids)
+		return Response({"status": "okay"})
+	return Response({"error": serializer.errors})
