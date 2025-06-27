@@ -25,6 +25,7 @@ class TestUserChatRoomSerializer(APITestCase):
 		self.assertEqual(self.chat_serializer_data["parent"]["id"], self.user1.id)
 		
 	def test_parent_serializer_method_field_if_it_returns_the_right_parent_with_a_group(self):
+		self.assertTrue(self.group_chat_serializer_data["is_group"])
 		self.assertIn("parent", self.group_chat_serializer_data)
 		self.assertEqual(self.group_chat_serializer_data["parent"]["id"], self.group.id)
 		
