@@ -1,7 +1,7 @@
 from rest_framework.test import APITestCase
 from group.serializers import GroupSerializer, GroupMemberSerializer, GroupMemberChangeSerializer
 from django.contrib.auth import get_user_model
-from group.models import Group, MemberDetails
+from group.models import Group, MemberDetail
 
 User = get_user_model()
 
@@ -10,7 +10,7 @@ class TestGroupSerializer(APITestCase):
 		self.user = User.objects.create_user(username = "test", email = "test@test.com", password = "testing123")
 		self.user1 = User.objects.create_user(username = "test1", email = "test1@test.com", password = "testing123")
 		self.group = Group.objects.create(name = "test")
-		self.adminMember = MemberDetails.objects.create(group = self.group, member = self.user, role = "admin")
+		self.adminMember = MemberDetail.objects.create(group = self.group, member = self.user, role = "admin")
 		
 	def test_create_method_with_valid_input(self):
 		data = {
@@ -59,7 +59,7 @@ class TestGroupMemberSerializer(APITestCase):
 	def setUp(self): 
 		self.user = User.objects.create_user(username = "test", email = "test@test.com", password = "testing123")
 		self.group = Group.objects.create(name = "test")
-		self.adminMember = MemberDetails.objects.create(group = self.group, member = self.user, role = "admin")
+		self.adminMember = MemberDetail.objects.create(group = self.group, member = self.user, role = "admin")
 		
 	def test_update_method_with_valid_input(self):
 		data = {
@@ -94,3 +94,7 @@ class TestGroupMemberChangeSerializer(APITestCase):
 	def test_validation_error_on_wrong_data_type(self):
 		serializer = GroupMemberChangeSerializer(data = {"member_ids": ""})
 		self.assertFalse(serializer.is_valid())
+		
+class TestRoleSerializer(APITestCase):
+	def test_description(self):
+		

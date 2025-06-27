@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Group, MemberDetails, Role, Permission
+from .models import Group, MemberDetail, Role, Permission
 from chat_room.models import ChatRoom
 
 class MembersSerializer(serializers.Serializer): 
@@ -29,7 +29,7 @@ class GroupMemberSerializer(serializers.ModelSerializer):
    member_username = serializers.ReadOnlyField(source = "member.username")
    
    class Meta: 
-       model = MemberDetails
+       model = MemberDetail
        fields = ["role", "joined_at", "member_id", "member_username"]
        extra_kwargs = {
            "joined_at": {

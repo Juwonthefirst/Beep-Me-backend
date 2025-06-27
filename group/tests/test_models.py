@@ -1,5 +1,5 @@
 from rest_framework.test import APITestCase
-from group.models import Group, MemberDetails
+from group.models import Group, MemberDetail
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
@@ -13,7 +13,7 @@ class TestGroupModel(APITestCase):
 		self.user2 = User.objects.create_user(username = "test2", email = "test2@test.com", password = "testing123")
 		self.user3 = User.objects.create_user(username = "test3", email = "test3@test.com", password = "testing123")
 		self.group = Group.objects.create(name = "test")
-		self.member = MemberDetails.objects.create(group = self.group, member = self.user, role = "admin")
+		self.member = MemberDetail.objects.create(group = self.group, member = self.user, role = "admin")
 		
 	def test_model_undefined(self): 
 		group = Group(name = "", description = "")

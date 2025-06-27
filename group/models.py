@@ -12,24 +12,24 @@ def create_member_rows(cls, group, new_member):
 class Group(models.Model): 
 	name = models.CharField(max_length = 100)
 	description = models.CharField(max_length = 200, blank = True)
-	members = models.ManyToManyField(User, related_name = "groups", through="MemberDetails", blank = True)
+	members = models.ManyToManyField(User, related_name = "groups", through="MemberDetail", blank = True)
 	avatar = models.CharField(max_length = 300, default = "default")
 	created_at = models.DateTimeField(auto_now_add = True)
 	
 	def user_is_admin(self, user):
 		try: 
-			return self.memberdetails_set.get(member = user).role == "admin"
+			return self.memberdetail_set.get(member = user).role == "admin"
 		except:
 			return False
 			
 	def add_members(self, new_members): 
-		return MemberDetails.add(self, new_members)
+		return MemberDetail.add(self, new_members)
 		
 	def update_members_role(self, role, member_ids): 
-		return MemberDetails.update_role(self, role, member_ids)
+		return MemberDetail.update_role(self, role, member_ids)
 		
 	def delete_members(self, member_ids): 
-		return MemberDetails.delete(self, member_ids)
+		return MemberDetail.delete(self, member_ids)
 		
 class Role(models.Model): 
 	name = models.CharField(max_length = 200)
@@ -38,7 +38,7 @@ class Role(models.Model):
 	created_at = models.DateTimeField(auto_now_add = True)
 	
 	
-class MemberDetails(models.Model): 
+class MemberDetail(models.Model): 
 	member = models.ForeignKey(User, on_delete = models.CASCADE)
 	group = models.ForeignKey(Group, on_delete = models.CASCADE)
 	role = models.ForeignKey(Role, on_delete = models.SET_NULL, null = True)
