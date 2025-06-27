@@ -16,7 +16,7 @@ class TestUserChatRoomSerializer(APITestCase):
 		self.chat_room = ChatRoom.create_with_members("chat_1_2")
 		self.group_chat_room = ChatRoom.objects.create(name = "group.12", is_group = True, group = self.group)
 		self.message1 = Message.objects.create(sender = self.user, body = "This is a test for the UserChatRoomSerializer", room = self.chat_room)
-		self.message2 = Message.objects.create(sender = self.user, body = "This is another test for the UserChatRoomSerializer", room = self.group_chat_room)
+		self.message2 = Message.objects.create(sender = self.user, body = "This is another test for the UserChatRoomSerializer", room = self.chat_room)
 		self.chat_serializer_data = UserChatRoomSerializer(self.chat_room, context = {"user_id": self.user.id}).data
 		self.group_chat_serializer_data = UserChatRoomSerializer(self.group_chat_room).data
 

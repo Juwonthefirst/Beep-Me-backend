@@ -73,8 +73,7 @@ class RoleSerializer(serializers.ModelSerializer):
 		instance.name = validated_data.get("name", instance.name)
 		new_permissions = validated_data.get("permissions")
 		if new_permissions: 
-			instance.permissions.clear()
-			instance.permissions.add(*new_permissions)
+			instance.permissions.set(new_permissions)
 		instance.save(updated_fields = ["name", "permissions"])
 		return instance
 		
