@@ -246,4 +246,4 @@ AWS_S3_VERIFY = True
 AWS_S3_USE_SSL = True
 
 #CELERY
-CELERY_BROKER_URL = os.getenv("REDIS_URL")          
+CELERY_BROKER_URL = os.getenv("REDIS_URL")

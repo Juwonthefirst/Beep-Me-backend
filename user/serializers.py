@@ -5,18 +5,18 @@ from group.serializers import GroupSerializer
 User = get_user_model()
 
 class UsersSerializer(serializers.ModelSerializer): 
-	class Meta: 
+	class Meta:
 		model = User
 		fields = ["id", "username"]
 		
 class RetrieveUsersSerializer(serializers.ModelSerializer): 
 	class Meta: 
 		model = User
-		fields = "__all__"
+		fields = ["id", "username", "email", "first_name", "last_name"]
 		extra_kwargs = {
-		    "password": {
-		        "write_only": True
-		    }
+			"id": {
+				"read_only": True
+			}
 		}
 		
 class UserIDSerializer(serializers.Serializer): 

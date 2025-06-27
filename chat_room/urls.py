@@ -3,6 +3,6 @@ from . import views
 
 urlpatterns = [
 	path("<int:pk>/", views.RoomDetailsView.as_view()),
-	path("<int:room_id>/messages/", views.RoomMessagesView.as_view()),
-	path("<int:room_id>/members/", views.RoomMembersView.as_view()),
+	path("<int:pk>/messages/", views.get_room_messages),
+	path("<int:pk>/members/", views.RoomMembersView.as_view()),
 ]

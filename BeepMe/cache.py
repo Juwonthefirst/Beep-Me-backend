@@ -21,8 +21,8 @@ class Cache:
 		if cached_messages_length > 50: 
 			await self.redis.ltrim(room_name, -50, -1)
 	
-	async def get_cached_messages(self, key):
-		return await self.redis.lrange(key, 0, -1)
+	async def get_cached_messages(self, room_name):
+		return await self.redis.lrange(room_name, 0, -1)
 		
 	async def set_user_online(self, user_id):
 		#await self.redis.incrby(f"user_{user_id}_is_online")

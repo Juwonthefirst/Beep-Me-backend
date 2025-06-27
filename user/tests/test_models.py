@@ -49,3 +49,9 @@ class TestUserModel(APITestCase):
 		new_last_online = self.user.last_online
 		
 		assertTrue(new_last_online > old_last_online)
+		
+		
+	def test_username_regex(self):
+		user4 = User(username = "test__1", email = "test1@test.com", password = "testing123")
+		with self.assertRaises(ValidationError): 
+			user4.full_clean()
