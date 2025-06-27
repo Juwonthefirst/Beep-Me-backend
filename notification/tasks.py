@@ -77,4 +77,4 @@ def send_friend_request_notification(user_id, friend_id, action):
 				"action": action,
 				}
 			}
-		)l
+		)
