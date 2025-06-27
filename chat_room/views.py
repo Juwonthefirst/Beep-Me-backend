@@ -1,4 +1,5 @@
 from rest_framework.response import Response
+from rest_framework.status import HTTP_404_NOT_FOUND
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -10,32 +11,15 @@ from .models import ChatRoom
 from user.serializers import UsersSerializer
 from message.serializers import MessagesSerializer
 from BeepMe.cache import cache
-
-class MessagePagination(PageNumberPagination): 
-	page_size = 50
-	
-"""class RoomMessagesView(ListAPIView):
-	serializer_class = MessagesSerializer
-	permission_classes = [IsAuthenticated]
-	pagination_class = MessagePagination
-	def get_queryset(self): 
-		room_id = self.kwargs["room_id"]
-		try: 
-			#checks if the user is a member of the room before returning messages
-			room = ChatRoom.objects.get(id = room_id)
-			if not room.members.filter(id = self.request.user.id).exists(): 
-				raise PermissionDenied
-			cached_message = async_to_sync(cache.get_cached_messages)(room.name)
-			if cached_message:
-				return 
-			return room.messages.all().order_by("timestamp")
-		except ChatRoom.DoesNotExist: 
-			return ChatRoom.objects.none()
-"""
+import json
+not_found = HTTP_404_NOT_FOUND
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_room_messages(request, room_id): 
+	paginator = PageNumberPagination()
+	paginator.page_size = 50
+	page = request.query_params.get("page", "1")
 	
 	try:
 		room = ChatRoom.objects.get(id = room_id)
@@ -43,16 +27,22 @@ def get_room_messages(request, room_id):
 			raise PermissionDenied
 			
 		cached_message = async_to_sync(cache.get_cached_messages)(room.name)
-		if cached_message:
-			return cached_message
-		room_messages = room.messages.all().order_by("timestamp")[:50]
-		if page == 1: 
-			async_to_sync(cache.cache_message)(room.name, *room_messages)
+		if cached_message and page == "1":
+			paginated_cached_messages = paginator.paginate_queryset(cached_message, request)
+			return paginator.get_paginated_response(paginated_cached_messages)
 			
-		return MessagesSerializer(room_messages, many = True).data
+		queryset = room.messages.all().order_by("timestamp")
+		room_messages = paginator.paginate_queryset(queryset, request)
+					
+		serializer = MessagesSerializer(room_messages, many = True).data
+		if page == "1":
+			jsonified_data = [json.dumps(message_object) for message_object in serializer]
+			async_to_sync(cache.cache_message)(room.name, *jsonified_data)
+
+		return paginator.get_paginated_response(serializer)
 		
 	except ChatRoom.DoesNotExist: 
-		return ChatRoom.objects.none()
+		return Response({"error": "This chat room doesn't exist"}, status = not_found)
 
 		
 		
