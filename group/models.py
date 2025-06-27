@@ -12,7 +12,7 @@ def create_member_rows(cls, group, new_member):
 class Group(models.Model): 
 	name = models.CharField(max_length = 100)
 	description = models.CharField(max_length = 200, blank = True)
-	members = models.ManyToManyField(User, related_name = "chat_groups", through="MemberDetails", blank = True)
+	members = models.ManyToManyField(User, related_name = "groups", through="MemberDetails", blank = True)
 	avatar = models.CharField(max_length = 300, default = "default")
 	created_at = models.DateTimeField(auto_now_add = True)
 	

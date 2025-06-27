@@ -7,13 +7,15 @@ from rest_framework.pagination import PageNumberPagination
 from asigref.sync import async_to_sync
 from .serializers import RoomMessagesSerializer, RoomMembersSerializer, RoomDetailsSerializer
 from .models import ChatRoom
+from user.serializers import UsersSerializer
+from message.serializers import MessagesSerializer
 from BeepMe.cache import cache
 
 class MessagePagination(PageNumberPagination): 
 	page_size = 50
 	
 """class RoomMessagesView(ListAPIView):
-	serializer_class = RoomMessagesSerializer
+	serializer_class = MessagesSerializer
 	permission_classes = [IsAuthenticated]
 	pagination_class = MessagePagination
 	def get_queryset(self): 
@@ -47,7 +49,7 @@ def get_room_messages(request, room_id):
 		if page == 1: 
 			async_to_sync(cache.cache_message)(room.name, *room_messages)
 			
-		return RoomMessagesSerializer(room_messages).data
+		return MessagesSerializer(room_messages, many = True).data
 		
 	except ChatRoom.DoesNotExist: 
 		return ChatRoom.objects.none()
@@ -57,7 +59,7 @@ def get_room_messages(request, room_id):
 		
 	
 class RoomMembersView(ListAPIView): 
-	serializer_class = RoomMembersSerializer
+	serializer_class = UsersSerializer
 	permission_classes = [IsAuthenticated]
 	search_fields = ["username"]
 	def get_queryset(self): 

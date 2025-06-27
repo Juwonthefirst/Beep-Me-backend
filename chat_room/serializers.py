@@ -1,20 +1,10 @@
 from rest_framework import serializers
 from .models import ChatRoom
-from django.contrib.auth import get_user_model
-from message.models import Message
+from user.serializers import UsersSerializer
+from message.serializers import MessagesSerializer
+from group.serializers import GroupSerializer
 
-User = get_user_model()
 
-class RoomMessagesSerializer(serializers.ModelSerializer):
-	class Meta: 
-		model = Message
-		fields = "__all__"
-		
-class RoomMembersSerializer(serializers.ModelSerializer): 
-	class Meta: 
-		model = User
-		fields = ["id", "username"]
-		
 class RoomDetailsSerializer(serializers.ModelSerializer): 
 	class Meta: 
 		model = ChatRoom
@@ -29,7 +19,7 @@ class UserChatRoomSerializer(serializers.ModelSerializer):
 		
 	def get_last_message(self, obj): 
 		last_message_object = obj.get_last_message()
-		return RoomMessagesSerializer(last_message_object).data
+		return MessagesSerializer(last_message_object).data
 	
 	def get_parent(self, obj): 
 		if obj.is_group: 
