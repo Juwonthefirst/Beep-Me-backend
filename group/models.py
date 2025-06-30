@@ -8,6 +8,9 @@ def create_member_rows(cls, group, new_member):
 		return cls(group = group, **new_member)
 	return cls(group = group, member_id = new_member)
 	
+class Permission(models.Model): 
+	action = models.CharField(max_length = 200)
+	
 	
 class Group(models.Model): 
 	name = models.CharField(max_length = 100)
@@ -71,5 +74,3 @@ class MemberDetail(models.Model):
 		
 	
 	
-class Permission(models.Model): 
-	action = models.CharField(max_length = 200)
