@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
-from .serializers import UserChatRoomSerializer, VideoChatSerializer
-from .models import ChatRoom
+from chat_room.serializers import UserChatRoomSerializer, VideoChatSerializer
+from chat_room.models import ChatRoom
 from group.models import Group
 from message.models import Message
 from django.contrib.auth import get_user_model

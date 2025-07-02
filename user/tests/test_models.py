@@ -1,5 +1,6 @@
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from time import sleep
 User = get_user_model()
 
@@ -23,8 +24,8 @@ class TestUserModel(APITestCase):
 		
 	def test_get_friends_method(self):
 		friends = self.user.get_friends()
-		assertTrue(isinstance(friends, list))
-		assertEqual(self.user.following.count(), 2)
+		self.assertTrue(isinstance(friends, list))
+		self.assertEqual(self.user.following.count(), 2)
 		
 	def test_get_unmutual_following_method(self):
 		unmutual_following = self.user.get_unmutual_following()

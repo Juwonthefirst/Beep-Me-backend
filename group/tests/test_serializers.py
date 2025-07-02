@@ -110,7 +110,7 @@ class TestRoleSerializer(APITestCase):
 	def test_create_method_with_valid_data(self):
 		data = {
 			"name": "ninja",
-			"group": 1
+			"group": 1,
 			"permissions": [{"id": 1}, {"id": 2}]
 		}
 		serializer = RoleSerializer(data = data)
@@ -131,7 +131,7 @@ class TestRoleSerializer(APITestCase):
 		serializer = RoleSerializer(data = data_1)
 		self.assertFalse(serializer.is_valid())
 		self.assertIn("name", serializer.errors)
-		self.assertEqual(len(serializer.errors, 1))
+		self.assertEqual(len(serializer.errors), 1)
 		
 		data_2 = {
 			"name": "ninja",

@@ -17,7 +17,7 @@ class CustomUser(AbstractUser):
 		
 	def mark_last_online(self): 
 		self.last_online = timezone.now()
-		self.save(updated_fields = ["last_online"])
+		self.save(update_fields = ["last_online"])
 		
 	def is_friend(self, user_id): 
 		return self.followers.filter(id = user_id).exists() and self.following.filter(id = user_id).exists()
@@ -31,4 +31,4 @@ class CustomUser(AbstractUser):
 	
 	def get_unmutual_followers(self): 
 		friends = self.get_friends().values_list("id", flat = True)
-		return set(self.user.followers.values_list("id", flat = True)) - set(friends)
+		return set(self.followers.values_list("id", flat = True)) - set(friends)
