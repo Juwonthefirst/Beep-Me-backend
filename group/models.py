@@ -70,15 +70,3 @@ class MemberDetail(models.Model):
 		return cls.objects.filter(group = group, member_id__in = member_ids).delete()
 		
 	
-permissions = [
-	"can delete member",
-	"can add member",
-	"can delete group message",
-	"can update group details",
-	"can create group role",
-	"is video admin"
-]
-
-permission_count = Permission.objects.count()
-for permission in permissions[permission_count:]:
-		Permission.objects.create(action = permission)
