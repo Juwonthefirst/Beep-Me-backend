@@ -77,15 +77,14 @@ def get_livekit_JWT_token(request):
     room_id = request.kwargs.get("pk")
     
     try:
-        room = Room.objects.get(id = room_id)
+        room = Room.objects.getl(id = room_id)
         if room.is_group:
-        	pass
+			pass
             
     except Room.DoesNotExist:
-        return Response({"error": "room not found"}, status = not_found)
+		return Response({"error": "room not found"}, status = not_found)
         
-    token = api.AccessToken(os.getenv("LIVEKIT_API_KEY"), os.getenv("LIVEKIT_API_SECRET")
-	).with_identity(user.id).with_name(user.username).with_grants(api.VideoGrants(
+    token = api.AccessToken(os.getenv("LIVEKIT_API_KEY"), os.getenv("LIVEKIT_API_SECRET")).with_identity(user.id).with_name(user.username).with_grants(api.VideoGrants(
 		room_join = True,
 		room_admin = is_video_admin,
 		room = room.name,
