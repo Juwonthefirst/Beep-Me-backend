@@ -143,6 +143,3 @@ class PermissionsView(ListAPIView):
 	serializer_class = PermissionSerializer
 	permission_classes = [IsAuthenticated]
 	
-	
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
