@@ -1,7 +1,5 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from chat_room.serializers import RoomMessagesSerializer
-from group.serializers import GroupSerializer
 User = get_user_model()
 
 class UsersSerializer(serializers.ModelSerializer): 
