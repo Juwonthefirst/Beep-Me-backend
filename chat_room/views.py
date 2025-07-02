@@ -69,24 +69,26 @@ class RoomDetailsView(RetrieveUpdateDestroyAPIView):
 	permission_classes = [IsAuthenticated]
 
 
-@api_view(["GET"])	
-@permission_classes(["IsAuthenticated"])
-def get_livekit_JWT_token(request):
-    user = request.user
-    is_video_admin = False
-    room_id = request.kwargs.get("pk")
-    
-    try:
-        room = Room.objects.getl(id = room_id)
-        if room.is_group:
-        	pass
-		except Room.DoesNotExist:
-			return Response({"error": "room not found"}, status = not_found)
-        
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_livekit_JWT_token(request): 
+	user = request.user
+	is_video_admin = False
+	room_id = request.kwargs.get("pk")
+	
+	try:
+		room = Room.objects.get(pk = room_id)
+	except Room.DoesNotExist:
+		return Response({"error": "room not found"}, status = not_found)
+	
+	if room.is_group: 
+		user_group_role = room.group.get_user_role(user)
+		is_video_admin = user_group_role.permissions.filter(action = "video admin").exists()
+	
 	token = api.AccessToken(os.getenv("LIVEKIT_API_KEY"), os.getenv("LIVEKIT_API_SECRET")).with_identity(user.id).with_name(user.username).with_grants(api.VideoGrants(
+		room = room.name
 		room_join = True,
 		room_admin = is_video_admin,
-		room = room.name,
 		can_publish = True,
 		can_publish_data = True,
 		can_subscribe = True

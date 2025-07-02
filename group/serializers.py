@@ -22,6 +22,8 @@ class GroupSerializer(serializers.ModelSerializer):
 		group = Group.objects.create(**validated_data)
 		group.add_members(members)
 		ChatRoom.objects.create(name = f"group.{group.id}", is_group = True, group = group)
+		owner_role = Role.objects.create(name = "owner", group = group)
+		member_role = Role.objects.create(name = "member", group = group)
 		return group
 		
 class GroupMemberSerializer(serializers.ModelSerializer): 

@@ -1,5 +1,5 @@
 from rest_framework.test import APITestCase
-from group.models import Group, MemberDetail
+from group.models import Group, MemberDetail, Role
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
@@ -13,7 +13,9 @@ class TestGroupModel(APITestCase):
 		self.user2 = User.objects.create_user(username = "test2", email = "test2@test.com", password = "testing123")
 		self.user3 = User.objects.create_user(username = "test3", email = "test3@test.com", password = "testing123")
 		self.group = Group.objects.create(name = "test")
-		self.member = MemberDetail.objects.create(group = self.group, member = self.user)
+		self.role = Role.objects.create(name = "member", group = group)
+		self.member = MemberDetail.objects.create(group = self.group, member = self.user, role = role)
+
 		
 	def test_model_undefined(self): 
 		group = Group(name = "", description = "")
@@ -31,7 +33,8 @@ class TestGroupModel(APITestCase):
 		self.assertIsNotNone(group.created_at)
 		
 	def test_model_method_get_user_role(self):
-		
+		member_role = self.group.get_user_role(self.user)
+		self.assertEqual(member_role, self.role)
 		
 	def test_model_method_add_members(self):
 		self.assertEqual(self.group.members.count(), 1)
