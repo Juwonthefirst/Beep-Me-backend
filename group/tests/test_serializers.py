@@ -104,7 +104,8 @@ class TestGroupMemberChangeSerializer(APITestCase):
 class TestRoleSerializer(APITestCase):
 	def setUp(self): 
 		self.group = Group.objects.create(name = "test")
-		
+		self.mod_role = Role.objects.create(name = "mod", group = self.group)
+		self.role.permissions.add(1,2,3)
 		
 	def test_create_method_with_valid_data(self):
 		data = {
@@ -153,4 +154,42 @@ class TestRoleSerializer(APITestCase):
 		self.assertEqual(len(serializer.errors, 1))
 		
 	def test_update_method_with_valid_input(self):
-		# Tab to edit
+		data = {
+			"name": "moderator"
+		}
+		
+		serializer = RoleSerializer(instance = self.mod_role, data = data, partial = True)
+		self.assertTrue(serializer.is_valid())
+		self.new_mod_role = serializer.save(self.mod_role)
+		self.assertEqual(self.new_mod_role.name, "moderator")
+		
+		data = {
+			"permissions": [{"id": 1}]
+		}
+		serializer = RoleSerializer(instance = self.mod_role, data = data, partial = True)
+		self.assertTrue(serializer.is_valid())
+		self.new_mod_role = serializer.save(self.mod_role)
+		self.assertEqual(new_mod_role.permissions.count(), 1)
+		
+	def test_update_method_with_empty_permissions(self):
+		data = {
+			"permissions": []
+		}
+		serializer = RoleSerializer(instance = self.mod_role, data = data, partial = True)
+		self.assertTrue(serializer.is_valid())
+		self.new_mod_role = serializer.save(self.mod_role)
+		self.assertEqual(new_mod_role.permissions.count(), 0)
+		self.assertEqual(new_mod_role.name, "moderator")
+		
+	def test_update_method_with_invalid_input(self):
+		data = {
+			"name": ""
+		}
+		serializer = RoleSerializer(instance = self.mod_role, data = data, partial = True)
+		self.assertFalse(serializer.is_valid())
+		
+		data = {
+			"permissions": 1
+		}
+		serializer = RoleSerializer(instance = self.mod_role, data = data, partial = True)
+		self.assertFalse(serializer.is_valid())
