@@ -3,7 +3,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_migrate
 
 @receiver(post_migrate)
-def create_permissions(signal):
+def create_permissions(**kwargs):
     permissions = [
         "can delete member",
         "can add member",
