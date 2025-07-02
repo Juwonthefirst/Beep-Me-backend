@@ -1,5 +1,5 @@
 from celery import shared_task
-from channels.layer import get_channel_layer
+from channels.layers import get_channel_layer
 from BeepMe.cache import cache
 from asgiref.sync import async_to_sync
 channel_layer = get_channel_layer()
