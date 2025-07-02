@@ -1,6 +1,6 @@
 from celery import shared_task
 from PIL import Image
-from IO import BytesIO
+from io import BytesIO
 from .models import ProfilePicture
 
 @shared_task
