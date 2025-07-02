@@ -27,7 +27,7 @@ class CustomUser(AbstractUser):
 		
 	def get_unmutual_following(self): 
 		friends = self.get_friends().values_list("id", flat = True)
-		return set(self.user.following.values_list("id", flat = True)) - set(friends)
+		return set(self.following.values_list("id", flat = True)) - set(friends)
 	
 	def get_unmutual_followers(self): 
 		friends = self.get_friends().values_list("id", flat = True)

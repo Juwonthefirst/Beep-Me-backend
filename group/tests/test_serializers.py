@@ -7,7 +7,7 @@ from group.serializers import (
 	PermissionSerializer,
 )
 from django.contrib.auth import get_user_model
-from group.models import Group, MemberDetail
+from group.models import Group, MemberDetail, Role
 
 User = get_user_model()
 
@@ -16,7 +16,6 @@ class TestGroupSerializer(APITestCase):
 		self.user = User.objects.create_user(username = "test", email = "test@test.com", password = "testing123")
 		self.user1 = User.objects.create_user(username = "test1", email = "test1@test.com", password = "testing123")
 		self.group = Group.objects.create(name = "test")
-		self.adminMember = MemberDetail.objects.create(group = self.group, member = self.user, role = "admin")
 		
 	def test_create_method_with_valid_input(self):
 		data = {

@@ -47,7 +47,7 @@ class TestRetrieveUsersSerializer(APITestCase):
 		
 	def test_id_does_not_get_validated(self):
 		data = {
-			"id": 500000078
+			"id": 500000078,
 			"username": "The_jay_man"
 		}
 		serializer = RetrieveUsersSerializer(data = data)

@@ -49,7 +49,7 @@ class TestUserModel(APITestCase):
 		self.user.mark_last_online()
 		new_last_online = self.user.last_online
 		
-		assertTrue(new_last_online > old_last_online)
+		self.assertTrue(new_last_online > old_last_online)
 		
 		
 	def test_username_regex(self):

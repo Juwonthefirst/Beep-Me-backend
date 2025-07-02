@@ -2,6 +2,7 @@ from rest_framework.test import APITestCase
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from chat_room.models import ChatRoom
+from message.models import Message
 User = get_user_model()
 
 class TestChatRoom(APITestCase):

@@ -14,7 +14,7 @@ class TestGroupModel(APITestCase):
 		self.user3 = User.objects.create_user(username = "test3", email = "test3@test.com", password = "testing123")
 		self.group = Group.objects.create(name = "test")
 		self.role = Role.objects.create(name = "member", group = self.group)
-		self.member = MemberDetail.objects.create(group = self.group, member = self.user, role = role)
+		self.member = MemberDetail.objects.create(group = self.group, member = self.user, role = self.role)
 
 		
 	def test_model_undefined(self): 

@@ -1,5 +1,5 @@
 from rest_framework.test import APITestCase
-from chat_room.serializers import UserChatRoomSerializer, VideoChatSerializer
+from chat_room.serializers import UserChatRoomSerializer
 from chat_room.models import ChatRoom
 from group.models import Group
 from message.models import Message
