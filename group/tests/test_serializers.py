@@ -1,5 +1,11 @@
 from rest_framework.test import APITestCase
-from group.serializers import GroupSerializer, GroupMemberSerializer, GroupMemberChangeSerializer
+from group.serializers import (
+	GroupSerializer, 
+	GroupMemberSerializer, 
+	GroupMemberChangeSerializer,
+	RoleSerializer,
+	PermissionSerializer,
+)
 from django.contrib.auth import get_user_model
 from group.models import Group, MemberDetail
 
@@ -96,5 +102,55 @@ class TestGroupMemberChangeSerializer(APITestCase):
 		self.assertFalse(serializer.is_valid())
 		
 class TestRoleSerializer(APITestCase):
-	def test_description(self):
+	def setUp(self): 
+		self.group = Group.objects.create(name = "test")
 		
+		
+	def test_create_method_with_valid_data(self):
+		data = {
+			"name": "ninja",
+			"group": 1
+			"permissions": [{"id": 1}, {"id": 2}]
+		}
+		serializer = RoleSerializer(data = data)
+		self.assertTrue(serializer.is_valid())
+		role = serializer.save()
+		self.assertEqual(role.permissions.count(), 2)
+		self.assertEqual(role.name, "ninja")
+		self.assertEqual(role.group, self.group)
+		self.assertIsNotNone(role.created_at)
+		
+	def test_create_method_with_invalid_data(self):
+		data_1 = {
+			"name": "",
+			"group": 1,
+			"permissions": [{"id": 1}, {"id": 2}]
+		}
+		
+		serializer = RoleSerializer(data = data_1)
+		self.assertFalse(serializer.is_valid())
+		self.assertIn("name", serializer.errors)
+		self.assertEqual(len(serializer.errors, 1))
+		
+		data_2 = {
+			"name": "ninja",
+			"permissions": [{"id": 1}, {"id": 2}]
+		}
+		
+		serializer = RoleSerializer(data = data_2)
+		self.assertFalse(serializer.is_valid())
+		self.assertIn("group", serializer.errors)
+		self.assertEqual(len(serializer.errors, 1))
+		
+		data_3 = {
+			"name": "ninja",
+			"group": 1
+		}
+		
+		serializer = RoleSerializer(data = data_3)
+		self.assertFalse(serializer.is_valid())
+		self.assertIn("permissions", serializer.errors)
+		self.assertEqual(len(serializer.errors, 1))
+		
+	def test_update_method_with_valid_input(self):
+		# Tab to edit

@@ -78,3 +78,7 @@ def send_friend_request_notification(user_id, friend_id, action):
 				}
 			}
 		)
+		
+@shared_task
+def send_call_notification(): 
+	pass
