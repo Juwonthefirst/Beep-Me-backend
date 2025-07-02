@@ -1,8 +1,14 @@
 from django.db import migrations
 
 permissions = [
-	""
+	"can delete member",
+	"can add member",
+	"can delete group message",
+	"can update group details",
+	"can create group role",
+	"is video admin"
 ]
+
 def create_permissions(apps, schema_editor): 
 	Permission = apps.get_model("group", "Permission")
 	

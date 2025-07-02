@@ -5,7 +5,7 @@ from rest_framework.generics import (
 	ListAPIView,
 	CreateAPIView,
 	ListCreateAPIView,
-	RetrieveUpdateAPIView, 
+	RetrieveUpdateAPIView,
 	RetrieveUpdateDestroyAPIView
 )
 from django.db import IntegrityError
@@ -48,7 +48,7 @@ class CreateGroupView(CreateAPIView):
 	serializer_class = GroupSerializer
 	permission_classes = [IsAuthenticated]
 	
-class GroupMemberRoleView(RetrieveUpdateAPIView): 
+class RetrieveGroupMemberView(RetrieveUpdateAPIView): 
 	serializer_class = GroupMemberSerializer
 	permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
 	lookup_field = "member_id"
@@ -59,6 +59,7 @@ class GroupMemberRoleView(RetrieveUpdateAPIView):
 			return Group.objects.get(id = group_id).memberdetails_set.all()
 		except Group.DoesNotExist:
 			return MemberDetails.objects.none()
+			
 			
 class GroupNotificationView(ListAPIView): 
 	serializer_class = NotificationSerializer
