@@ -11,7 +11,7 @@ username_validator = RegexValidator(
 
 
 class CustomUser(AbstractUser): 
-	last_online = models.DateTimeField()
+	last_online = models.DateTimeField(auto_now_add = True)
 	username = models.CharField(max_length = 60, unique = True, validators = [username_validator], error_messages = {"unique": "a user with this username already exists"}, db_index = True)
 	following = models.ManyToManyField("self", symmetrical = False, related_name = "followers")
 		
