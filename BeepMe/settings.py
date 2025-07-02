@@ -37,14 +37,14 @@ INSTALLED_APPS = [
     "corsheaders",
     "storages",
     "drf_yasg",
-    "user",
     "authentication",
     "home",
-    "chat_room",
     "message",
     "group",
     "notification",
+    "chat_room",
     "upload"
+    "user",
 ]
 
 MIDDLEWARE = [
