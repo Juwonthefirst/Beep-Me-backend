@@ -24,7 +24,7 @@ def remove_permissions(apps, schema_editor):
 		
 class Migration(migrations.Migration): 
 	dependencies = [
-		("group", "0001_initial")
+		#("group", "0001_initial")
 	]
 	
 	operations = [
