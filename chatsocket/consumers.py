@@ -151,7 +151,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         await self.send(text_data = json.dumps({
             "type": "online_status_notification",
             "user": notification_detail.get("user"),
-            "status" notification_detail.get("status"),
+            "status":  notification_detail.get("status"),
             "time": timezone.now(),
         }))
         
