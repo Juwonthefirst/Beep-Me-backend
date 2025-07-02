@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from asgiref.sync import async_to_sync
-from .serializers import RoomMessagesSerializer, RoomMembersSerializer, RoomDetailsSerializer
+from .serializers import RoomDetailsSerializer
 from .models import ChatRoom
 from user.serializers import UsersSerializer
 from message.serializers import MessagesSerializer
