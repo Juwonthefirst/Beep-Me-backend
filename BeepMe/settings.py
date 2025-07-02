@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "group",
     "notification",
     "chat_room",
-    "upload"
+    "upload",
     "user",
 ]
 
