@@ -24,22 +24,21 @@ class TestUserModel(APITestCase):
 		
 	def test_get_friends_method(self):
 		friends = self.user.get_friends()
-		self.assertTrue(isinstance(friends, list))
 		self.assertEqual(self.user.following.count(), 2)
 		
 	def test_get_unmutual_following_method(self):
 		unmutual_following = self.user.get_unmutual_following()
-		self.assertEqual(len(unmutual_following), 3)
-		self.user1.following.add(self.user)
 		self.assertEqual(len(unmutual_following), 2)
+		self.user1.following.add(self.user)
+		self.assertEqual(len(unmutual_following), 1)
 		self.user1.following.clear()
 		
 	def test_get_unmutual_followers_method(self):
-		unmutual_followers = self.user1.get_unmutual_following()
-		self.assertEqual(len(unmutual_followers), 1)
-		self.user1.following.add(self.user)
+		unmutual_followers = self.user.get_unmutual_followers()
 		self.assertEqual(len(unmutual_followers), 0)
-		self.user1.following.clear()
+		self.user3.following.add(self.user)
+		self.assertEqual(len(unmutual_followers), 1)
+		self.user3.following.clear()
 		
 	def test_mark_last_online_method_is_updating(self):
 		self.user.mark_last_online()

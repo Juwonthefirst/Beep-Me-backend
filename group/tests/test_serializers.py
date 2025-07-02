@@ -21,7 +21,7 @@ class TestGroupSerializer(APITestCase):
 		data = {
 			"name": "test",
 			"description": "I'm testing",
-			"members": [{"member_id": self.user.id, "role": "admin"}, {"member_id": self.user1.id, "role": "member"}],
+			"members": [{"member_id": self.user.id}, {"member_id": self.user1.id}],
 		}
 		serializer = GroupSerializer(data = data)
 		self.assertTrue(serializer.is_valid())
@@ -64,29 +64,18 @@ class TestGroupMemberSerializer(APITestCase):
 	def setUp(self): 
 		self.user = User.objects.create_user(username = "test", email = "test@test.com", password = "testing123")
 		self.group = Group.objects.create(name = "test")
-		self.adminMember = MemberDetail.objects.create(group = self.group, member = self.user, role = "admin")
-		
-	def test_update_method_with_valid_input(self):
-		data = {
-			"role": "member"
-		}
-		self.assertTrue(self.group.user_is_admin(self.user))
-		serializer = GroupMemberSerializer(self.adminMember, data = data, partial = True)
-		self.assertTrue(serializer.is_valid())
-		member = serializer.save()
-		self.assertEqual(member.role, "member")
-		self.assertIsNotNone(member.joined_at)
+		self.admim_role = Role.objects.create(name="admin", group = self. group)
+		self.adminMember = MemberDetail.objects.create(group = self.group, member = self.user, role = self.admim_role)
 	
 	def test_read_only_fields_do_not_change_on_update(self):
 		data = {
-			"role": "admin",
 			"member_id": 3000,
 			"member_username": "test",
 			"joined_at": "today"
 		}
 		serializer = GroupMemberSerializer(self.adminMember, data = data, partial = True)
 		self.assertTrue(serializer.is_valid())
-		self.assertTrue(self.group.user_is_admin(self.user))
+		self.assertEqual(self.group.get_user_role(self.user))
 		self.assertNotIn("member_id", serializer.validated_data)
 		self.assertNotIn("member_username", serializer.validated_data)
 		self.assertNotIn("joined_at", serializer.validated_data)
@@ -104,7 +93,7 @@ class TestRoleSerializer(APITestCase):
 	def setUp(self): 
 		self.group = Group.objects.create(name = "test")
 		self.mod_role = Role.objects.create(name = "mod", group = self.group)
-		self.role.permissions.add(1,2,3)
+		self.mod_role.permissions.add(1,2,3)
 		
 	def test_create_method_with_valid_data(self):
 		data = {

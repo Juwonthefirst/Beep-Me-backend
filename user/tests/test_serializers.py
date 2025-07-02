@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
-from .serializers import UsersSerializer, UserIDSerializer, RetrieveUsersSerializer
+from user.serializers import UsersSerializer, UserIDSerializer, RetrieveUsersSerializer
 User = get_user_model()
 
 class TestUserSerializer(APITestCase):

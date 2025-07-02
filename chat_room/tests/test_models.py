@@ -36,7 +36,7 @@ class TestChatRoom(APITestCase):
 		self.room.members.add(self.user, self.user1)
 		self.assertEqual(self.room.members.count(), 2)
 		self.room.members.remove(self.user)
-		self.assertEqual(self.room.members.all(), [self.user1])
+		self.assertEqual(list(self.room.members.all()), [self.user1])
 		self.room.members.add(self.user)
 		self.room.members.clear()
 		self.assertEqual(self.room.members.count(), 0)

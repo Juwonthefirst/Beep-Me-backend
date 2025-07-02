@@ -15,7 +15,7 @@ class UserChatRoomSerializer(serializers.ModelSerializer):
 	last_message = serializers.SerializerMethodField()
 	class Meta: 
 		model = ChatRoom
-		fields = ["parent","last_message", "id", "name", "is_group"]
+		fields = ["parent", "last_message", "id", "name", "is_group"]
 		
 	def get_last_message(self, obj): 
 		last_message_object = obj.get_last_message()
@@ -26,4 +26,5 @@ class UserChatRoomSerializer(serializers.ModelSerializer):
 			return GroupSerializer(obj.group).data
 		user_id = self.context.get("user_id")
 		other_member = obj.members.exclude(id = user_id)
+		print(other_member)
 		return UsersSerializer(other_member).data

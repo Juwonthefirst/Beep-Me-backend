@@ -20,7 +20,7 @@ class Group(models.Model):
 	created_at = models.DateTimeField(auto_now_add = True)
 	
 	def get_user_role(self, member):
-		return self.memberdetail_set.get(member = user).role
+		return self.memberdetail_set.get(member = member).role
 			
 	def add_members(self, new_members): 
 		return MemberDetail.add(self, new_members)

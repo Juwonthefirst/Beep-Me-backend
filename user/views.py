@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from notification.serializers import NotificationSerializer
 from chat_room.serializers import UserChatRoomSerializer
-from .serializers import (
+from user.serializers import (
 	UsersSerializer, 
 	RetrieveUsersSerializer,
 	UserIDSerializer
