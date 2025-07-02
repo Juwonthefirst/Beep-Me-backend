@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from .models import Group, MemberDetails, Role
+from .models import Group, MemberDetail, Role
 from notification.models import Notification
 from .permissions import IsAdminOrReadOnly
 from .serializers import (
