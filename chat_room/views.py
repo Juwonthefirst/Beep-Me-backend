@@ -5,7 +5,7 @@ from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
-from asigref.sync import async_to_sync
+from aisgref.sync import async_to_sync
 from .serializers import RoomMessagesSerializer, RoomMembersSerializer, RoomDetailsSerializer
 from .models import ChatRoom
 from user.serializers import UsersSerializer
