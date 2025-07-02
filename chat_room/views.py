@@ -80,7 +80,6 @@ def get_livekit_JWT_token(request):
         room = Room.objects.getl(id = room_id)
         if room.is_group:
         	pass
-            
     except Room.DoesNotExist:
 		return Response({"error": "room not found"}, status = not_found)
         
