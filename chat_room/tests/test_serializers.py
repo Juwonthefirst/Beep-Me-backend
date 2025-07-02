@@ -1,5 +1,5 @@
 from rest_framework.test import APITestCase
-from .serializers import UserChatRoomSerializer
+from .serializers import UserChatRoomSerializer, VideoChatSerializer
 from .models import ChatRoom
 from group.models import Group
 from message.models import Message
@@ -32,3 +32,4 @@ class TestUserChatRoomSerializer(APITestCase):
 	def test_last_message_serializer_method_field_if_it_returns_the_last_message(self):
 		self.assertIn("last_message", self.chat_serializer_data)
 		self.assertEqual(self.chat_serializer_data["last_message"]["id"], self.message2.id)
+		

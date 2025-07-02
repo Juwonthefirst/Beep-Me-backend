@@ -19,11 +19,8 @@ class Group(models.Model):
 	avatar = models.CharField(max_length = 300, default = "default")
 	created_at = models.DateTimeField(auto_now_add = True)
 	
-	def user_is_admin(self, user):
-		try: 
-			return self.memberdetail_set.get(member = user).role == "admin"
-		except:
-			return False
+	def get_user_role(self, member):
+		return self.memberdetail_set.get(member = user).role
 			
 	def add_members(self, new_members): 
 		return MemberDetail.add(self, new_members)

@@ -11,7 +11,10 @@ from .models import ChatRoom
 from user.serializers import UsersSerializer
 from message.serializers import MessagesSerializer
 from BeepMe.cache import cache
-import json
+import json, os
+from livekit import api
+
+
 not_found = HTTP_404_NOT_FOUND
 
 @api_view(["GET"])
@@ -64,4 +67,31 @@ class RoomDetailsView(RetrieveUpdateDestroyAPIView):
 	queryset = ChatRoom.objects.all()
 	serializer_class = RoomDetailsSerializer
 	permission_classes = [IsAuthenticated]
+
+
+@api_view(["GET"])	
+@permission_classes(["IsAuthenticated"])
+def get_livekit_JWT_token(request):
+    user = request.user
+    is_video_admin = False
+    room_id = request.kwargs.get("pk")
+    
+    try:
+        room = Room.objects.get(id = room_id)
+        if room.is_group:
+            
+            
+    except Room.DoesNotExist:
+        return Response({"error": "room not found"}, status = not_found)
+        
+    token = api.AccessToken(os.getenv("LIVEKIT_API_KEY"), os.getenv("LIVEKIT_API_SECRET")
+	).with_identity(user.id).with_name(user.username).with_grants(api.VideoGrants(
+		room_join = True,
+		room_admin = is_video_admin,
+		room = room.name,
+		can_publish = True,
+		can_publish_data = True,
+		can_subscribe = True
+	)).to_jwt()
 	
+	return Response({"token": token})

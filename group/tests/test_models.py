@@ -13,7 +13,7 @@ class TestGroupModel(APITestCase):
 		self.user2 = User.objects.create_user(username = "test2", email = "test2@test.com", password = "testing123")
 		self.user3 = User.objects.create_user(username = "test3", email = "test3@test.com", password = "testing123")
 		self.group = Group.objects.create(name = "test")
-		self.member = MemberDetail.objects.create(group = self.group, member = self.user, role = "admin")
+		self.member = MemberDetail.objects.create(group = self.group, member = self.user)
 		
 	def test_model_undefined(self): 
 		group = Group(name = "", description = "")
@@ -30,9 +30,8 @@ class TestGroupModel(APITestCase):
 		group.save()
 		self.assertIsNotNone(group.created_at)
 		
-	def test_model_method_user_is_admin(self):
-		self.assertTrue(self.group.user_is_admin(self.user))
-		self.assertFalse(self.group.user_is_admin(self.user1))
+	def test_model_method_get_user_role(self):
+		
 		
 	def test_model_method_add_members(self):
 		self.assertEqual(self.group.members.count(), 1)
