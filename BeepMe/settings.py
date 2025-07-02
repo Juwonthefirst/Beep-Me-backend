@@ -38,13 +38,13 @@ INSTALLED_APPS = [
     "storages",
     "drf_yasg",
     "authentication",
+    "user",
     "home",
     "message",
     "group",
     "notification",
     "chat_room",
     "upload",
-    "user",
 ]
 
 MIDDLEWARE = [
