@@ -15,10 +15,17 @@ class TestUserSerializer(APITestCase):
 		data = UsersSerializer(self.user).data
 		self.assertIsNotNone(data.get("id"))
 		self.assertIsNotNone(data.get("username"))
-		self.assertEqual(self.user1.id, data.get("id"))
+		self.assertEqual(self.user.id, data.get("id"))
 		
 		
 class TestRetrieveUsersSerializer(APITestCase):
+	def setUp(self): 
+		self.user = User.objects.create_user(username = "test", email = "test@test.com", password = "testing123")
+		self.user1 = User.objects.create_user(username = "test1", email = "test1@test.com", password = "testing123")
+		self.user2 = User.objects.create_user(username = "test2", email = "test2@test.com", password = "testing123")
+		self.user3 = User.objects.create_user(username = "test3", email = "test3@test.com", password = "testing123")
+		self.user.following.add(self.user1, self.user2)
+
 	def test_output_data(self):
 		data = RetrieveUsersSerializer(self.user).data
 		self.assertIn("id", data)

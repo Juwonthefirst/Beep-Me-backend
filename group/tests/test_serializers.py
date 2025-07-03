@@ -75,7 +75,7 @@ class TestGroupMemberSerializer(APITestCase):
 		}
 		serializer = GroupMemberSerializer(self.adminMember, data = data, partial = True)
 		self.assertTrue(serializer.is_valid())
-		self.assertEqual(self.group.get_user_role(self.user))
+		self.assertEqual(self.group.get_user_role(self.user).name, "admin")
 		self.assertNotIn("member_id", serializer.validated_data)
 		self.assertNotIn("member_username", serializer.validated_data)
 		self.assertNotIn("joined_at", serializer.validated_data)
@@ -129,7 +129,7 @@ class TestRoleSerializer(APITestCase):
 		serializer = RoleSerializer(data = data_2)
 		self.assertFalse(serializer.is_valid())
 		self.assertIn("group", serializer.errors)
-		self.assertEqual(len(serializer.errors, 1))
+		self.assertEqual(len(serializer.errors), 1)
 		
 		data_3 = {
 			"name": "ninja",
@@ -139,7 +139,7 @@ class TestRoleSerializer(APITestCase):
 		serializer = RoleSerializer(data = data_3)
 		self.assertFalse(serializer.is_valid())
 		self.assertIn("permissions", serializer.errors)
-		self.assertEqual(len(serializer.errors, 1))
+		self.assertEqual(len(serializer.errors), 1)
 		
 	def test_update_method_with_valid_input(self):
 		data = {
@@ -148,7 +148,7 @@ class TestRoleSerializer(APITestCase):
 		
 		serializer = RoleSerializer(instance = self.mod_role, data = data, partial = True)
 		self.assertTrue(serializer.is_valid())
-		self.new_mod_role = serializer.save(self.mod_role)
+		self.new_mod_role = serializer.save()
 		self.assertEqual(self.new_mod_role.name, "moderator")
 		
 		data = {
