@@ -65,6 +65,7 @@ class RoleSerializer(serializers.ModelSerializer):
 		
 	def create(self, validated_data):
 		permissions = validated_data.pop("permissions")
+		print(permissions)
 		if not isinstance(permissions, list):
 			raise ValueError
 		role = Role.objects.create(**validated_data)
@@ -81,7 +82,7 @@ class RoleSerializer(serializers.ModelSerializer):
 			for permission in new_permissions:
 				instance.permissions.add(permission["id"])
 			
-		instance.save(updated_fields = ["name", "permissions"])
+		instance.save(update_fields = ["name", "permissions"])
 		return instance
 		
 class PermissionChangeSerializer(serializers.Serializer): 
