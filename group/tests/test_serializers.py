@@ -165,7 +165,6 @@ class TestRoleSerializer(APITestCase):
 		}
 		serializer = RoleSerializer(instance = self.mod_role, data = data, partial = True)
 		self.assertTrue(serializer.is_valid())
-		print(serializer.validated_data.get("permissions"))
 		new_mod_role = serializer.save()
 		self.assertEqual(new_mod_role.permissions.count(), 0)
 		self.assertEqual(new_mod_role.name, "moderator")
