@@ -26,4 +26,5 @@ class UserChatRoomSerializer(serializers.ModelSerializer):
 			return GroupSerializer(obj.group).data
 		user_id = self.context.get("user_id")
 		other_member = obj.members.exclude(id = user_id)
+		print(other_member.username)
 		return UsersSerializer(other_member).data
