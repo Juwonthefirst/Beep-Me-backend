@@ -104,7 +104,6 @@ class TestRoleSerializer(APITestCase):
 		serializer = RoleSerializer(data = data)
 		self.assertTrue(serializer.is_valid())
 		role = serializer.save()
-		print(role)
 		self.assertEqual(role.permissions.count(), 2)
 		self.assertEqual(role.name, "ninja")
 		self.assertEqual(role.group, self.group)
@@ -149,15 +148,15 @@ class TestRoleSerializer(APITestCase):
 		
 		serializer = RoleSerializer(instance = self.mod_role, data = data, partial = True)
 		self.assertTrue(serializer.is_valid())
-		self.new_mod_role = serializer.save()
-		self.assertEqual(self.new_mod_role.name, "moderator")
+		new_mod_role = serializer.save()
+		self.assertEqual(new_mod_role.name, "moderator")
 		
 		data = {
 			"permissions": [{"id": 1}]
 		}
 		serializer = RoleSerializer(instance = self.mod_role, data = data, partial = True)
 		self.assertTrue(serializer.is_valid())
-		self.new_mod_role = serializer.save()
+		new_mod_role = serializer.save()
 		self.assertEqual(new_mod_role.permissions.count(), 1)
 		
 	def test_update_method_with_empty_permissions(self):
@@ -166,7 +165,7 @@ class TestRoleSerializer(APITestCase):
 		}
 		serializer = RoleSerializer(instance = self.mod_role, data = data, partial = True)
 		self.assertTrue(serializer.is_valid())
-		self.new_mod_role = serializer.save()
+		new_mod_role = serializer.save()
 		self.assertEqual(new_mod_role.permissions.count(), 0)
 		self.assertEqual(new_mod_role.name, "moderator")
 		
