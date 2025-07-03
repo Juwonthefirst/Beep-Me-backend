@@ -167,7 +167,7 @@ class TestRoleSerializer(APITestCase):
 		self.assertTrue(serializer.is_valid())
 		new_mod_role = serializer.save()
 		self.assertEqual(new_mod_role.permissions.count(), 0)
-		self.assertEqual(new_mod_role.name, "moderator")
+		self.assertEqqual(new_mod_role.name, "mod")
 		
 	def test_update_method_with_invalid_input(self):
 		data = {
