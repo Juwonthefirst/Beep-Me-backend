@@ -23,6 +23,7 @@ class GroupSerializer(serializers.ModelSerializer):
 		group.add_members(members)
 		ChatRoom.objects.create(name = f"group.{group.id}", is_group = True, group = group)
 		owner_role = Role.objects.create(name = "owner", group = group)
+		owner_role.permissions.add(*Permission.objects.all())
 		member_role = Role.objects.create(name = "member", group = group)
 		return group
 		
@@ -42,15 +43,9 @@ class GroupMemberSerializer(serializers.ModelSerializer):
 class GroupMemberChangeSerializer(serializers.Serializer): 
 	member_ids = serializers.ListField(child = serializers.IntegerField(min_value = 1), allow_empty = False)
 
-class PermissionSerializer(serializers.ModelSerializer): 
-	class Meta: 
-		model = Permission
-		fields = "__all__"	
-		extra_kwargs = {
-			"action": {
-				"read_only": True
-			}
-		}
+class PermissionSerializer(serializers.Serializer): 
+	id = serializers.IntegerField()
+	action = serializers.CharField(max_length = 100, read_only = True)
 		
 class RoleSerializer(serializers.ModelSerializer): 
 	permissions = PermissionSerializer(many = True)
@@ -68,9 +63,7 @@ class RoleSerializer(serializers.ModelSerializer):
 		if not isinstance(permissions, list):
 			raise ValueError
 		role = Role.objects.create(**validated_data)
-		print(permissions)
 		for permission in permissions:
-			
 			if len(permission) == 0:
 				continue
 			role.permissions.add(permission["id"])
@@ -87,7 +80,7 @@ class RoleSerializer(serializers.ModelSerializer):
 					continue
 				instance.permissions.add(permission["id"])
 			
-		instance.save(update_fields = ["name", "permissions"])
+		instance.save(update_fields = ["name"])
 		return instance
 		
 class PermissionChangeSerializer(serializers.Serializer): 
