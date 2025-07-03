@@ -92,7 +92,7 @@ DATABASES = {
 }
 
 DATABASES["default"]["OPTIONS"] = {
-    #"sslmode": "require",
+    "sslmode": "require",
 }
 
 AUTH_USER_MODEL = "user.CustomUser"
