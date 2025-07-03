@@ -27,9 +27,7 @@ class TestChatRoom(APITestCase):
 	def test_name_field_unique_validation(self):
 		chat_room1 = ChatRoom(name = "testing")
 		with self.assertRaises(ValidationError): 
-			chat_room1.save()
-			
-		chat_room1.delete()
+			chat_room1.full_clean()
 		
 	def test_members_many_to_many_relationship_methods(self):
 		self.assertEqual(self.room.members.count(), 0)
