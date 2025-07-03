@@ -104,6 +104,7 @@ class TestRoleSerializer(APITestCase):
 		serializer = RoleSerializer(data = data)
 		self.assertTrue(serializer.is_valid())
 		role = serializer.save()
+		print(role)
 		self.assertEqual(role.permissions.count(), 2)
 		self.assertEqual(role.name, "ninja")
 		self.assertEqual(role.group, self.group)

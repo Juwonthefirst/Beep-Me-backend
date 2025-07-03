@@ -68,7 +68,9 @@ class RoleSerializer(serializers.ModelSerializer):
 		if not isinstance(permissions, list):
 			raise ValueError
 		role = Role.objects.create(**validated_data)
+		print(permissions)
 		for permission in permissions:
+			
 			if len(permission) == 0:
 				continue
 			role.permissions.add(permission["id"])
