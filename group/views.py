@@ -37,7 +37,7 @@ class GroupMembersView(ListAPIView):
 	permission_classes = [IsAuthenticated]
 	search_fields = ["member__username", "role"]
 	def get_queryset(self): 
-		group_id = self.kwargs["pk"]
+		group_id = self.kwargs.get("pk")
 		try:
 			return Group.objects.get(id = group_id).memberdetails_set.all()
 		except Group.DoesNotExist:
@@ -54,7 +54,7 @@ class RetrieveGroupMemberView(RetrieveUpdateAPIView):
 	lookup_field = "member_id"
 	
 	def get_queryset(self): 
-		group_id = self.kwargs["pk"]
+		group_id = self.kwargs.get("pk")
 		try:
 			return Group.objects.get(id = group_id).memberdetails_set.all()
 		except Group.DoesNotExist:

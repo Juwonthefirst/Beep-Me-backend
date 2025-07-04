@@ -5,6 +5,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
+from django.db.models import Max
 from notification.serializers import NotificationSerializer
 from chat_room.serializers import UserChatRoomSerializer
 from user.serializers import (
@@ -16,6 +17,7 @@ from user.serializers import (
 User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
 not_found = status.HTTP_404_NOT_FOUND
+
 class UsersView(ListAPIView):
 	"""View to get all user in the database, this meant to be used with filtering and pagination"""
 	queryset = User.objects.all()
