@@ -39,7 +39,7 @@ class UserChatRoomsView(ListAPIView):
 		user = self.request.user
 		user_chat_rooms = user.rooms
 		return user_chat_rooms.annotate(
-			last_message_time = Max("messages_timestamp")
+			last_message_time = Max("messages__timestamp")
 		).order_by("-last_message_time")
 
 	def get_serializer_context(self): 
