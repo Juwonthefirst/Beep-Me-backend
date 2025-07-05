@@ -6,9 +6,9 @@ from django.utils import timezone
 from notification import tasks
 
 @database_sync_to_async
-def save_message(room, sender_id, message):
+def save_message(room, sender_id, message, timestamp):
     from message.models import Message
-    return Message.objects.create(room_id = room_id, body = message, sender_id = sender_id)
+    return Message.objects.create(room_id = room_id, body = message, sender_id = sender_id, timestamp = timestamp)
     
 @database_sync_to_async
 def get_or_create_room(room_name):
@@ -45,6 +45,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.joined_rooms[room], self.channel_name
             )
             cache.remove_active_member(user_id, room)
+            
         self.user.mark_last_online()
         self.joined_rooms.clear()
         cache.remove_user_online(self.user.id)
@@ -72,6 +73,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
         sender_id = data.get("sender_id")
+        sender_username = data.get("sender_username")
         message = data.get("message")
         room_name = data.get("room")
         action = data.get("action")
@@ -87,9 +89,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     room_name, {"type": "chat.typing", "room": room_name, "sender_id": sender_id}
                 )
                 
-            case "is_online": 
-                await self.user_online()
-                
             case "chat": 
                 await self.channel_layer.group_send(
                     room_name, {"type": "chat.message", "room": room_name, "message": message}
@@ -99,14 +98,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room_name = event.get("room")
         message = event.get("message")
         sender_id = event.get("sender_id")
+        sender_username = event.get("sender_username")
+        timestamp = timezone.now()
         room = self.joined_rooms[room_name]
-        await self.send(text_data = json.dumps({"room": room_name,"message": message, "sender_id": sender_id}))
-        tasks.send_chat_notification.delay(room, message, sender_id = sender_id)
-        await save_message(room = room_name, message = message, sender_id = sender_id)
+        await self.send(text_data = json.dumps({
+            "room": room_name,
+            "message": message, 
+            "sender_username": sender_username, 
+            "timestamp": timestamp
+        }))
+        tasks.send_chat_notification.delay(room, message, sender_username = sender_username)
+        await save_message(room = room_name, message = message, sender_id = sender_id, timestamp = timestamp)
         
     async def chat_typing(self, event):
         room_name = event.get("room")
-        sender_id = event.get("sender_id")
+        sender_username = event.get("sender_username")
         await self.send(text_data = json.dumps({"room": room_name, "typing": True, "sender_id": sender_id }))
         
 class NotificationConsumer(AsyncWebsocketConsumer): 

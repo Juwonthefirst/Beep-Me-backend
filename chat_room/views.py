@@ -1,12 +1,12 @@
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from asgiref.sync import async_to_sync
-from chat_room.serializers import RoomDetailsSerializer
+from chat_room.serializers import RoomDetailsSerializer, ChatRoomAndMessagesSerializer
 from chat_room.models import ChatRoom
 from user.serializers import UsersSerializer
 from message.serializers import MessagesSerializer
@@ -95,3 +95,19 @@ def get_livekit_JWT_token(request, pk):
 	)).to_jwt()
 	
 	return Response({"token": token})
+	
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def getChatRoomAndMessageByRoomName(request, room_name):
+	
+	
+class GetChatRoomAndMessageByRoomName(RetrieveAPIView): 
+	serializer_class = ChatRoomAndMessagesSerializer
+	permission_classes = [IsAuthenticated]
+	def get_queryset(self): 
+		room_name = self.kwargs.get("room_name")
+		try:
+			return ChatRoom.objects.get(name = room_name)
+		except ChatRoom.DoesNotExist:
+			return ChatRoom.objects.none()
+			
