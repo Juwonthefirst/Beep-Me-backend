@@ -19,7 +19,7 @@ not_found = HTTP_404_NOT_FOUND
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_room_messages(request, room_id): 
+def get_room_messages(request, pk): 
 	paginator = PageNumberPagination()
 	paginator.page_size = 50
 	page = request.query_params.get("page", "1")
