@@ -178,3 +178,15 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             "time": time,
         }))
         await create_notification("group_notification", notification, self.user, time, group_id = group_id)
+        
+    async def notification_call(self, event):
+        notification_detail = event.get("notification")
+        is_video = notification_detail.get("is_video")
+        caller_id = notification_detail.get("caller_id")
+        is_group = notification_detail.get("is_group")
+        await self.send(text_data = json.dumps({
+            "type": "call_notification",
+            "caller_id": caller_id,
+            "is_video": is_video,
+            "is_group": is_group
+        }))
