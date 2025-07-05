@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND
 from rest_framework.decorators import api_view, permission_classes
@@ -14,7 +15,7 @@ from BeepMe.cache import cache
 import json, os
 from livekit import api
 
-
+User = get_user_model()
 not_found = HTTP_404_NOT_FOUND
 
 @api_view(["GET"])
@@ -101,7 +102,18 @@ class GetChatRoomAndMessageByRoomName(RetrieveAPIView):
 	serializer_class = ChatRoomAndMessagesSerializer
 	permission_classes = [IsAuthenticated]
 	def get_queryset(self): 
-		room_name = self.kwargs.get("room_name")
+		user_id = request.user.id
+		friend_username = self.kwargs.get("friend_username")
+		
+		try:
+			friend_id = User.objects.get(username = friend_username).id
+		except User.DoesNotExist:
+			return ChatRoom.objects.none()
+		
+		room_name = f"chat_{user_id}_{friend_id}"
+		if friend_id < user_id:
+			room_name = f"chat_{friend_id}_{user_id}"
+			
 		try:
 			return ChatRoom.objects.get(name = room_name)
 		except ChatRoom.DoesNotExist:
