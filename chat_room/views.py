@@ -6,8 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from asgiref.sync import async_to_sync
-from .serializers import RoomDetailsSerializer
-from .models import ChatRoom
+from chat_room.serializers import RoomDetailsSerializer
+from chat_room.models import ChatRoom
 from user.serializers import UsersSerializer
 from message.serializers import MessagesSerializer
 from BeepMe.cache import cache
@@ -71,10 +71,10 @@ class RoomDetailsView(RetrieveUpdateDestroyAPIView):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_livekit_JWT_token(request): 
+def get_livekit_JWT_token(request, pk): 
 	user = request.user
 	is_video_admin = False
-	room_id = request.kwargs.get("pk")
+	room_id = pk
 	
 	try:
 		roomObject = Room.objects.get(pk = room_id)
