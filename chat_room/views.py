@@ -96,10 +96,6 @@ def get_livekit_JWT_token(request, pk):
 	
 	return Response({"token": token})
 	
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def getChatRoomAndMessageByRoomName(request, room_name):
-	
 	
 class GetChatRoomAndMessageByRoomName(RetrieveAPIView): 
 	serializer_class = ChatRoomAndMessagesSerializer
