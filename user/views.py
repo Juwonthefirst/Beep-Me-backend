@@ -68,6 +68,7 @@ class DoesUsernameExistView(APIView):
 class FriendListView(ListAPIView): 
 	serializer_class = UsersSerializer
 	permission_classes = [IsAuthenticated]
+	search_fields = ["username"]
 	def get_queryset(self): 
 		user = self.request.user
 		return user.get_friends()
@@ -75,6 +76,7 @@ class FriendListView(ListAPIView):
 class SentFriendRequestView(ListAPIView): 
 	serializer_class = UsersSerializer
 	permission_classes = [IsAuthenticated]
+	search_fields = ["username"]
 	def get_queryset(self): 
 		user = self.request.user
 		return user.get_unmutual_following()
@@ -82,6 +84,7 @@ class SentFriendRequestView(ListAPIView):
 class receivedFriendRequestView(ListAPIView): 
 	serializer_class = UsersSerializer
 	permission_classes = [IsAuthenticated]
+	search_fields = ["username"]
 	def get_queryset(self): 
 		user = self.request.user
 		return user.get_unmutual_followers()

@@ -25,7 +25,7 @@ def get_room_messages(request, pk):
 	page = request.query_params.get("page", "1")
 	
 	try:
-		room = ChatRoom.objects.get(id = room_id)
+		room = ChatRoom.objects.get(id = pk)
 		if not room.members.filter(id = request.user.id).exists(): 
 			raise PermissionDenied
 			
