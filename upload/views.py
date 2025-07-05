@@ -58,7 +58,7 @@ class GetAttachmentFileView(APIView):
 	
 	def get(self, request, message_id):
 		try: 
-			attachment = Attachment.objects.get(message_id = message_id)
+			attachment = Attachment.objects.get(source_message_id = message_id)
 			file = attachment.file
 			return FileResponse(
 				file,
