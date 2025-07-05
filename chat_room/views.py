@@ -77,9 +77,9 @@ def get_livekit_JWT_token(request, pk):
 	room_id = pk
 	
 	try:
-		roomObject = Room.objects.get(pk = room_id)
-	except Room.DoesNotExist:
-		return Response({"error": "room not found"}, status = not_found)
+		roomObject = ChatRoom.objects.get(pk = room_id)
+	except ChatRoom.DoesNotExist:
+		return Response({"error": "chat room not found"}, status = not_found)
 	
 	if roomObject.is_group: 
 		user_group_role = roomObject.group.get_user_role(user)
