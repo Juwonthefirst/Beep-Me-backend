@@ -6,34 +6,22 @@ channel_layer = get_channel_layer()
 
 @shared_task
 def send_chat_notification(room, message, sender_id, sender_username):
-	
 	if room.is_group:
 		members_id = room.group.members.values_list("id", flat = True)
-		online_inactive_members_id = async_to_sync(cache.get_online_inactive_members)(room.name, members_id) - {sender_id}
-		for member_id in online_inactive_members_id:
-			
-			async_to_sync(channel_layer.group_send)(
-				f"user_{member_id}_notifications", {"type": "notification.chat", "notification_detail": {
-					"sender_id": sender_id,
-					"sender": sender_username
-					"receiver": room.group.name,
-					"message": message,
-					"is_group": True,
-					"room_id": room.id
-					}
-				}
-			)
-			
 	else:
 		room_name = room.name
 		members_id = room_name.split("_")[1:]
-		online_inactive_members_id = async_to_sync(cache.get_online_inactive_members)(room.name, members_id) - {sender_id}
+		
+	online_inactive_members_id = async_to_sync(cache.get_online_inactive_members)(room.name, members_id) - {sender_id}
+	for member_id in online_inactive_members_id:
 		async_to_sync(channel_layer.group_send)(
 			f"user_{member_id}_notifications", {"type": "notification.chat", "notification_detail": {
-				"sender": sender_id,
-				"receiver": receiver,
+				"sender_id": sender_id,
+				"sender": sender_username
+				"receiver": room.group.name,
 				"message": message,
-				"is_group": room.is_group
+				"is_group": room.is_group,
+				"room_id": room.id
 				}
 			}
 		)
@@ -81,33 +69,23 @@ def send_friend_request_notification(user_id, friend_id, action):
 		)
 		
 @shared_task
-def send_call_notification(caller_id, room_object, video_call = False): 
+def send_call_notification(caller, room_object, video_call = False): 
 	if room.is_group:
 		members_id = room.group.members.values_list("id", flat = True)
-		online_inactive_members_id = async_to_sync(cache.get_online_inactive_members)(room.name, members_id) - {sender_id}
-		for member_id in online_inactive_members_id:
-			
-			async_to_sync(channel_layer.group_send)(
-				f"user_{member_id}_notifications", {"type": "notification.chat", "notification_detail": {
-					"sender": sender_id,
-					"receiver": room.group.name,
-					"message": message,
-					"is_group": True,
-					"room_id": room.id
-					}
-				}
-			)
-			
 	else:
 		room_name = room.name
 		members_id = room_name.split("_")[1:]
-		online_inactive_members_id = async_to_sync(cache.get_online_inactive_members)(room.name, members_id) - {sender_id}
+	
+	online_members_id = async_to_sync(cache.online_members_id)(members_id) - {sender_id}
+	for member_id in online_members_id:
+	
 		async_to_sync(channel_layer.group_send)(
-			f"user_{member_id}_notifications", {"type": "notification.chat", "notification_detail": {
-				"sender": sender_id,
-				"receiver": receiver,
-				"message": message,
-				"is_group": room.is_group
+			f"user_{member_id}_notifications", {"type": "notification.call", "notification_detail": {
+				"caller": caller,
+				"room_name": room.name,
+				"is_video": video_call,
+				"is_group": room.is_group,
+				"room_id": room.id
 				}
 			}
 		)

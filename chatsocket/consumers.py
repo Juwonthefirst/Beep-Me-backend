@@ -149,7 +149,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             "receiver": notification_detail.get("receiver"),
             "message": notification_detail.get("message"),
             "is_group": notification_detail.get("is_group"),
-            "time": timezone.now(),
+            "timestamp": timezone.now(),
         }))
         
     async def notification_online(self, event):
@@ -158,17 +158,17 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             "type": "online_status_notification",
             "user": notification_detail.get("user"),
             "status":  notification_detail.get("status"),
-            "time": timezone.now(),
+            "timestamp": timezone.now(),
         }))
         
     async def notification_friend(self, event):
         notification_detail = event.get("notification_detail")
         notification = notification_detail.get("notification"),
-        time = timezone.now()
+        timestamp = timezone.now()
         await self.send(text_data = json.dumps({
             "type": "friend_notification",
             "notification": notification,
-            "time": time,
+            "timestamp": timestamp,
         }))
         await create_notification("friend_notification", notification, self.user, time)
         
@@ -176,23 +176,27 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         notification_detail = event.get("notification")
         notification = notification_detail.get("notification")
         group_id = notification_detail.get("group_id")
-        time = timezone.now()
+        timestamp = timezone.now()
         await self.send(text_data = json.dumps({
             "type": "group_notification",
             "notification":  notification,
             "group_id": group_id,
-            "time": time,
+            "timestamp": timestamp,
         }))
         await create_notification("group_notification", notification, self.user, time, group_id = group_id)
         
     async def notification_call(self, event):
         notification_detail = event.get("notification")
         is_video = notification_detail.get("is_video")
-        caller_id = notification_detail.get("caller_id")
+        caller = notification_detail.get("caller")
+        room_name = notification_detail.get("room_name")
+        room_id = notification_detail.get("room_id")
         is_group = notification_detail.get("is_group")
         await self.send(text_data = json.dumps({
             "type": "call_notification",
-            "caller_id": caller_id,
+            "caller": caller,
+            "room_name": room_name,
+            "room_id": room_id,
             "is_video": is_video,
             "is_group": is_group
         }))
