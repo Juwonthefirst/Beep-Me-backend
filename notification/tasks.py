@@ -17,7 +17,7 @@ def send_chat_notification(room, message, sender_id, sender_username):
 		async_to_sync(channel_layer.group_send)(
 			f"user_{member_id}_notifications", {"type": "notification.chat", "notification_detail": {
 				"sender_id": sender_id,
-				"sender": sender_username
+				"sender": sender_username,
 				"receiver": room.group.name,
 				"message": message,
 				"is_group": room.is_group,
