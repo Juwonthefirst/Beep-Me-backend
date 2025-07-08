@@ -38,7 +38,7 @@ class ChatRoomAndMessagesSerializer(serializers.ModelSerializer):
 		fields = ["parent", "messages", "id", "name", "is_group"]
 		
 	def get_message(self, obj): 
-		cached_message = async_to_sync(cache.get_cached_messages)(cached_message = async_to_sync(cache.get_cached_messages)(obj.name)
+		cached_message = async_to_sync(cache.get_cached_messages)(obj.name)
 		if cached_message: 
 			return cached_message
 			
