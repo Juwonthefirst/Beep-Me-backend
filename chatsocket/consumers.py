@@ -36,7 +36,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close(code=4001)
         self.joined_rooms = {}
         await self.accept()
-        await self.user.mark_last_online()
+        await database_sync_to_async(self.user.mark_last_online)()
         tasks.send_online_status_notification.delay(self.user, True)
         
     async def disconnect(self, close_code):
