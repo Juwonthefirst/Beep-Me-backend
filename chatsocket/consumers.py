@@ -25,7 +25,7 @@ def create_notification(notification_type, notification, receiver, time, group_i
         notification_type = notification_type, 
         notification = notification,
         receiver = receiver,
-        sender = sender
+        sender = sender,
         timestamp = time,
         group_id = group_id,
     )
