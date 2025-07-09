@@ -2,16 +2,13 @@ from celery import shared_task
 from channels.layers import get_channel_layer
 from BeepMe.cache import cache
 from django.contrib.auth import get_user_model
-from chat_room.models import ChatRoom
-from Group.models import Group
 from asgiref.sync import async_to_sync
 channel_layer = get_channel_layer()
 
-User = get_user_model()
 
 @shared_task
 def send_chat_notification(room_id, message, sender_username):
-	
+	from chat_room.models import ChatRoom
 	room = ChatRoom.objects.select_related("group").get(id = room_id)
 	if room.is_group:
 		members_id = room.group.members.values_list("id", flat = True)
@@ -35,6 +32,7 @@ def send_chat_notification(room_id, message, sender_username):
 	
 @shared_task
 def send_group_notification(room_id, notification, sender_id): 
+	from chat_room.models import ChatRoom
 	room = ChatRoom.objects.select_related("group").get(id = room_id)
 	members_id = room.group.members.values_list("id", flat = True)
 	online_inactive_members_id = async_to_sync(cache.get_online_inactive_members)(room.name, members_id) - {sender_id}
@@ -51,7 +49,8 @@ def send_group_notification(room_id, notification, sender_id):
 		
 @shared_task
 def send_online_status_notification(user_id, status): 
-	
+	User = get_user_model()
+
 	user = User.objects.get(id = user_id)
 	friends_id = user.get_friends().values_list("id", flat = True)
 	online_friends_id = async_to_sync(cache.is_user_online)(*friends_id)
@@ -79,7 +78,7 @@ def send_friend_request_notification(username, friend_id, action):
 		
 @shared_task
 def send_call_notification(caller, room_id, video_call = False): 
-	
+	from chat_room.models import ChatRoom
 	room = ChatRoom.objects.select_related("group").get(id = room_id)
 	if room.is_group:
 		members_id = room.group.members.values_list("id", flat = True)
