@@ -1,12 +1,18 @@
 from celery import shared_task
 from channels.layers import get_channel_layer
 from BeepMe.cache import cache
+from django.contrib.auth import get_user_model
+from chat_room.models import ChatRoom
+from Group.models import Group
 from asgiref.sync import async_to_sync
 channel_layer = get_channel_layer()
 
+User = get_user_model()
+
 @shared_task
-def send_chat_notification(room, message, sender_id, sender_username):
+def send_chat_notification(room_id, message, sender_username):
 	
+	room = ChatRoom.objects.select_related("group").get(id = room_id)
 	if room.is_group:
 		members_id = room.group.members.values_list("id", flat = True)
 	else:
@@ -17,7 +23,7 @@ def send_chat_notification(room, message, sender_id, sender_username):
 	for member_id in online_inactive_members_id:
 		async_to_sync(channel_layer.group_send)(
 			f"user_{member_id}_notifications", {"type": "notification.chat", "notification_detail": {
-				"sender_id": sender_id,
+				#"sender_id": sender_id,
 				"sender": sender_username,
 				"receiver": room.group.name,
 				"message": message,
@@ -28,7 +34,8 @@ def send_chat_notification(room, message, sender_id, sender_username):
 		)
 	
 @shared_task
-def send_group_notification(room, notification, sender_id): 
+def send_group_notification(room_id, notification, sender_id): 
+	room = ChatRoom.objects.select_related("group").get(id = room_id)
 	members_id = room.group.members.values_list("id", flat = True)
 	online_inactive_members_id = async_to_sync(cache.get_online_inactive_members)(room.name, members_id) - {sender_id}
 	for member_id in online_inactive_members_id:
@@ -43,7 +50,9 @@ def send_group_notification(room, notification, sender_id):
 		)
 		
 @shared_task
-def send_online_status_notification(user, status): 
+def send_online_status_notification(user_id, status): 
+	
+	user = User.objects.get(id = user_id)
 	friends_id = user.get_friends().values_list("id", flat = True)
 	online_friends_id = async_to_sync(cache.is_user_online)(*friends_id)
 	
@@ -58,11 +67,11 @@ def send_online_status_notification(user, status):
 		})
 		
 @shared_task
-def send_friend_request_notification(user_id, friend_id, action):
+def send_friend_request_notification(username, friend_id, action):
 	if async_to_sync(cache.is_user_online)(friend_id): 
 		async_to_sync(channel_layer.group_send)(
 			f"user_{friend_id}_notifications", {"type": "notification.friend", "notification_detail": {
-				"sender": user_id,
+				"sender": username,
 				"receiver": receiver_id,
 				"action": action,
 				}
@@ -70,7 +79,9 @@ def send_friend_request_notification(user_id, friend_id, action):
 		)
 		
 @shared_task
-def send_call_notification(caller, room_object, video_call = False): 
+def send_call_notification(caller, room_id, video_call = False): 
+	
+	room = ChatRoom.objects.select_related("group").get(id = room_id)
 	if room.is_group:
 		members_id = room.group.members.values_list("id", flat = True)
 	else:

@@ -37,7 +37,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.joined_rooms = {}
         await self.accept()
         await database_sync_to_async(self.user.mark_last_online)()
-        tasks.send_online_status_notification.delay(self.user, True)
+        tasks.send_online_status_notification.delay(self.user.id, True)
         
     async def disconnect(self, close_code):
         for room in self.joined_rooms:
@@ -49,7 +49,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user.mark_last_online()
         self.joined_rooms.clear()
         cache.remove_user_online(self.user.id)
-        tasks.send_online_status_notification.delay(self.user, False)
+        tasks.send_online_status_notification.delay(self.user.id, False)
         
     async def group_join(self, room_name): 
         await self.channel_layer.group_add(
@@ -107,7 +107,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "sender_username": sender_username, 
             "timestamp": timestamp
         }))
-        tasks.send_chat_notification.delay(room, message, sender_username = sender_username)
+        tasks.send_chat_notification.delay(room_id, message, sender_username)
         await save_message(room = room_name, message = message, sender_id = sender_id, timestamp = timestamp)
         
     async def chat_typing(self, event):
