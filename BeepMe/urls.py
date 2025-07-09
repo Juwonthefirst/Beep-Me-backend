@@ -26,5 +26,4 @@ urlpatterns = [
     path("api/groups/", include("group.urls")),
     path("api/users/", include("user.urls")),
     path("api/uploads/", include("upload.urls")),
-    path("__debug__/", include("django_toolbar.urls")),
 ]

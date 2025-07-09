@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-DEBUG = True
+DEBUG = False
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     "corsheaders",
     "storages",
     "drf_yasg",
-    "django_toolbar",
     "authentication",
     "user",
     "home",
@@ -60,7 +59,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "allauth.account.middleware.AccountMiddleware",
 	'django.contrib.sites.middleware.CurrentSiteMiddleware',
-	"django_toolbar.middleware.DjangoToolbarMiddleware"
 ]
 
 ROOT_URLCONF = 'BeepMe.urls'
@@ -250,8 +248,3 @@ AWS_S3_USE_SSL = True
 #CELERY
 CELERY_BROKER_URL = os.getenv("REDIS_URL")
 
-INTERNAL_IPS = [
-    "3.75.158.163",
-    "3.125.183.140",
-    "35.157.117.28"
-]
