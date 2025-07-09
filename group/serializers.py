@@ -28,12 +28,12 @@ class GroupSerializer(serializers.ModelSerializer):
 		return group
 		
 class GroupMemberSerializer(serializers.ModelSerializer): 
-   member_id = serializers.ReadOnlyField(source = "member.id")
    member_username = serializers.ReadOnlyField(source = "member.username")
+   role_name = serializers.ReadOnlyField(source = "role.name")
    
    class Meta: 
        model = MemberDetail
-       fields = ["role", "joined_at", "member_id", "member_username"]
+       fields = ["role_id", "joined_at", "member_id", "member_username", "role_name"]
        extra_kwargs = {
            "joined_at": {
                "read_only": True

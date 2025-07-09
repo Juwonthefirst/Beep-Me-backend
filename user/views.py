@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Max
 from notification.serializers import NotificationSerializer
 from chat_room.serializers import UserChatRoomSerializer
+from chat_room.models import ChatRoom
 from user.serializers import (
 	UsersSerializer, 
 	RetrieveUsersSerializer,
@@ -37,10 +38,14 @@ class UserChatRoomsView(ListAPIView):
 	search_fields = ["members__username", "group__name"]
 	def get_queryset(self):
 		user = self.request.user
-		user_chat_rooms = user.rooms
-		return user_chat_rooms.annotate(
+		return ChatRoom.objects \
+		.select_related("group") \
+		.prefetch_related("members", "messages") \
+		.filter(members = user) \
+		.annotate(
 			last_message_time = Max("messages__timestamp")
-		).order_by("-last_message_time")
+		) \
+		.order_by("-last_message_time")
 
 	def get_serializer_context(self): 
 		context = super().get_serializer_context()

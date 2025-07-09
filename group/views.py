@@ -35,14 +35,11 @@ class UpdateGroupView(RetrieveUpdateDestroyAPIView):
 class GroupMembersView(ListAPIView): 
 	serializer_class = GroupMemberSerializer
 	permission_classes = [IsAuthenticated]
-	search_fields = ["member__username", "role"]
+	search_fields = ["member__username", "role__name"]
 	def get_queryset(self): 
 		group_id = self.kwargs.get("pk")
-		try:
-			return Group.objects.get(id = group_id).memberdetails_set.all()
-		except Group.DoesNotExist:
-			return MemberDetails.objects.none()
-
+		return MemberDetail.objects.select_related("role", "member").filter(group_id = group_id)
+		
 class CreateGroupView(CreateAPIView): 
 	queryset = Group.objects.all()
 	serializer_class = GroupSerializer
@@ -55,11 +52,8 @@ class RetrieveGroupMemberView(RetrieveUpdateAPIView):
 	
 	def get_queryset(self): 
 		group_id = self.kwargs.get("pk")
-		try:
-			return Group.objects.get(id = group_id).memberdetails_set.all()
-		except Group.DoesNotExist:
-			return MemberDetails.objects.none()
-			
+		return MemberDetail.objects.select_related("role", "member").filter(group_id = group_id)
+		
 			
 class GroupNotificationView(ListAPIView): 
 	serializer_class = NotificationSerializer
@@ -67,11 +61,8 @@ class GroupNotificationView(ListAPIView):
 	
 	def get_queryset(self): 
 		group_id = self.kwargs.get("pk")
-		try:
-			return Group.objects.get(id = group_id).notifications.all()
-		except Group.DoesNotExist:
-			return Group.objects.none()
-			
+		return Notification.objects.filter(group_id = group_id)
+
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
 def delete_group_members(request, pk):
@@ -122,10 +113,7 @@ class RolesView(ListCreateAPIView):
 	search_fields = ["name"]
 	def get_queryset(self):
 		group_id = self.kwargs.get("pk")
-		try:
-			return Group.objects.get(id = group_id).roles.all()
-		except Group.DoesNotExist:
-			return Role.objects.none()
+		return Role.objects.prefetch_related("permissions").filter(group_id = group_id)
 
 class EditRolesView(RetrieveUpdateDestroyAPIView): 
 	permission_classes = [IsAdminOrReadOnly, IsAuthenticated]
@@ -133,10 +121,7 @@ class EditRolesView(RetrieveUpdateDestroyAPIView):
 	lookup_field = "room_id"
 	def get_queryset(self):
 		group_id = self.kwargs.get("pk")
-		try:
-			return Group.objects.get(id = group_id).roles.all()
-		except Group.DoesNotExist:
-			return Role.objects.none()
+		return Role.objects.prefetch_related("permissions").filter(group_id = group_id)
 			
 class PermissionsView(ListAPIView): 
 	queryset = Permission.objects.all()

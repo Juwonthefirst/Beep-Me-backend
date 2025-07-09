@@ -62,7 +62,7 @@ class RoomMembersView(ListAPIView):
 			room = ChatRoom.objects.get(id = room_id)
 			return room.members.all()
 		except ChatRoom.DoesNotExist: 
-			return ChatRoom.objects.none()
+			return User.objects.none()
 			
 class RoomDetailsView(RetrieveUpdateDestroyAPIView): 
 	queryset = ChatRoom.objects.all()
@@ -78,12 +78,12 @@ def get_livekit_JWT_token(request, pk):
 	room_id = pk
 	
 	try:
-		roomObject = ChatRoom.objects.get(pk = room_id)
+		roomObject = ChatRoom.objects.select_related("group").get(pk = room_id)
 	except ChatRoom.DoesNotExist:
 		return Response({"error": "chat room not found"}, status = not_found)
 	
 	if roomObject.is_group: 
-		user_group_role = roomObject.group.get_user_role(user)
+		user_group_role = roomObject.group.get_user_role(user.id)
 		is_video_admin = user_group_role.permissions.filter(action = "video admin").exists()
 	
 	token = api.AccessToken(os.getenv("LIVEKIT_API_KEY"), os.getenv("LIVEKIT_API_SECRET")).with_identity(user.id).with_name(user.username).with_grants(api.VideoGrants(

@@ -21,3 +21,4 @@ boto3
 PILLOW
 celery
 livekit-api==1.0.3
+django-debug-toolbar

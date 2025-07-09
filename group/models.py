@@ -19,8 +19,8 @@ class Group(models.Model):
 	avatar = models.CharField(max_length = 300, default = "default")
 	created_at = models.DateTimeField(auto_now_add = True)
 	
-	def get_user_role(self, member):
-		return self.memberdetail_set.get(member = member).role
+	def get_user_role(self, member_id):
+		return MemberDetail.objects.select_related("role").filter(group_id = self.id, member_id = member_id).first().role
 			
 	def add_members(self, new_members): 
 		return MemberDetail.add(self, new_members)

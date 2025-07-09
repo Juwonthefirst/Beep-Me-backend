@@ -6,6 +6,7 @@ channel_layer = get_channel_layer()
 
 @shared_task
 def send_chat_notification(room, message, sender_id, sender_username):
+	
 	if room.is_group:
 		members_id = room.group.members.values_list("id", flat = True)
 	else:

@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from drf_yasg import openapi, views
 
+
 schema_view = views.get_schema_view(
     openapi.Info(
         title = "Beep-me API",
@@ -24,5 +25,6 @@ urlpatterns = [
     path("api/chats/", include("chat_room.urls")),
     path("api/groups/", include("group.urls")),
     path("api/users/", include("user.urls")),
-    path("api/uploads/", include("upload.urls"))
+    path("api/uploads/", include("upload.urls")),
+    path("__debug__/", include("django_toolbar.urls")),
 ]
