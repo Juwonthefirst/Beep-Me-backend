@@ -98,6 +98,14 @@ def get_livekit_JWT_token(request, pk):
 	return Response({"token": token})
 	
 	
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def receiveLivekitEvents(request, pk): 
+	print(request.data)
+	return Response("status": "ok")
+	
+
+	
 class GetChatRoomAndMessageByFriend(RetrieveAPIView): 
 	serializer_class = ChatRoomAndMessagesSerializer
 	permission_classes = [IsAuthenticated]
