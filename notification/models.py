@@ -8,6 +8,7 @@ class Notification(models.Model):
 	notification_type = models.CharField(max_length = 100)
 	timestamp = models.DateTimeField()
 	notification = models.CharField(max_length = 200)
+	sender = models.ForeignKey(User, on_delete = models.SET_NULL, null = True)
 	receiver = models.ForeignKey(User, on_delete = models.CASCADE, related_name = "notifications")
 	group = models.ForeignKey(Group, on_delete = models.CASCADE, related_name = "notifications")
 	is_read = models.BooleanField(default = False)

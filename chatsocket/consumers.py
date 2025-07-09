@@ -19,12 +19,13 @@ def get_or_create_room(room_name):
         return ChatRoom.create_with_members(room_name)
 
 @database_sync_to_async
-def create_notification(notification_type, notification, receiver, time, group_id = None): 
+def create_notification(notification_type, notification, receiver, time, group_id = None, sender = None): 
     from notification.models import Notification
     return Notification.objects.create(
         notification_type = notification_type, 
         notification = notification,
         receiver = receiver,
+        sender = sender
         timestamp = time,
         group_id = group_id,
     )
@@ -163,14 +164,16 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         
     async def notification_friend(self, event):
         notification_detail = event.get("notification_detail")
-        notification = notification_detail.get("notification"),
+        action = notification_detail.get("action"),
+        sender = notification_detail.get("sender"),
         timestamp = timezone.now()
         await self.send(text_data = json.dumps({
             "type": "friend_notification",
-            "notification": notification,
+            "sender": sender,""
+            "action": action,
             "timestamp": timestamp,
         }))
-        await create_notification("friend_notification", notification, self.user, time)
+        await create_notification("friend_notification", action, self.user, time, sender = sender)
         
     async def notification_group(self, event):
         notification_detail = event.get("notification")
