@@ -102,7 +102,7 @@ def get_livekit_JWT_token(request, pk):
 @permission_classes([IsAuthenticated])
 def receiveLivekitEvents(request, pk): 
 	print(request.data)
-	return Response("status": "ok")
+	return Response({"status": "ok"})
 	
 
 	
