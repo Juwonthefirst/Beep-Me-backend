@@ -98,7 +98,7 @@ def get_livekit_JWT_token(request, pk):
 	return Response({"token": token})
 	
 	
-class GetChatRoomAndMessageByRoomName(RetrieveAPIView): 
+class GetChatRoomAndMessageByFriend(RetrieveAPIView): 
 	serializer_class = ChatRoomAndMessagesSerializer
 	permission_classes = [IsAuthenticated]
 	def get_queryset(self): 
@@ -118,4 +118,24 @@ class GetChatRoomAndMessageByRoomName(RetrieveAPIView):
 			return ChatRoom.objects.get(name = room_name)
 		except ChatRoom.DoesNotExist:
 			return ChatRoom.objects.none()
+			
+			
+class GetChatRoomAndMessageByGroup(RetrieveAPIView): 
+	serializer_class = ChatRoomAndMessagesSerializer
+	permission_classes = [IsAuthenticated]
+	def get_queryset(self): 
+		user_id = request.user.id
+		group = self.kwargs.get("group_name")
+		
+		try:
+			group_id = Group.objects.get(username = friend_username).id
+		except User.DoesNotExist:
+			return ChatRoom.objects.none()
+		
+		room_name = f"group_{group_id}"
+		try:
+			return ChatRoom.objects.get(name = room_name)
+		except ChatRoom.DoesNotExist:
+			return ChatRoom.objects.none()
+			
 			
