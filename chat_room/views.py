@@ -100,7 +100,7 @@ def get_livekit_JWT_token(request, pk):
 	
 @api_view(["POST"])
 
-def receiveLivekitEvents(request, pk): 
+def receiveLivekitEvents(request): 
 	print(request.data)
 	return Response({"status": "ok"})
 	
