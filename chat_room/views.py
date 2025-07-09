@@ -98,7 +98,7 @@ def get_livekit_JWT_token(request, pk):
 	return Response({"token": token})
 	
 	
-@api_view(["GET"])
+@api_view(["POST"])
 
 def receiveLivekitEvents(request, pk): 
 	print(request.data)
