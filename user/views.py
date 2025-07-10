@@ -133,7 +133,7 @@ class receivedFriendRequestView(ListAPIView):
 @permission_classes([IsAuthenticated])
 def sendFriendRequest(request): 
 	serializer = UserIDSerializer(data = request.data)
-	if serializer.is_valid: 
+	if serializer.is_valid(): 
 		user_ids = serializer.validated_data.get("user_ids")
 		request.user.following.add(*user_ids)
 		tasks.send_friend_request_notification.delay(request.user.username, user_ids[0], "sent")
