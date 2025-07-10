@@ -13,7 +13,7 @@ urlpatterns = [
 	path("user/rooms/", user_views.UserChatRoomsView.as_view()),
 	path("user/notifications/", user_views.UserNotificationsView.as_view()),
 	path("user/friends/", user_views.FriendListView.as_view()),
-	path("user/friend-requests/send/", user_views.SentFriendRequestView.as_view()),
+	path("user/friend-requests/sent/", user_views.SentFriendRequestView.as_view()),
 	path("user/friend-requests/send/", user_views.sendFriendRequest),
 	path("user/friend-requests/receive/", user_views.receivedFriendRequestView.as_view()),
 	path("", include("dj_rest_auth.urls")),

@@ -5,7 +5,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from django.db.models import Max
+from django.db.models import Max, Exists, OuterRef
 from notification.serializers import NotificationSerializer
 from chat_room.serializers import UserChatRoomSerializer
 from chat_room.models import ChatRoom
@@ -25,6 +25,23 @@ class UsersView(ListAPIView):
 	permission_classes = [IsAuthenticated]
 	serializer_class = UsersSerializer
 	search_fields = ["username"]
+	def get_queryset(self): 
+		user = self.request.user
+		return User.objects.annotate(
+			is_following = Exists(
+				User.following.through.objects.filter(
+					from_user_id = user.id,
+					to_user_id = OuterRef("pk")
+				)
+			),
+			
+			is_follower = Exists(
+				User.following.through.objects.filter(
+					from_user_id = OuterRef("pk"),
+					to_user_id = user.id
+				)
+			)
+		)
 	
 class RetrieveUserView(RetrieveAPIView): 
 	"""View to get a particular user in the database """
