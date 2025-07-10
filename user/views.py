@@ -102,5 +102,5 @@ def sendFriendRequest(request):
 	if serializer.is_valid: 
 		user_ids = serializer.validated_data.get("user_ids")
 		request.user.following.add(*user_ids)
-		return Response({"status": "okay"})
+		return Response({"status": "ok"})
 	return Response({"error": serializer.errors}, status = bad_request)
