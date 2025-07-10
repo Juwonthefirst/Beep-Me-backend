@@ -22,7 +22,6 @@ not_found = status.HTTP_404_NOT_FOUND
 
 class UsersView(ListAPIView):
 	"""View to get all user in the database, this meant to be used with filtering and pagination"""
-	queryset = User.objects.all()
 	permission_classes = [IsAuthenticated]
 	serializer_class = UsersSerializer
 	search_fields = ["username"]
@@ -42,14 +41,31 @@ class UsersView(ListAPIView):
 					to_customuser_id = user.id
 				)
 			)
-		).all()
+		)
 	
 class RetrieveUserView(RetrieveAPIView): 
 	"""View to get a particular user in the database """
-	queryset = User.objects.all()
 	permission_classes = [IsAuthenticated]
 	serializer_class = RetrieveUsersSerializer
-	
+	def get_queryset(self): 
+		user = self.request.user
+		return User.objects.annotate(
+			is_followed_by_me = Exists(
+				User.following.through.objects.filter(
+					from_customuser_id = user.id,
+					to_customuser_id = OuterRef("pk")
+				)
+			),
+			
+			is_following_me = Exists(
+				User.following.through.objects.filter(
+					from_customuser_id = OuterRef("pk"),
+					to_customuser_id = user.id
+				)
+			)
+		)
+		
+		
 class UserChatRoomsView(ListAPIView): 
 	permission_classes = [IsAuthenticated]
 	serializer_class = UserChatRoomSerializer
