@@ -223,7 +223,6 @@ CHANNEL_LAYERS = {
             "hosts":[{
                 "address": os.getenv("REDIS_URL"),
                 "connection_class": Connection,
-                "ssl_context": ssl_context,
             },],
         }, 
     }
