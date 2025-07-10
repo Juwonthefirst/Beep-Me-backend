@@ -30,15 +30,15 @@ class UsersView(ListAPIView):
 		return User.objects.annotate(
 			is_followed_by_me = Exists(
 				User.following.through.objects.filter(
-					from_user_id = user.id,
-					to_user_id = OuterRef("pk")
+					from_customuser_id = user.id,
+					to_customuser_id = OuterRef("pk")
 				)
 			),
 			
 			is_following_me = Exists(
 				User.following.through.objects.filter(
-					from_user_id = OuterRef("pk"),
-					to_user_id = user.id
+					from_customuser_id = OuterRef("pk"),
+					to_customuser_id = user.id
 				)
 			)
 		)
