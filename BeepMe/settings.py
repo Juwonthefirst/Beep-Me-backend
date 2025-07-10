@@ -1,6 +1,6 @@
 from pathlib import Path
 from datetime import timedelta
-import os, dj_database_url
+import os, dj_database_url, redis
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -218,8 +218,7 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG":{
             "hosts":[os.getenv("REDIS_URL")],
-            "ssl_cert_reqs": None,
-            "ssl_check_hostname": False
+            "connection_class": redis.connection.SSLConnection
         },
     }
 }
