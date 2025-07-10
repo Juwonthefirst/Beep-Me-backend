@@ -28,14 +28,14 @@ class UsersView(ListAPIView):
 	def get_queryset(self): 
 		user = self.request.user
 		return User.objects.annotate(
-			is_following = Exists(
+			is_followed_by_me = Exists(
 				User.following.through.objects.filter(
 					from_user_id = user.id,
 					to_user_id = OuterRef("pk")
 				)
 			),
 			
-			is_follower = Exists(
+			is_following_me = Exists(
 				User.following.through.objects.filter(
 					from_user_id = OuterRef("pk"),
 					to_user_id = user.id
