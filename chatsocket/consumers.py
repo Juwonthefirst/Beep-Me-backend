@@ -169,7 +169,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         timestamp = timezone.now()
         await self.send(text_data = json.dumps({
             "type": "friend_notification",
-            "sender": sender,""
+            "sender": sender,
             "action": action,
             "timestamp": timestamp,
         }))

@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from django.db.models import Max, Exists, OuterRef
 from notification.serializers import NotificationSerializer
+from notification import tasks
 from chat_room.serializers import UserChatRoomSerializer
 from chat_room.models import ChatRoom
 from user.serializers import (
@@ -119,5 +120,6 @@ def sendFriendRequest(request):
 	if serializer.is_valid: 
 		user_ids = serializer.validated_data.get("user_ids")
 		request.user.following.add(*user_ids)
+		tasks.send_friend_request_notification.delay(request.user.username, user_ids[0], "sent")
 		return Response({"status": "ok"})
 	return Response({"error": serializer.errors}, status = bad_request)
