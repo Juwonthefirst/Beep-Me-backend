@@ -47,7 +47,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
             cache.remove_active_member(user_id, room)
             
-        self.user.mark_last_online()
+        await database_sync_to_async(self.user.mark_last_online)()
         self.joined_rooms.clear()
         cache.remove_user_online(self.user.id)
         tasks.send_online_status_notification.delay(self.user.id, False)
