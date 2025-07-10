@@ -1,6 +1,7 @@
 from pathlib import Path
 from datetime import timedelta
-import os, dj_database_url, redis, ssl
+import os, dj_database_url, ssl
+from redis.asyncio.connection import Connection
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -212,6 +213,8 @@ CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SAMESITE = 'None'
 
+ssl_context = ssl.create_default_context()
+
 
 CHANNEL_LAYERS = {
     "default":{
@@ -219,9 +222,8 @@ CHANNEL_LAYERS = {
         "CONFIG":{
             "hosts":[{
                 "address": os.getenv("REDIS_URL"),
-                "connection_class": redis.connection.SSLConnection,
-                "ssl_cert_reqs": ssl.CERT_NONE,
-                "ssl_ca_data": None
+                "connection_class": Connection,
+                "ssl": ssl_context
             }],
         }, 
     }
