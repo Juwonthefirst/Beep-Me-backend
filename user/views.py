@@ -42,7 +42,7 @@ class UsersView(ListAPIView):
 					to_customuser_id = user.id
 				)
 			)
-		)
+		).all()
 	
 class RetrieveUserView(RetrieveAPIView): 
 	"""View to get a particular user in the database """
