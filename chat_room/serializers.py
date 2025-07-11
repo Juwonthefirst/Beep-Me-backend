@@ -13,6 +13,7 @@ class RoomDetailsSerializer(serializers.ModelSerializer):
 		
 class UserChatRoomSerializer(serializers.ModelSerializer): 
 	parent = serializers.SerializerMethodField()
+	#is_online = serializers.SerializerMethodField()
 	last_message = serializers.SerializerMethodField()
 	class Meta: 
 		model = ChatRoom

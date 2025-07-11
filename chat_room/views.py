@@ -110,7 +110,7 @@ class GetChatRoomAndMessageByFriend(RetrieveAPIView):
 	serializer_class = ChatRoomAndMessagesSerializer
 	permission_classes = [IsAuthenticated]
 	def get_queryset(self): 
-		user_id = request.user.id
+		user_id = self.request.user.id
 		friend_username = self.kwargs.get("friend_username")
 		
 		try:
