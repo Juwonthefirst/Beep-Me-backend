@@ -5,7 +5,8 @@ class Cache:
 	def __init__(self):
 		self.pool = async_redis.ConnectionPool.from_url(
 			url = os.getenv("REDIS_URL"),
-			decode_response = True
+			decode_response = True,
+			ssl = True
 		)
 		self.redis = async_redis.Redis(connection_pool = self.pool)
 		
@@ -24,19 +25,17 @@ class Cache:
 		return await self.redis.lrange(room_name, 0, -1)
 		
 	async def set_user_online(self, user_id):
-		#await self.redis.incrby(f"user_{user_id}_is_online")
-		#await self.redis.expire(f"user_{user_id}_is_online", 30)
 		await self.redis.sadd("online_users", user_id)
 	
 	async def remove_user_online(self, user_id):
 		await self.redis.srem("online_users", user_id)
 	
-	async def is_user_online(self, *user_id):
-		#await self.redis.exists(f"user_{user_id}_is_online")
-		return await self.redis.sismember("online_users", *user_id)
+	async def is_user_online(self, tuser_id):
+		return await self.redis.exists(f"user_{user_id}_is_online")
 		
 	async def get_online_users(self, user_id_list):
-		return self.redis.sinter("online_users", *user_id_list)
+		are_users_online = self.redis.smismember("online_users", *user_id_list)
+		return {user_id for index, user_id in enumerate(user_id_list) if are_users_online[index]}
 		
 	async def add_active_member(self, user_id, room_name):
 		await self.redis.sadd(f"{room_name}_online_members", user_id)
@@ -47,11 +46,12 @@ class Cache:
 	async def remove_active_member(self, user_id, room_name):
 		await self.redis.srem(f"{room_name}_online_members", user_id)
 
-	async def is_user_active_member(self, room_name, *user_id):
-		return await self.redis.sismember(room_name, *user_id)
+	async def is_user_active_member(self, room_name, *users_id):
+		are_users_online = await self.redis.smismember(room_name, *users_id)
+		return {user_id for index, user_id in enumerate(users_id) if are_users_online[index]}
 	
 	async def get_online_inactive_members(self, room_name, user_ids):
-		online_members_id = await self.is_user_online(*members_id)
+		online_members_id = await self.get_online_userst(*members_id)
 		active_group_members_id = await self.is_user_active_member(room_name, *online_members_id)
 		online_inactive_members_id = online_members_id - active_group_members_id
 		return online_inactive_members_id

@@ -53,7 +53,7 @@ def send_online_status_notification(user_id, status):
 
 	user = User.objects.get(id = user_id)
 	friends_id = user.get_friends().values_list("id", flat = True)
-	online_friends_id = async_to_sync(cache.is_user_online)(*friends_id)
+	online_friends_id = async_to_sync(cache.get_online_users)(*friends_id)
 	
 	for friend_id in online_friends_id:
 		async_to_sync(channel_layer.group_send)(
