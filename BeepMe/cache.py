@@ -1,5 +1,6 @@
 import redis.asyncio as async_redis
 import os
+from asgiref.sync import async_to_sync
 
 class Cache: 
 	def __init__(self, redis):
@@ -63,5 +64,6 @@ class Cache:
 		online_inactive_members_id = online_members_id - active_group_members_id
 		return online_inactive_members_id
 		
-		
-cache = Cache.connect()
+
+cache = async_to_sync(Cache.connect)()
+	
