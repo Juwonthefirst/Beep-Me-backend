@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import ListAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
@@ -128,7 +129,7 @@ class GetChatRoomAndMessageByFriend(APIView):
 			return Response({"error": "invalid room"}, status = not_found)
 			
 			
-class GetChatRoomAndMessageByGroup(RetrieveAPIView): 
+class GetChatRoomAndMessageByGroup(APIView): 
 	serializer_class = ChatRoomAndMessagesSerializer
 	permission_classes = [IsAuthenticated]
 	def get_queryset(self): 
@@ -140,7 +141,7 @@ class GetChatRoomAndMessageByGroup(RetrieveAPIView):
 		except User.DoesNotExist:
 			return ChatRoom.objects.none()
 		
-		room_name = f"group_{group_id}"
+		room_name = f"group.{group_id}"
 		try:
 			return ChatRoom.objects.get(name = room_name)
 		except ChatRoom.DoesNotExist:
