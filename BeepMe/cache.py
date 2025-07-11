@@ -4,7 +4,7 @@ from asgiref.sync import async_to_sync
 
 class Cache: 
 	def __init__(self):
-		pool =  await async_redis.ConnectionPool.from_url(
+		pool = async_redis.ConnectionPool.from_url(
 			url = os.getenv("REDIS_URL"),
 			decode_responses = True,
 			ssl = True
