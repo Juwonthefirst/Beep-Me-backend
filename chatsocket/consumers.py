@@ -137,7 +137,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender_username = self.user.username
         await self.send(text_data = json.dumps({"room": room_name, "typing": True, "sender_id": sender_id }))
         
-   async def chat_error(self, event): 
+    async def chat_error(self, event): 
         error_mesaage = event.get("error_mesaage")
         await self.send(text_data = json.dumps({"error": error_mesaage}))
         
