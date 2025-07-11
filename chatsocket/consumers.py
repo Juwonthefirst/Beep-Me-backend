@@ -89,6 +89,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = data.get("message")
         room_name = data.get("room")
         action = data.get("action")
+        temporary_id = data.get("temporary_id")
         if not (re.match(r"^(chat_[1-9]+_[1-9]+|group.[1-9]+){1,100}$", room_name) and room_name in self.joined_rooms):
             #stop users from sending to rooms they haven't joined
             #prevent invalid room_name
@@ -125,7 +126,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "room": room_name,
             "message": message, 
             "sender_username": self.user.username, 
-            "timestamp": timestamp
+            "timestamp": timestamp,
+            "temporary_id": temporary_id
         }))
         tasks.send_chat_notification.delay(room.id, message, self.user.username)
         await save_message(room = room_name, message = message, sender_id = self.user.id, timestamp = timestamp)
