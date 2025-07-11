@@ -13,7 +13,7 @@ from chat_room.models import ChatRoom
 from user.serializers import (
 	UsersSerializer, 
 	RetrieveUsersSerializer,
-	UserIDSerializer
+	FriendRequestSerializer
 )
 
 User = get_user_model()
@@ -132,10 +132,11 @@ class receivedFriendRequestView(ListAPIView):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def sendFriendRequest(request): 
-	serializer = UserIDSerializer(data = request.data)
+	serializer = FriendRequestSerializer(data = request.data)
 	if serializer.is_valid(): 
-		user_ids = serializer.validated_data.get("user_ids")
-		request.user.following.add(*user_ids)
-		tasks.send_friend_request_notification.delay(request.user.username, user_ids[0], "sent")
+		friend_id = serializer.validated_data.get("friend_id")
+		action = serializer.validated_data.get("action")
+		request.user.following.add(friend_id)
+		tasks.send_friend_request_notification.delay(request.user.username, friend_id, action)
 		return Response({"status": "ok"})
 	return Response({"error": serializer.errors}, status = bad_request)

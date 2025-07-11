@@ -21,5 +21,6 @@ class RetrieveUsersSerializer(serializers.ModelSerializer):
 			}
 		}
 		
-class UserIDSerializer(serializers.Serializer): 
-	user_ids = serializers.ListField(child = serializers.IntegerField(min_value = 1), allow_empty = False)
+class FriendRequestSerializer(serializers.Serializer): 
+	friend_ids = serializers.IntegerField(min_value = 1)
+	action = serializers.CharField(max_length = 30)

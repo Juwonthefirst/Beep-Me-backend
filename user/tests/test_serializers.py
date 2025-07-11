@@ -62,11 +62,18 @@ class TestRetrieveUsersSerializer(APITestCase):
 		self.assertNotIn("id", serializer.validated_data)
 		
 		
-class TestUserIDSerializer(APITestCase): 
-	def test_validation_error_on_empty_list(self):
-		serializer = UserIDSerializer(data = {"users_id": []})
-		self.assertFalse(serializer.is_valid())
+class TestFriendRequestSerializer(APITestCase): 
+	def test_validation_on_proper_data(self):
+		serializer = FriendRequestSerializer(data = {"friend_id": 1, "action": "sent"})
+		self.assertTrue(serializer.is_valid())
 			
-	def test_validation_error_on_wrong_data_type(self):
-		serializer = UserIDSerializer(data = {"users_id": ""})
+	def test_validation_error_on_empty_data(self):
+		serializer = FriendRequestSerializer(data = {})
+		self.assertFalse(serializer.is_valid())
+		
+	def test_validation_on_missing_data(self):
+		serializer = FriendRequestSerializer(data = {"friend_id": 1})
+		self.assertFalse(serializer.is_valid())
+	    
+	    serializer = FriendRequestSerializer(data = {"action": "sent"})
 		self.assertFalse(serializer.is_valid())
