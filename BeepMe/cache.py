@@ -16,6 +16,9 @@ class Cache:
 	async def get(self, key):
 		return await self.redis.get(key)
 	
+	async def ping(self, user_id): 
+		await self.redis.set(f"user_{user_id}_is_online", 1, ex = 50)
+		
 	async def cache_message(self, room_name, *messages):
 		cached_messages_length = await self.redis.rpush(room_name, *messages)
 		if cached_messages_length > 50: 

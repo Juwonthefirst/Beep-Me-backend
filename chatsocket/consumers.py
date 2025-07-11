@@ -80,9 +80,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         del self.joined_rooms[room_name]
         await cache.remove_active_members(user_id, room)
         
-    async def user_online(self): 
+    async def ping_user_is_online(self): 
         user_id = self.user.id
-        await cache.set_user_online(user_id)
+        await cache.ping(user_id)
         
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -111,6 +111,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.group_send(
                     room_name, {"type": "chat.message", "room": room_name, "message": message}
                 )
+                
+            case "ping": 
+                await self.ping_user_is_online()
         
     async def chat_message(self, event):
         room_name = event.get("room")
