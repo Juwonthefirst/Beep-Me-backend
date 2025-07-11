@@ -2,16 +2,17 @@ import redis.asyncio as async_redis
 import os
 
 class Cache: 
-	def __init__(self):
-		self.redis = connect()
+	def __init__(self, redis):
+		self.redis = redis
 	
-	async def connect(self):
+	@classmethod
+	async def connect(cls):
 		pool =  await async_redis.ConnectionPool.from_url(
 			url = os.getenv("REDIS_URL"),
-			decode_response = True,
+			decode_responses = True,
 			ssl = True
 		)
-		return async_redis.Redis(connection_pool = pool)
+		return cls(async_redis.Redis(connection_pool = pool))
 		
 	async def set(self, key, value, expire): 
 		await self.redis.set(key, value, ex = expire)
@@ -63,4 +64,4 @@ class Cache:
 		return online_inactive_members_id
 		
 		
-cache = Cache()
+cache = Cache.connect()
