@@ -13,7 +13,7 @@ class TestUserChatRoomSerializer(APITestCase):
 		self.group = Group.objects.create(name = "test_group")
 		self.user.following.add(self.user1)
 		self.user1.following.add(self.user)
-		self.chat_room = ChatRoom.create_with_members("chat_1_2")
+		self.chat_room = ChatRoom.create_with_members("chat-1-2")
 		self.group_chat_room = ChatRoom.objects.create(name = "group.12", is_group = True, group = self.group)
 		self.message1 = Message.objects.create(sender = self.user, body = "This is a test for the UserChatRoomSerializer", room = self.chat_room)
 		self.message2 = Message.objects.create(sender = self.user, body = "This is another test for the UserChatRoomSerializer", room = self.chat_room)

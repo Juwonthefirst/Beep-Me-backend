@@ -41,10 +41,10 @@ class TestChatRoom(APITestCase):
 		
 	def test_create_with_members_model_method_with_group_prefix(self):
 		with self.assertRaises(ValueError): 
-			ChatRoom.create_with_members("group_1_2")
+			ChatRoom.create_with_members("group-1-2")
 			
 	def test_create_with_members_model_method_with_chat_prefix(self):
-		chat_room = ChatRoom.create_with_members("chat_1_2")
+		chat_room = ChatRoom.create_with_members("chat-1-2")
 		self.assertEqual(chat_room.members.count(), 2)
 		
 	def test_get_last_message(self):

@@ -16,7 +16,7 @@ class ChatRoom(models.Model):
 		if not name.startswith("chat"): 
 			raise ValueError("create_with_members should only be called for one to one messages")
 			
-		users = name.split("_")[1:]
+		users = name.split("-")[1:]
 		if not User.objects.get(id  = users[0]).is_friend(users[1]): 
 			raise PermissionDenied
 			

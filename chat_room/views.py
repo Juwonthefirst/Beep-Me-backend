@@ -106,26 +106,26 @@ def receiveLivekitEvents(request):
 	
 
 	
-class GetChatRoomAndMessageByFriend(RetrieveAPIView): 
-	serializer_class = ChatRoomAndMessagesSerializer
+class GetChatRoomAndMessageByFriend(APIView): 
 	permission_classes = [IsAuthenticated]
-	def get_queryset(self): 
-		user_id = self.request.user.id
-		friend_username = self.kwargs.get("friend_username")
-		
+	
+	def get(self, request, friend_username): 
+		user_id = request.user.id
 		try:
 			friend_id = User.objects.get(username = friend_username).id
 		except User.DoesNotExist:
-			return ChatRoom.objects.none()
+			return Response({"error": "invalid room"}, status = not_found)
 		
-		room_name = f"chat_{user_id}_{friend_id}"
+		room_name = f"chat-{user_id}-{friend_id}"
 		if friend_id < user_id:
-			room_name = f"chat_{friend_id}_{user_id}"
+			room_name = f"chat-{friend_id}-{user_id}"
 			
 		try:
-			return ChatRoom.objects.get(name = room_name)
+			room = ChatRoom.objects.get(name = room_name)
+			serialized_data = ChatRoomAndMessagesSerializer(room).data
+			return Response(serialized_data)
 		except ChatRoom.DoesNotExist:
-			return ChatRoom.objects.none()
+			return Response({"error": "invalid room"}, status = not_found)
 			
 			
 class GetChatRoomAndMessageByGroup(RetrieveAPIView): 

@@ -1,4 +1,4 @@
-import json
+import json, re
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from BeepMe.cache import cache
@@ -11,7 +11,7 @@ def save_message(room, sender_id, message, timestamp):
     return Message.objects.create(room_id = room_id, body = message, sender_id = sender_id, timestamp = timestamp)
     
 @database_sync_to_async
-def get_or_create_room(room_name):
+def get_room(room_name):
     from chat_room.models import ChatRoom
     try: 
         return ChatRoom.objects.get(name = room_name)
@@ -29,6 +29,11 @@ def create_notification(notification_type, notification, receiver, time, group_i
         timestamp = time,
         group_id = group_id,
     )
+
+@database_sync_to_async
+def is_group_member(group_id, user_id): 
+    from group.models import MemberDetail
+    return MemberDetail.objects.filter(group_id = group_id, member_id = user_id).exists()
     
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -42,21 +47,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
     async def disconnect(self, close_code):
         for room in self.joined_rooms:
-            await self.channel_layer.group_discard(
-                self.joined_rooms[room], self.channel_name
-            )
-            cache.remove_active_member(user_id, room)
+            await self.group_leave(room.name)
             
         await database_sync_to_async(self.user.mark_last_online)()
         self.joined_rooms.clear()
         cache.remove_user_online(self.user.id)
         tasks.send_online_status_notification.delay(self.user.id, False)
         
-    async def group_join(self, room_name): 
+    async def group_join(self, room_name):
+        room = await get_room(room_name)
+        if room_name.startswith("chat") and self.user.id not in room_name.split("-") or await is_group_member(room.group.id, self.user.id):
+            return await self.respond_with_error("you aren't a member of this group")
+        
         await self.channel_layer.group_add(
             room_name, self.channel_name
         )
-        room = await get_or_create_room(room_name)
+        
         self.joined_rooms[room_name] = room
         cache.add_active_members(user_id, room_name)
         
@@ -73,11 +79,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
     async def receive(self, text_data):
         data = json.loads(text_data)
-        sender_id = data.get("sender_id")
-        sender_username = data.get("sender_username")
         message = data.get("message")
         room_name = data.get("room")
         action = data.get("action")
+        if not (re.match(r"^(chat_[1-9]+_[1-9]+|group.[1-9]+){1,100}$", room_name) and room_name in self.joined_rooms):
+            #stop users from sending to rooms they haven't joined
+            #prevent invalid room_name
+            await self.respond_with_error("join room before sending messages r")
+            return
+        
         match(action): 
             case "group_join": 
                 await self.group_join(room_name)
@@ -87,7 +97,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 
             case "typing": 
                 await self.channel_layer.group_send(
-                    room_name, {"type": "chat.typing", "room": room_name, "sender_id": sender_id}
+                    room_name, {"type": "chat.typing", "room": room_name}
                 )
                 
             case "chat": 
@@ -98,23 +108,34 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         room_name = event.get("room")
         message = event.get("message")
-        sender_id = event.get("sender_id")
-        sender_username = event.get("sender_username")
         timestamp = timezone.now()
-        room = self.joined_rooms[room_name]
+        room = self.joined_rooms.get(room_name)
+        
         await self.send(text_data = json.dumps({
             "room": room_name,
             "message": message, 
-            "sender_username": sender_username, 
+            "sender_username": self.user.username, 
             "timestamp": timestamp
         }))
-        tasks.send_chat_notification.delay(room_id, message, sender_username)
-        await save_message(room = room_name, message = message, sender_id = sender_id, timestamp = timestamp)
+        tasks.send_chat_notification.delay(room.id, message, self.user.username)
+        await save_message(room = room_name, message = message, sender_id = self.user.id, timestamp = timestamp)
         
     async def chat_typing(self, event):
         room_name = event.get("room")
-        sender_username = event.get("sender_username")
+        sender_username = self.user.username
         await self.send(text_data = json.dumps({"room": room_name, "typing": True, "sender_id": sender_id }))
+        
+   async def chat_error(self, event): 
+        error_mesaage = event.get("error_mesaage")
+        await self.send(text_data = json.dumps({"error": error_mesaage}))
+        
+    async def respond_with_error(self, error_mesaage): 
+        await self.channel_layer.send(
+            self.channel_name, {
+                "error": error_mesaage,
+                "type": "chat.error"
+            }
+        )
         
 class NotificationConsumer(AsyncWebsocketConsumer): 
     async def connect(self):

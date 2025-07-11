@@ -21,7 +21,7 @@ class GroupSerializer(serializers.ModelSerializer):
 		members = validated_data.pop("members")
 		group = Group.objects.create(**validated_data)
 		group.add_members(members)
-		ChatRoom.objects.create(name = f"group_{group.id}", is_group = True, group = group)
+		ChatRoom.objects.create(name = f"group.{group.id}", is_group = True, group = group)
 		owner_role = Role.objects.create(name = "owner", group = group)
 		owner_role.permissions.add(*Permission.objects.all())
 		member_role = Role.objects.create(name = "member", group = group)
