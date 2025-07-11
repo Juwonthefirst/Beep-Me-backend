@@ -62,16 +62,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(
             room_name, self.channel_name
         )
-        
+       
+        # reordering to keep the most active at the back
+        if room_name in self.joined_rooms:
+            del self.joined_rooms[room_name] 
+
+        elif len(self.joined_rooms) >= 10:
+            del self.joined_rooms[self.joined_rooms.keys()[0]]
+            
         self.joined_rooms[room_name] = room
-        cache.add_active_members(user_id, room_name)
+        await cache.add_active_members(user_id, room_name)
         
     async def group_leave(self, room_name):
         await self.channel_layer.group_discard(
             room_name, self.channel_name
         )
         del self.joined_rooms[room_name]
-        self.remove_active_members(user_id, room)
+        await cache.remove_active_members(user_id, room)
         
     async def user_online(self): 
         user_id = self.user.id
@@ -85,7 +92,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not (re.match(r"^(chat_[1-9]+_[1-9]+|group.[1-9]+){1,100}$", room_name) and room_name in self.joined_rooms):
             #stop users from sending to rooms they haven't joined
             #prevent invalid room_name
-            await self.respond_with_error("join room before sending messages r")
+            await self.respond_with_error("join room before sending messages")
             return
         
         match(action): 
