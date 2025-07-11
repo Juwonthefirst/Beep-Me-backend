@@ -3,17 +3,13 @@ import os
 from asgiref.sync import async_to_sync
 
 class Cache: 
-	def __init__(self, redis):
-		self.redis = redis
-	
-	@classmethod
-	async def connect(cls):
+	def __init__(self):
 		pool =  await async_redis.ConnectionPool.from_url(
 			url = os.getenv("REDIS_URL"),
 			decode_responses = True,
 			ssl = True
 		)
-		return cls(async_redis.Redis(connection_pool = pool))
+		self.redis = async_redis.Redis(connection_pool = pool)
 		
 	async def set(self, key, value, expire): 
 		await self.redis.set(key, value, ex = expire)
@@ -65,5 +61,6 @@ class Cache:
 		return online_inactive_members_id
 		
 
-cache = async_to_sync(Cache.connect)()
+
+cache = Cache()
 	
