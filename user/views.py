@@ -133,10 +133,17 @@ class receivedFriendRequestView(ListAPIView):
 @permission_classes([IsAuthenticated])
 def sendFriendRequest(request): 
 	serializer = FriendRequestSerializer(data = request.data)
+	user_id = request.user.id
 	if serializer.is_valid(): 
 		friend_id = serializer.validated_data.get("friend_id")
 		action = serializer.validated_data.get("action")
 		request.user.following.add(friend_id)
+		if action == "accept":
+			room_name = f"chat-{user_id}-{friend_id}"
+			if friend_id < user_id:
+				room_name = f"chat-{friend_id}-{user_id}"
+				
+			ChatRoom.create_with_members(room_name)
 		tasks.send_friend_request_notification.delay(request.user.username, friend_id, action)
 		return Response({"status": "ok"})
 	return Response({"error": serializer.errors}, status = bad_request)
