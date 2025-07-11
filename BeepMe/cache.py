@@ -2,13 +2,13 @@ import redis.asyncio as async_redis
 import os
 
 class Cache: 
-	def __init__(self):
-		self.pool = async_redis.ConnectionPool.from_url(
+	async def __init__(self):
+		self.pool = await async_redis.ConnectionPool.from_url(
 			url = os.getenv("REDIS_URL"),
 			decode_response = True,
 			ssl = True
 		)
-		self.redis = async_redis.Redis(connection_pool = self.pool)
+		self.redis = await async_redis.Redis(connection_pool = self.pool)
 		
 	async def set(self, key, value, expire): 
 		await self.redis.set(key, value, ex = expire)
