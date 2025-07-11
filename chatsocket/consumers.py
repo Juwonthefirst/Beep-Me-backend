@@ -144,7 +144,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def respond_with_error(self, error_mesaage): 
         await self.channel_layer.send(
             self.channel_name, {
-                "error": error_mesaage,
+                "error_mesaage": error_mesaage,
                 "type": "chat.error"
             }
         )
