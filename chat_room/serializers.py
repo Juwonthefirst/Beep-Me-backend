@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ChatRoom
+from chat_room.models import ChatRoom
 from user.serializers import UsersSerializer
 from message.serializers import MessagesSerializer
 from group.serializers import GroupSerializer
