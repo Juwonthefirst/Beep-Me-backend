@@ -48,7 +48,9 @@ class ChatRoomAndMessagesSerializer(serializers.ModelSerializer):
 	
 	def get_parent(self, obj): 
 		if obj.is_group: 
-			return GroupSerializer(obj.group).data
+			number_of_active_members = len(async_to_sync(cache.get_active_members)(obj.name))
+			return { **GroupSerializer(obj.group).data, "online_members_count": number_of_active_members }
 		user_id = self.context.get("user_id")
 		other_member = obj.members.exclude(id = user_id).first()
-		return UsersSerializer(other_member).data
+		is_other_member_online = async_to_sync(cache.is_user_online)(other_member.id)
+		return { **UsersSerializer(other_member).data, "is_online": is_other_member_online}

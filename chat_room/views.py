@@ -10,6 +10,7 @@ from rest_framework.pagination import PageNumberPagination
 from asgiref.sync import async_to_sync
 from chat_room.serializers import RoomDetailsSerializer, ChatRoomAndMessagesSerializer
 from chat_room.models import ChatRoom
+from chat_room.tasks import cache_messages
 from user.serializers import UsersSerializer
 from message.serializers import MessagesSerializer
 from BeepMe.cache import cache
@@ -39,10 +40,10 @@ def get_room_messages(request, pk):
 		queryset = room.messages.all().order_by("timestamp")
 		room_messages = paginator.paginate_queryset(queryset, request)
 					
-		serializer = MessagesSerializer(room_messages, many = True).data
+		serialized_data = MessagesSerializer(room_messages, many = True).data
 		if page == "1":
-			jsonified_data = [json.dumps(message_object) for message_object in serializer]
-			async_to_sync(cache.cache_message)(room.name, *jsonified_data)
+			jsonified_data = [json.dumps(message_object) for message_object in serialized_data]
+			cache_messages.delay(jsonified_data)
 
 		return paginator.get_paginated_response(serializer)
 		
