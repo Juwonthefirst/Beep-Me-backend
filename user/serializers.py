@@ -9,7 +9,7 @@ class UsersSerializer(serializers.ModelSerializer):
 	is_followed_by_me = serializers.BooleanField(read_only = True)
 	class Meta:
 		model = User
-		fields = ["id", "username", "email", "is_following_me", "is_followed_by_me"]
+		fields = ["id", "username", "email", "is_following_me", "is_followed_by_me", "last_online"]
 		
 class RetrieveUsersSerializer(serializers.ModelSerializer): 
 	is_following_me = serializers.BooleanField(read_only = True)
