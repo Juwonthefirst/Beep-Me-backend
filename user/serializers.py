@@ -17,7 +17,7 @@ class RetrieveUsersSerializer(serializers.ModelSerializer):
 	is_online = serializers.SerializerMethodField()
 	class Meta: 
 		model = User
-		fields = ["id", "username", "email", "first_name", "last_name", "is_followed_by_me", "is_following_me", "is_online"]
+		fields = ["id", "username", "email", "first_name", "last_name", "is_followed_by_me", "is_following_me", "is_online", "last_online"]
 		extra_kwargs = {
 			"id": {
 				"read_only": True
