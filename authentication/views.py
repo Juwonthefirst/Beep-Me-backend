@@ -7,17 +7,20 @@ from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.utils.datastructures import MultiValueDict
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
+from django.db.models import Q
 from secrets import token_hex
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from allauth.account.models import EmailAddress
 from authlib.integrations.requests_client import OAuth2Session
+from authentication.serializers import LoginSerializer
 import os
 
 
 User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
-google_client_id = os.getenv("GOOGLE_CLIENT_ID")
+unauthorized = status.HTTP_401_UNAUTHORIZED
+forbidden = status.HTTP_403_FORBIDDEN
+google_print()client_id = os.getenv("GOOGLE_CLIENT_ID")
 google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
 client = OAuth2Session(google_client_id, google_client_secret, redirect_uri = "postmessage")
 
@@ -68,13 +71,6 @@ def google_login_by_id_token(request):
 			password = f'pass_{token_hex(32)}',
 			first_name = first_name,
 			last_name = last_name
-		)
-		
-		EmailAddress.objects.create(
-			user = user,
-			email = email,
-			primary = True,
-			verified = True
 		)
 		new_user = True
 				
@@ -134,12 +130,6 @@ def google_login_by_code_token(request):
 			last_name = last_name
 		)
 		
-		EmailAddress.objects.create(
-			user = user,
-			email = email,
-			primary = True,
-			verified = True
-		)
 		new_user = True
 				
 	refresh_token = RefreshToken.for_user(user)
@@ -166,28 +156,57 @@ def google_login_by_code_token(request):
 	
 	return response
 	
-@method_decorator(ensure_csrf_cookie, name = "dispatch")
-class CustomLoginView(LoginView): 
-	def get_response(self): 
-		original_response = super().get_response()
-		refresh_token = original_response.data.pop("refresh")
-		original_response.set_cookie(
-		    key = "refresh_token",
-		    value = refresh_token,
-		    secure = True,
-		    httponly = True,
-		    max_age = 60 * 60 * 24 * 30,
-		    samesite = 'None'
-		)
-		return original_response
-
-
+@ensure_csrf_cookie
+@api_view
+def loginView(request): 
+	serializer = LoginSerializer(data = request.data)
+	if not serializer.is_valid():
+		return Response(serializer.errors, status = bad_request)
+	
+	username = serializer.validated_data.get("username")
+	email = serializer.validated_data.get("email")
+	password = serializers.validated_data.get("password")
+	
+	try:
+		user = User.objects.get(Q(username = username) | Q(email = email))
+	except User.DoesNotExist:
+		return Response({"error": "Unable to login with provided credentials"}, status = unauthorized)
+	
+	if not user.is_active:
+		return Response({"error": "User is not verified"}, status = forbidden)
+		
+	if not user.check_password(password):
+		return Response({"error": "Unable to login with provided credentials"}, status = unauthorized)
+		
+	refresh_token = RefreshToken.for_user(user)
+	response = Response({
+		"access": str(refresh_token.access_token),
+		"user" : {
+			"id": user.id,
+			"username": user.username,
+			"email": user.email,
+			"firstname": user.first_name,
+			"lastname": user.last_name
+		}
+	})
+	
+	response.set_cookie(
+		key = "refresh_token",
+		value = str(refresh_token),
+		secure = True,
+		httponly = True,
+		max_age = 60 * 60 * 24 * 30,
+		samesite = 'None'
+	)
+	return response
+	
+		
 @csrf_protect
 @api_view(["GET"])	    
 def logoutView(request):
 	refresh_token = request.COOKIES.get("refresh_token")
 	if not refresh_token: 
-			return Response({"error": "You don't have permission to use this view"}, status = status.HTTP_401_UNAUTHORIZED)
+			return Response({"error": "You don't have permission to use this view"}, status = unauthorized)
 	try: 
 		token = RefreshToken(refresh_token)
 		token.blacklist()
@@ -203,7 +222,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 	def post(self, request, *args, **kwargs):
 		refresh_token = request.COOKIES.get("refresh_token")
 		if not refresh_token: 
-			return Response({"error": "You don't have permission to use this view"}, status = status.HTTP_401_UNAUTHORIZED)
+			return Response({"error": "You don't have permission to use this view"}, status = unauthorized)
 		request._full_data = MultiValueDict({"refresh": [refresh_token]})
 		response = super().post(request, *args, **kwargs)
 		if "refresh" in response.data: 
