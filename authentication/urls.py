@@ -3,7 +3,7 @@ from . import views
 from user import views as user_views
 
 urlpatterns = [
-	path("login/", views.CustomLoginView.as_view()),
+	path("login/", views.loginView),
 	path("logout/", views.logoutView),
     path("social/google/ID/", views.google_login_by_id_token),
     path("social/google/code/", views.google_login_by_code_token),
