@@ -165,7 +165,7 @@ def loginView(request):
 	
 	username = serializer.validated_data.get("username")
 	email = serializer.validated_data.get("email")
-	password = serializers.validated_data.get("password")
+	password = serializer.validated_data.get("password")
 	
 	try:
 		user = User.objects.get(Q(username = username) | Q(email = email))
