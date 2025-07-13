@@ -224,7 +224,11 @@ class CustomTokenRefreshView(TokenRefreshView):
 		if not refresh_token: 
 			return Response({"error": "You don't have permission to use this view"}, status = unauthorized)
 		request._full_data = MultiValueDict({"refresh": [refresh_token]})
-		response = super().post(request, *args, **kwargs)
+		try:
+			response = super().post(request, *args, **kwargs)
+		except User.DoesNotExist:
+			return Response({"error": "user doesn't exist"}, status = bad_request)
+			
 		if "refresh" in response.data: 
 			new_refresh_token = response.data.pop("refresh")
 			response.set_cookie(
