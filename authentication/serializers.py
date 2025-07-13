@@ -12,4 +12,4 @@ class LoginSerializer(serializers.Serializer):
 		if not(email or username):
 			raise serializers.ValidationError("username or email has to be present")
 			
-		return atrrs
+		return attrs
