@@ -20,7 +20,7 @@ User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
 unauthorized = status.HTTP_401_UNAUTHORIZED
 forbidden = status.HTTP_403_FORBIDDEN
-google_print()client_id = os.getenv("GOOGLE_CLIENT_ID")
+google_client_id = os.getenv("GOOGLE_CLIENT_ID")
 google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
 client = OAuth2Session(google_client_id, google_client_secret, redirect_uri = "postmessage")
 
