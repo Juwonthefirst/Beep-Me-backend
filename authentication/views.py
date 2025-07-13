@@ -157,7 +157,7 @@ def google_login_by_code_token(request):
 	return response
 	
 @ensure_csrf_cookie
-@api_view
+@api_view(["POST"])
 def loginView(request): 
 	serializer = LoginSerializer(data = request.data)
 	if not serializer.is_valid():
