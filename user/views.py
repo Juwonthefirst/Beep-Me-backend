@@ -95,7 +95,7 @@ class UserNotificationsView(ListAPIView):
 		return user.notifications.all()
 	
 class DoesUsernameExistView(APIView): 
-    permission_classes = [IsAuthenticated]
+    
     def post(self, request): 
         requested_username = request.data.get("username")
         username_taken = User.objects.filter(username = requested_username).exists()
