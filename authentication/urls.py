@@ -3,9 +3,8 @@ from . import views
 from user import views as user_views
 
 urlpatterns = [
-	path("login/", views.CustomLoginView.as_view()),
+	#path("login/", views.CustomLoginView.as_view()),
 	path("logout/", views.logoutView),
-    path("registration/", include("dj_rest_auth.registration.urls")),
     path("social/google/ID/", views.google_login_by_id_token),
     path("social/google/code/", views.google_login_by_code_token),
 	path("token/refresh/", views.CustomTokenRefreshView.as_view()),
@@ -16,5 +15,5 @@ urlpatterns = [
 	path("user/friend-requests/sent/", user_views.SentFriendRequestView.as_view()),
 	path("user/friend-requests/send/", user_views.sendFriendRequest),
 	path("user/friend-requests/receive/", user_views.receivedFriendRequestView.as_view()),
-	path("", include("dj_rest_auth.urls")),
+	path("", include("djoser.urls.jwt")),
 ]

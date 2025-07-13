@@ -3,7 +3,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
-from dj_rest_auth.views import LoginView
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.utils.datastructures import MultiValueDict

@@ -30,11 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "dj_rest_auth",
-    "dj_rest_auth.registration",
+    "djoser",
     "corsheaders",
     "storages",
     "drf_yasg",
@@ -58,7 +54,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "allauth.account.middleware.AccountMiddleware",
 	'django.contrib.sites.middleware.CurrentSiteMiddleware',
 ]
 
@@ -143,16 +138,7 @@ SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
 ]
-
-ACCOUNT_ADAPTER = "authentication.adapters.EmailAdapter"
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-ACCOUNT_UNIQUE_EMAIL = True
-
-ACCOUNT_LOGOUT_ON_GET = True
-ACCOUNT_LOGIN_METHODS = {"username", "email"}
-ACCOUNT_SIGNUP_FIELDS = ["username*","email*", "password1*", "password2*"]
 
 REST_FRAMEWORK = {
 	"DEFAULT_AUTHENTICATION_CLASSES": (
@@ -177,12 +163,17 @@ SIMPLE_JWT ={
     "BLACKLIST_AFTER_ROTATION": True
 }
 
-REST_AUTH = {
-    "USE_JWT": True,
+DJOSER = {
     "TOKEN_MODEL": None,
-    "JWT_AUTH_COOKIE": None,
-    "JWT_AUTH_REFRESH_COOKIE": None,
-    "JWT_AUTH_HTTPONLY": False
+    "EMAIL_FRONTEND_PROTOCOL": "https",
+    "EMAIL_FRONTEND_DOMAIN": "instafake-ten.vercel.app",
+    "EMAIL_FRONTEND_SITE_NAME": "Beep me",
+    "SEND_ACTIVATION_EMAIL": True,
+    "SEND_CONFIRMATION_EMAIL": True,
+    "PASSWORD_CHANGED_EMAIL_CONFIRMATION": True,
+    "ACTIVATION_URL": f"#/verify/?uid={uid}&token={token}",
+    "LOGOUT_ON_PASSWORD_CHANGE": True,
+    "HIDE_USERS": True
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -212,9 +203,6 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SAMESITE = 'None'
-
-ssl_context = ssl.create_default_context()
-
 
 CHANNEL_LAYERS = {
     "default":{
