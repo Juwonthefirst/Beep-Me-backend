@@ -23,6 +23,7 @@ google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
 client = OAuth2Session(google_client_id, google_client_secret, redirect_uri = "postmessage")
 
 @api_view(["GET"])
+@ensure_csrf_cookie
 def get_csrf(request):
 	csrf_token = request.COOKIES.get("csrftoken")
 	if csrf_token: 
