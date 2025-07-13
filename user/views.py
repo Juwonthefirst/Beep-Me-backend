@@ -27,7 +27,7 @@ class UsersView(ListAPIView):
 	search_fields = ["username"]
 	def get_queryset(self): 
 		user = self.request.user
-		return User.objects.annotate(
+		return User.objects.filter(is_active = True).exclude(username = user.username).annotate(
 			is_followed_by_me = Exists(
 				User.following.through.objects.filter(
 					from_customuser_id = user.id,
