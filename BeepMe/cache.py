@@ -6,8 +6,7 @@ class Cache:
 	def __init__(self):
 		pool = async_redis.ConnectionPool.from_url(
 			url = os.getenv("REDIS_URL"),
-			decode_responses = True,
-			ssl = True
+			decode_responses = True
 		)
 		self.redis = async_redis.Redis(connection_pool = pool)
 		
