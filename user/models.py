@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils import timezone
@@ -9,7 +9,7 @@ username_validator = RegexValidator(
 	code = "invalid_username"
 )
 
-class ActiveUserManager(BaseUserManager): 
+class ActiveUserManager(UserManager): 
 	def get(self, *args, **kwargs): 
 		return self.get_queryset().filter(is_active = True).get(*args, **kwargs)
 	def all(self): 
