@@ -90,10 +90,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room_name = data.get("room")
         action = data.get("action")
         temporary_id = data.get("temporary_id")
-        if not (re.match(r"^(chat_[1-9]+_[1-9]+|group.[1-9]+){1,100}$", room_name) and room_name in self.joined_rooms):
-            #stop users from sending to rooms they haven't joined
+        if not re.match(r"^(chat\-[1-9]+\-[1-9]+|group.[1-9]+){1,100}$", room_name):
             #prevent invalid room_name
-            await self.respond_with_error("join room before sending messages")
+            await self.respond_with_error("Invalid room name")
             return
         
         match(action): 
@@ -121,7 +120,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = event.get("message")
         timestamp = timezone.now()
         room = self.joined_rooms.get(room_name)
-        
+        if not room:
+            self.respond_with_error("join room before sending messages")
+            
         await self.send(text_data = json.dumps({
             "room": room_name,
             "message": message, 
@@ -135,6 +136,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_typing(self, event):
         room_name = event.get("room")
         sender_username = self.user.username
+        if room_name not in self.joined_rooms:
+            self.respond_with_error("join room before sending messages")
+            
         await self.send(text_data = json.dumps({"room": room_name, "typing": True, "sender_id": sender_id }))
         
     async def chat_error(self, event): 
