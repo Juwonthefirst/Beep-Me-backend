@@ -56,8 +56,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
     async def group_join(self, room_name):
         room = await get_room(room_name)
-        if (room_name.startswith("chat") and self.user.id not in room_name.split("-")) or await is_group_member(room.group.id, self.user.id):
-            return await self.respond_with_error("you aren't a member of this group")
+        if (room_name.startswith("chat") and str(self.user.id) not in room_name.split("-")) or await is_group_member(room.group.id, self.user.id):
+            return await self.respond_with_error(f"you aren't a member of this group")
         
         await self.channel_layer.group_add(
             room_name, self.channel_name
