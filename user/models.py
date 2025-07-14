@@ -2,10 +2,10 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils import timezone
-from django.conf.settings import USERNAME_REGEX
+from django.conf import settings
 
 username_validator = RegexValidator(
-	regex = USERNAME_REGEX,
+	regex = settings.USERNAME_REGEX,
 	message = "Your username should only have letters, number and non-repeating underscore and hyphen",
 	code = "invalid_username"
 )
