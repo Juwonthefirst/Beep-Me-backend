@@ -123,7 +123,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room_name = event.get("room")
         message = event.get("message")
         temporary_id = event.get("temporary_id")
-        timestamp = timezone.now()
+        timestamp = timezone.now().isoformat()
         room = self.joined_rooms.get(room_name)
         if not room:
             self.respond_with_error("join room before sending messages")
@@ -192,7 +192,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             "receiver": notification_detail.get("receiver"),
             "message": notification_detail.get("message"),
             "is_group": notification_detail.get("is_group"),
-            "timestamp": timezone.now(),
+            "timestamp": timezone.now().isoformat(),
         }))
         
     async def notification_online(self, event):
@@ -201,14 +201,14 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             "type": "online_status_notification",
             "user": notification_detail.get("user"),
             "status":  notification_detail.get("status"),
-            "timestamp": timezone.now(),
+            "timestamp": timezone.now().isoformat(),
         }))
         
     async def notification_friend(self, event):
         notification_detail = event.get("notification_detail")
         action = notification_detail.get("action"),
         sender = notification_detail.get("sender"),
-        timestamp = timezone.now()
+        timestamp = timezone.now().isoformat()
         await self.send(text_data = json.dumps({
             "type": "friend_notification",
             "sender": sender,
@@ -221,7 +221,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         notification_detail = event.get("notification")
         notification = notification_detail.get("notification")
         group_id = notification_detail.get("group_id")
-        timestamp = timezone.now()
+        timestamp = timezone.now().isoformat()
         await self.send(text_data = json.dumps({
             "type": "group_notification",
             "notification":  notification,
