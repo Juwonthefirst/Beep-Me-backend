@@ -15,6 +15,8 @@ from user.serializers import (
 	RetrieveUsersSerializer,
 	FriendRequestSerializer
 )
+from django.conf.settings import USERNAME_REGEX
+import re
 
 User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
@@ -97,10 +99,14 @@ class UserNotificationsView(ListAPIView):
 class DoesUsernameExistView(APIView): 
     
     def post(self, request): 
-        requested_username = request.data.get("username")
+        requested_username = request.data.get("username").capitalize()
         username_taken = User.objects.filter(username = requested_username).exists()
         if username_taken:
         	return Response({"exists": username_taken}, status = bad_request)
+        if not re.match(USERNAME_REGEX, requested_username):
+        	return Response({"error": "username should only have numbers, letters, and non-repeating underscore and hyphen"}, status = bad_request)
+            
+            
         return Response({"exists": username_taken})
         
 

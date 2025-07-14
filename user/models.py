@@ -2,9 +2,10 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from django.conf.settings import USERNAME_REGEX
 
 username_validator = RegexValidator(
-	regex = "^[a-zA-Z](?:[a-zA-Z0-9]*(?:[-_][a-zA-Z0-9])?)*[a-zA-Z0-9]+$",
+	regex = USERNAME_REGEX,
 	message = "Your username should only have letters, number and non-repeating underscore and hyphen",
 	code = "invalid_username"
 )
@@ -43,3 +44,7 @@ class CustomUser(AbstractUser):
 	def get_unmutual_followers(self): 
 		friends = self.get_friends().values_list("id", flat = True)
 		return set(self.followers.values_list("id", flat = True)) - set(friends)
+		
+	def save(self, *args, **kwargs):
+		self.username = self.username.capitalize()
+		super().save(*args, **kwargs)

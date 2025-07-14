@@ -242,3 +242,4 @@ AWS_S3_USE_SSL = True
 #CELERY
 CELERY_BROKER_URL = os.getenv("REDIS_URL")
 
+USERNAME_REGEX = r"^[a-zA-Z](?:[a-zA-Z0-9]*(?:[-_][a-zA-Z0-9])?)*[a-zA-Z0-9]+$"
