@@ -113,7 +113,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 
             case "chat": 
                 await self.channel_layer.group_send(
-                    room_name, {"type": "chat.message", "room": room_name, "message": message}
+                    room_name, {"type": "chat.message", "room": room_name, "message": message, "temporary_id": temporary_id}
                 )
                 
             case "ping": 
@@ -122,6 +122,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         room_name = event.get("room")
         message = event.get("message")
+        temporary_id = event.get("temporary_id")
         timestamp = timezone.now()
         room = self.joined_rooms.get(room_name)
         if not room:
