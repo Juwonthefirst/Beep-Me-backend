@@ -29,5 +29,5 @@ class RetrieveUsersSerializer(serializers.ModelSerializer):
 		
 		
 class FriendRequestSerializer(serializers.Serializer): 
-	friend_ids = serializers.IntegerField(min_value = 1)
+	friend_id = serializers.IntegerField(min_value = 1)
 	action = serializers.CharField(max_length = 30)
