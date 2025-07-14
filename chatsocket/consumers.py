@@ -71,7 +71,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             del self.joined_rooms[room_name] 
 
         elif len(self.joined_rooms) >= 10:
-            del self.joined_rooms[self.joined_rooms.keys()[0]]
+            room = self.joined_rooms[self.joined_rooms.keys()[0]]
+            self.group_leave(room.name)
             
         self.joined_rooms[room_name] = room
         await cache.add_active_member(user_id, room_name)
