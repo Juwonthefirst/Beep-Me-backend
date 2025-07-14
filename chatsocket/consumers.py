@@ -74,7 +74,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             del self.joined_rooms[self.joined_rooms.keys()[0]]
             
         self.joined_rooms[room_name] = room
-        await cache.add_active_members(user_id, room_name)
+        await cache.add_active_member(user_id, room_name)
         
     async def group_leave(self, room_name):
         await self.channel_layer.group_discard(
