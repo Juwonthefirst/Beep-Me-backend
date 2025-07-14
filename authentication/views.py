@@ -171,12 +171,12 @@ def loginView(request):
 		user = User.objects.get(Q(username = username) | Q(email = email))
 	except User.DoesNotExist:
 		return Response({"error": "Unable to login with provided credentials"}, status = unauthorized)
-	
-	if not user.is_active:
-		return Response({"error": "User is not verified"}, status = forbidden)
 		
 	if not user.check_password(password):
 		return Response({"error": "Unable to login with provided credentials"}, status = unauthorized)
+		
+	if not user.is_active:
+		return Response({"error": "User is not verified", "email": user.email}, status = forbidden)
 		
 	refresh_token = RefreshToken.for_user(user)
 	response = Response({
