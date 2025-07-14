@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.models import AbstractUser, UserManager, QuerySet
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils import timezone
@@ -9,11 +9,14 @@ username_validator = RegexValidator(
 	code = "invalid_username"
 )
 
+class ActiveUserQueryset(QuerySet): 
+	def active(self): 
+		return self.filter(is_active = True)
+
 class ActiveUserManager(UserManager): 
-	def get(self, *args, **kwargs): 
-		return self.get_queryset().filter(is_active = True).get(*args, **kwargs)
-	def all(self): 
-		return self.get_queryset().filter(is_active = True)
+	def get_queryset(self):
+		return ActiveUserQuerySet(self.model, using = self._db)
+
 
 
 class CustomUser(AbstractUser): 
@@ -21,7 +24,7 @@ class CustomUser(AbstractUser):
 	username = models.CharField(max_length = 60, unique = True, validators = [username_validator], error_messages = {"unique": "a user with this username already exists"}, db_index = True)
 	email = models.EmailField(unique = True, db_index = True)
 	following = models.ManyToManyField("self", symmetrical = False, related_name = "followers")
-	objects = ActiveUserManager()
+	#objects = ActiveUserManager()
 	
 	def mark_last_online(self): 
 		self.last_online = timezone.now()
