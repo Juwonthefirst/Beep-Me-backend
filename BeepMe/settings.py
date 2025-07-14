@@ -171,7 +171,7 @@ DJOSER = {
     "SEND_ACTIVATION_EMAIL": True,
     "SEND_CONFIRMATION_EMAIL": True,
     "PASSWORD_CHANGED_EMAIL_CONFIRMATION": True,
-    "ACTIVATION_URL": "verify/?uid={uid}&token={token}",
+    "ACTIVATION_URL": "verify-email/?uid={uid}&token={token}",
     "LOGOUT_ON_PASSWORD_CHANGE": True,
 }
 
