@@ -6,7 +6,7 @@ from django.utils import timezone
 from notification import tasks
 
 @database_sync_to_async
-def save_message(room, sender_id, message, timestamp):
+def save_message(room_id, sender_id, message, timestamp):
     from message.models import Message
     return Message.objects.create(room_id = room_id, body = message, sender_id = sender_id, timestamp = timestamp)
     
@@ -136,7 +136,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "temporary_id": temporary_id
         }))
         tasks.send_chat_notification.delay(room.id, message, self.user.username)
-        await save_message(room = room_name, message = message, sender_id = self.user.id, timestamp = timestamp)
+        await save_message(room_id = room.id, message = message, sender_id = self.user.id, timestamp = timestamp)
         
     async def chat_typing(self, event):
         room_name = event.get("room")
