@@ -117,6 +117,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
                 
             case "chat": 
+                room = self.joined_rooms.get(room_name)
+                if not room:
+                    return 
                 await self.channel_layer.group_send(
                     room_name, {
                         "type": "chat.message", 
@@ -136,9 +139,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender_username = event.get("sender_username")
         temporary_id = event.get("temporary_id")
         timestamp = timezone.now().isoformat()
-        room = self.joined_rooms.get(room_name)
-        if not room:
-            return 
         
         await self.send(text_data = json.dumps({
             "room": room_name,
