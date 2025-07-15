@@ -92,6 +92,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         message = data.get("message")
         room_name = data.get("room")
+        sender_username = self.user.username
         action = data.get("action")
         temporary_id = data.get("temporary_id")
         if not re.match(r"^(chat\-[1-9]+\-[1-9]+|group.[1-9]+){1,100}$", room_name):
@@ -108,13 +109,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 
             case "typing": 
                 await self.channel_layer.group_send(
-                    room_name, {"type": "chat.typing", "room": room_name}
+                    room_name, {"type": "chat.typing", "room": room_name, "sender_username": sender_username}
                 )
                 
             case "chat": 
                 await self.channel_layer.group_send(
-                    room_name, {"type": "chat.message", "room": room_name, "message": message, "temporary_id": temporary_id}
+                    room_name, {
+                        "type": "chat.message", 
+                        "room": room_name, 
+                        "message": message, 
+                        "temporary_id": temporary_id, 
+                        "sender_username": sender_username
+                    }
                 )
+                await save_message(room_id = room.id, message = message, sender_id = self.user.id, timestamp = timestamp)
+                tasks.send_chat_notification.delay(room.id, message, self.user.username)
+            
                 
             case "ping": 
                 await self.ping_user_is_online()
@@ -122,29 +132,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         room_name = event.get("room")
         message = event.get("message")
+        sender_username = event.get("sender_username")
         temporary_id = event.get("temporary_id")
         timestamp = timezone.now().isoformat()
         room = self.joined_rooms.get(room_name)
         if not room:
-            self.respond_with_error("join room before sending messages")
-            
+            return 
+        
         await self.send(text_data = json.dumps({
             "room": room_name,
-            "message": message, 
-            "sender_username": self.user.username, 
+            "message": message,
+            "sender_username": sender_username,
             "timestamp": timestamp,
             "temporary_id": temporary_id
         }))
-        tasks.send_chat_notification.delay(room.id, message, self.user.username)
-        await save_message(room_id = room.id, message = message, sender_id = self.user.id, timestamp = timestamp)
         
     async def chat_typing(self, event):
         room_name = event.get("room")
-        sender_username = self.user.username
+        sender_username = event.get("sender_username")
         if room_name not in self.joined_rooms:
-            self.respond_with_error("join room before sending messages")
+            return self.respond_with_error("join room before sending messages")
             
-        await self.send(text_data = json.dumps({"room": room_name, "typing": True, "sender_id": sender_id }))
+        await self.send(text_data = json.dumps({"room": room_name, "typing": True, "sender_username": sender_username }))
         
     async def chat_error(self, event): 
         error_mesaage = event.get("error_mesaage")
