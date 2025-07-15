@@ -47,7 +47,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
     async def disconnect(self, close_code):
         for room in self.joined_rooms:
-            await self.group_leave(room.name)
+            await self.group_leave(room)
             
         await database_sync_to_async(self.user.mark_last_online)()
         self.joined_rooms.clear()
