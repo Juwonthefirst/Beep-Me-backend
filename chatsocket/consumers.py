@@ -40,17 +40,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user = self.scope.get("user")
         if not self.user:
             await self.close(code=4001)
-        self.joined_rooms = {}
+        self.currentRoom = None
         await self.accept()
         await database_sync_to_async(self.user.mark_last_online)()
         tasks.send_online_status_notification.delay(self.user.id, True)
         
     async def disconnect(self, close_code):
-        for room in self.joined_rooms:
-            await self.group_leave(room)
-            
+        await self.group_leave()
         await database_sync_to_async(self.user.mark_last_online)()
-        self.joined_rooms.clear()
+        self.currentRoom = None
         cache.remove_user_online(self.user.id)
         tasks.send_online_status_notification.delay(self.user.id, False)
         
@@ -59,29 +57,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if room_name.startswith("chat") and str(self.user.id) not in room_name.split("-"):
             return await self.respond_with_error("you aren't a member of this group")
         
-        if room.is_group and not await is_group_member(room.group.id, self.user.id):
+        elif room.is_group and not await is_group_member(room.group.id, self.user.id):
             return await self.respond_with_error("you aren't a member of this group")
 
         await self.channel_layer.group_add(
             room_name, self.channel_name
         )
-       
-        # reordering to keep the most active at the back
-        if room_name in self.joined_rooms:
-            del self.joined_rooms[room_name] 
-
-        elif len(self.joined_rooms) >= 10:
-            room = self.joined_rooms[self.joined_rooms.keys()[0]]
-            self.group_leave(room.name)
-            
-        self.joined_rooms[room_name] = room
+        
+        self.currentRoom = room   
         await cache.add_active_member(self.user.id, room_name)
         
     async def group_leave(self, room_name):
         await self.channel_layer.group_discard(
             room_name, self.channel_name
         )
-        del self.joined_rooms[room_name]
+        self.currentRoom = None
         await cache.remove_active_member(self.user.id, room_name)
         
     async def ping_user_is_online(self): 
@@ -118,8 +108,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 
             case "chat": 
                 timestamp = timezone.now().isoformat()
-                room = self.joined_rooms.get(room_name)
-                if not room:
+                room = self.currentRoom
+                if not room.name == room_name:
                     return 
                 await self.channel_layer.group_send(
                     room_name, {
@@ -153,7 +143,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_typing(self, event):
         room_name = event.get("room")
         sender_username = event.get("sender_username")
-        if room_name not in self.joined_rooms:
+        if not self.currentRoom.name == room_name:
             return self.respond_with_error("join room before sending messages")
             
         await self.send(text_data = json.dumps({"room": room_name, "typing": True, "sender_username": sender_username }))
