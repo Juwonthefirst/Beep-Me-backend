@@ -117,6 +117,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
                 
             case "chat": 
+                timestamp = timezone.now().isoformat()
                 room = self.joined_rooms.get(room_name)
                 if not room:
                     return 
@@ -126,7 +127,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         "room": room_name, 
                         "message": message, 
                         "temporary_id": temporary_id, 
-                        "sender_username": sender_username
+                        "sender_username": sender_username,
+                        "timestamp": timestamp
                     }
                 )
                 await save_message(room_id = room.id, message = message, sender_id = self.user.id, timestamp = timestamp)
@@ -138,7 +140,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = event.get("message")
         sender_username = event.get("sender_username")
         temporary_id = event.get("temporary_id")
-        timestamp = timezone.now().isoformat()
+        timestamp = event.get("timestamp")
         
         await self.send(text_data = json.dumps({
             "room": room_name,
