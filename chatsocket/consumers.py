@@ -95,7 +95,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender_username = self.user.username
         action = data.get("action")
         temporary_id = data.get("temporary_id")
-        if not re.match(r"^(chat\-[1-9]+\-[1-9]+|group.[1-9]+){1,100}$", room_name):
+        if not re.match(r"^(chat\-[1-9]+\-[1-9]+|group.[1-9]+){1,100}$", room_name) and action != "ping":
             #prevent invalid room_name
             await self.respond_with_error("Invalid room name")
             return
