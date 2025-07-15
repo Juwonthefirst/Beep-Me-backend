@@ -53,6 +53,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         tasks.send_online_status_notification.delay(self.user.id, False)
         
     async def group_join(self, room_name):
+        if self.currentRoom:
+           await self.group_leave(self.currentRoom.name)
+           
         room = await get_room(room_name)
         if room_name.startswith("chat") and str(self.user.id) not in room_name.split("-"):
             return await self.respond_with_error("you aren't a member of this group")
