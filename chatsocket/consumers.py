@@ -95,7 +95,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender_username = self.user.username
         action = data.get("action")
         temporary_id = data.get("temporary_id")
-        if not re.match(r"^(chat\-[1-9]+\-[1-9]+|group.[1-9]+){1,100}$", room_name) and action != "ping":
+        
+        if action == "ping": 
+            return await self.ping_user_is_online()
+            
+        if not re.match(r"^(chat\-[1-9]+\-[1-9]+|group.[1-9]+){1,100}$", room_name):
             #prevent invalid room_name
             await self.respond_with_error("Invalid room name")
             return
@@ -124,10 +128,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
                 await save_message(room_id = room.id, message = message, sender_id = self.user.id, timestamp = timestamp)
                 tasks.send_chat_notification.delay(room.id, message, self.user.username)
-            
                 
-            case "ping": 
-                await self.ping_user_is_online()
         
     async def chat_message(self, event):
         room_name = event.get("room")
