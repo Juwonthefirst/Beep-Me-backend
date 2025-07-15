@@ -31,6 +31,7 @@ class Cache:
 		await self.redis.sadd("online_users", user_id)
 	
 	async def remove_user_online(self, user_id):
+		await self.redis.delete(f"user_{user_id}_is_online")
 		await self.redis.srem("online_users", user_id)
 	
 	async def is_user_online(self, user_id):

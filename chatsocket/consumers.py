@@ -82,7 +82,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room_name, self.channel_name
         )
         del self.joined_rooms[room_name]
-        await cache.remove_active_members(self.user.id, room)
+        await cache.remove_active_member(self.user.id, room)
         
     async def ping_user_is_online(self): 
         user_id = self.user.id
