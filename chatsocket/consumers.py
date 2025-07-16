@@ -46,14 +46,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         tasks.send_online_status_notification.delay(self.user.id, True)
         
     async def disconnect(self, close_code):
-        await self.group_leave()
+        if self.currentRoom:
+           await self.group_leave()
         await database_sync_to_async(self.user.mark_last_online)()
         cache.remove_user_online(self.user.id)
         tasks.send_online_status_notification.delay(self.user.id, False)
         
     async def group_join(self, room_name):
         if self.currentRoom:
-           await self.group_leave(self.currentRoom.name)
+           await self.group_leave()
            
         room = await get_room(room_name)
         if room_name.startswith("chat") and str(self.user.id) not in room_name.split("-"):
