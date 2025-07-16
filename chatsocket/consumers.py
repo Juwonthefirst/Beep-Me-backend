@@ -49,7 +49,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if self.currentRoom:
            await self.group_leave()
         await database_sync_to_async(self.user.mark_last_online)()
-        cache.remove_user_online(self.user.id)
+        await cache.remove_user_online(self.user.id)
         tasks.send_online_status_notification.delay(self.user.id, False)
         
     async def group_join(self, room_name):
@@ -70,6 +70,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await cache.add_active_member(self.user.id, room_name)
         
     async def group_leave(self):
+        if not self.currentRoom:
+            return
         room_name = self.currentRoom.name
         await self.channel_layer.group_discard(
             room_name, self.channel_name
@@ -88,6 +90,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender_username = self.user.username
         action = data.get("action")
         temporary_id = data.get("temporary_id")
+        timestamp = timezone.now().isoformat()
         
         if action == "ping": 
             return await self.ping_user_is_online()
@@ -110,12 +113,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
                 
             case "chat": 
-                timestamp = timezone.now().isoformat()
                 room = self.currentRoom
                 if not room:
-                    return
+                    return await self.respond_with_error("You aren't in any room")
                 if room.name != room_name:
-                    return 
+                    return await self.respond_with_error("You aren't in this room")
                 await self.channel_layer.group_send(
                     room_name, {
                         "type": "chat.message", 
@@ -148,6 +150,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_typing(self, event):
         room_name = event.get("room")
         sender_username = event.get("sender_username")
+        if not self.currentRoom:
+            return await self.respond_with_error("you can't type in a room you haven't joined")
         if not self.currentRoom.name == room_name:
             return self.respond_with_error("join room before sending messages")
             

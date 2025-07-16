@@ -9,12 +9,6 @@ class Cache:
 			decode_responses = True
 		)
 		self.redis = async_redis.Redis(connection_pool = pool)
-		
-	async def set(self, key, value, expire): 
-		await self.redis.set(key, value, ex = expire)
-		
-	async def get(self, key):
-		return await self.redis.get(key)
 	
 	async def ping(self, user_id): 
 		await self.redis.set(f"user_{user_id}_is_online", 1, ex = 50)
