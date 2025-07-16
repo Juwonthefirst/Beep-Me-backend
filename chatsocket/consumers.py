@@ -48,7 +48,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         await self.group_leave()
         await database_sync_to_async(self.user.mark_last_online)()
-        self.currentRoom = None
         cache.remove_user_online(self.user.id)
         tasks.send_online_status_notification.delay(self.user.id, False)
         
@@ -70,9 +69,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.currentRoom = room   
         await cache.add_active_member(self.user.id, room_name)
         
-    async def group_leave(self, room_name):
+    async def group_leave(self):
         await self.channel_layer.group_discard(
-            room_name, self.channel_name
+            self.currentRoom.name, self.channel_name
         )
         self.currentRoom = None
         await cache.remove_active_member(self.user.id, room_name)
