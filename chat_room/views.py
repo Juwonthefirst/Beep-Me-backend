@@ -123,7 +123,7 @@ class GetChatRoomAndMessageByFriend(APIView):
 			
 		try:
 			room = ChatRoom.objects.get(name = room_name)
-			serialized_data = ChatRoomAndMessagesSerializer(room).data
+			serialized_data = ChatRoomAndMessagesSerializer(room, context = {"user_id": user_id}).data
 			return Response(serialized_data)
 		except ChatRoom.DoesNotExist:
 			return Response({"error": "invalid room"}, status = not_found)

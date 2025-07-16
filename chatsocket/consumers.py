@@ -61,7 +61,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         elif room.is_group and not await is_group_member(room.group.id, self.user.id):
             return await self.respond_with_error("you aren't a member of this group")
-
         await self.channel_layer.group_add(
             room_name, self.channel_name
         )
@@ -101,7 +100,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.group_join(room_name)
                 
             case "group_leave": 
-                await self.group_leave(room_name)
+                await self.group_leave()
                 
             case "typing": 
                 await self.channel_layer.group_send(
