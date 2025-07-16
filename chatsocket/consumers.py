@@ -112,7 +112,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             case "chat": 
                 timestamp = timezone.now().isoformat()
                 room = self.currentRoom
-                if not room.name == room_name:
+                if room and room.name != room_name:
                     return 
                 await self.channel_layer.group_send(
                     room_name, {
