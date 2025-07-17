@@ -153,7 +153,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not self.currentRoom:
             return await self.respond_with_error("you can't type in a room you haven't joined")
         if not self.currentRoom.name == room_name:
-            return self.respond_with_error("join room before sending messages")
+            return await self.respond_with_error("join room before sending messages")
             
         await self.send(text_data = json.dumps({"room": room_name, "typing": True, "sender_username": sender_username }))
         
