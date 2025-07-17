@@ -37,7 +37,7 @@ def get_room_messages(request, pk):
 			paginated_cached_messages = paginator.paginate_queryset(cached_message, request)
 			return paginator.get_paginated_response(paginated_cached_messages)
 			
-		queryset = room.messages.all().order_by("timestamp")
+		queryset = room.messages.all().order_by("-timestamp")
 		room_messages = paginator.paginate_queryset(queryset, request)
 					
 		serialized_data = MessagesSerializer(room_messages, many = True).data
