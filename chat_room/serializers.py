@@ -42,7 +42,7 @@ class ChatRoomAndMessagesSerializer(serializers.ModelSerializer):
 		if cached_message: 
 			return cached_message
 			
-		queryset = obj.messages.all().order_by("timestamp")[:50]
+		queryset = obj.messages.all().order_by("timestamp")[:-50]
 		return MessagesSerializer(queryset, many = True).data
 	
 	def get_parent(self, obj): 
