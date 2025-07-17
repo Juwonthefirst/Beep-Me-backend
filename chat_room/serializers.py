@@ -5,6 +5,7 @@ from message.serializers import MessagesSerializer
 from group.serializers import GroupSerializer
 from BeepMe.cache import cache
 from asgiref.sync import async_to_sync
+from chat_room.tasks import cache_messages
 
 class RoomDetailsSerializer(serializers.ModelSerializer): 
 	class Meta: 
@@ -43,7 +44,10 @@ class ChatRoomAndMessagesSerializer(serializers.ModelSerializer):
 			return cached_message
 			
 		queryset = obj.messages.all().order_by("timestamp")[:-50]
-		return MessagesSerializer(queryset, many = True).data
+		serialized_data = MessagesSerializer(queryset, many = True).data
+		jsonified_data = [json.dumps(message_object) for message_object in serialized_data]
+		cache_messages.delay(jsonified_data)
+		return serialized_data
 	
 	def get_parent(self, obj): 
 		if obj.is_group: 
