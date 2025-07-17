@@ -43,7 +43,7 @@ class ChatRoomAndMessagesSerializer(serializers.ModelSerializer):
 		if cached_message: 
 			return cached_message
 			
-		queryset = obj.messages.all().order_by("timestamp")[:-50]
+		queryset = obj.messages.all().order_by("-timestamp")[:50]
 		serialized_data = MessagesSerializer(queryset, many = True).data
 		jsonified_data = [json.dumps(message_object) for message_object in serialized_data]
 		cache_messages.delay(jsonified_data)
