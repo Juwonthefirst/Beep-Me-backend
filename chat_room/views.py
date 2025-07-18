@@ -75,7 +75,7 @@ class RoomDetailsView(RetrieveUpdateDestroyAPIView):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_livekit_JWT_token(request, room_name ): 
+def get_livekit_JWT_token(request, room_name): 
 	user = request.user
 	is_video_admin = False
 	
@@ -109,7 +109,7 @@ def receiveLivekitEvents(request):
 	return Response({"status": "ok"})
 	
 
-	
+#Update to use room_name instead of fried username
 class GetChatRoomAndMessageByFriend(APIView): 
 	permission_classes = [IsAuthenticated]
 	
