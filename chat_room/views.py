@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
-from rest_framework.status import HTTP_404_NOT_FOUND
+from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import ListAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
@@ -19,6 +19,7 @@ from livekit import api
 
 User = get_user_model()
 not_found = HTTP_404_NOT_FOUND
+forbidden = HTTP_403_FORBIDDEN
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -74,12 +75,15 @@ class RoomDetailsView(RetrieveUpdateDestroyAPIView):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_livekit_JWT_token(request, friend_username): 
+def get_livekit_JWT_token(request, room_name ): 
 	user = request.user
 	is_video_admin = False
 	
+	if request.user.id not in room_name.split("-"):
+		return Response({"error": "You don't have access to this chat"}, status = forbidden)
+		
 	try:
-		roomObject = ChatRoom.objects.select_related("group").filter(member__usernames_in= room_id)
+		roomObject = ChatRoom.objects.select_related("group").filter(name = room_name)
 	except ChatRoom.DoesNotExist:
 		return Response({"error": "chat room not found"}, status = not_found)
 	
