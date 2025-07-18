@@ -74,13 +74,12 @@ class RoomDetailsView(RetrieveUpdateDestroyAPIView):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_livekit_JWT_token(request, pk): 
+def get_livekit_JWT_token(request, friend_username): 
 	user = request.user
 	is_video_admin = False
-	room_id = pk
 	
 	try:
-		roomObject = ChatRoom.objects.select_related("group").get(pk = room_id)
+		roomObject = ChatRoom.objects.select_related("group").filter(member__usernames_in= room_id)
 	except ChatRoom.DoesNotExist:
 		return Response({"error": "chat room not found"}, status = not_found)
 	
