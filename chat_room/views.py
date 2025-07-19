@@ -79,7 +79,7 @@ def get_livekit_JWT_token(request, room_name):
 	user = request.user
 	is_video_admin = False
 	
-	if request.user.id not in room_name.split("-"):
+	if str(request.user.id) not in room_name.split("-"):
 		return Response({"error": "You don't have access to this chat"}, status = forbidden)
 		
 	try:
