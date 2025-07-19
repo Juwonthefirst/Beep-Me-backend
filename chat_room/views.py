@@ -91,7 +91,7 @@ def get_livekit_JWT_token(request, room_name):
 		user_group_role = roomObject.group.get_user_role(user.id)
 		is_video_admin = user_group_role.permissions.filter(action = "video admin").exists()
 	
-	token = api.AccessToken(os.getenv("LIVEKIT_API_KEY"), os.getenv("LIVEKIT_API_SECRET")).with_identity(user.id).with_name(user.username).with_grants(api.VideoGrants(
+	token = api.AccessToken(os.getenv("LIVEKIT_API_KEY"), os.getenv("LIVEKIT_API_SECRET")).with_identity(str(user.id)).with_name(user.username).with_grants(api.VideoGrants(
 		room = roomObject.name,
 		room_join = True,
 		room_admin = is_video_admin,
