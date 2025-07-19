@@ -83,7 +83,7 @@ def get_livekit_JWT_token(request, room_name):
 		return Response({"error": "You don't have access to this chat"}, status = forbidden)
 		
 	try:
-		roomObject = ChatRoom.objects.select_related("group").filter(name = room_name)
+		roomObject = ChatRoom.objects.select_related("group").get(name = room_name)
 	except ChatRoom.DoesNotExist:
 		return Response({"error": "chat room not found"}, status = not_found)
 	
