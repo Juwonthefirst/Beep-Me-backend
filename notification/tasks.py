@@ -76,7 +76,6 @@ def send_friend_request_notification(username, friend_id, action):
 			}
 		)
 		
-@shared_task
 def send_call_notification(caller, room_id, video_call = False): 
 	from chat_room.models import ChatRoom
 	room = ChatRoom.objects.select_related("group").get(id = room_id)

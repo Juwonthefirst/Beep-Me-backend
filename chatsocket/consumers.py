@@ -29,6 +29,29 @@ def create_notification(notification_type, notification, receiver, time, group_i
         timestamp = time,
         group_id = group_id,
     )
+    
+    
+async def send_call_notification(caller, room_name, video_call = False): 
+	from chat_room.models import ChatRoom
+	room = ChatRoom.objects.select_related("group").get(name = room_name)
+	if room.is_group:
+		members_id = room.group.members.values_list("id", flat = True)
+	else:
+		room_name = room.name
+		members_id = room_name.split("_")[1:]
+	
+	online_members_id = await cache.online_members_id(members_id) - {sender_id}
+	for member_id in online_members_id:
+		await channel_layer.group_send(
+			f"user_{member_id}_notifications", {"type": "notification.call", "notification_detail": {
+				"caller": caller,
+				"room_name": room.name,
+				"is_video": video_call,
+				"is_group": room.is_group,
+				"room_id": room.id
+				}
+			}
+		)
 
 @database_sync_to_async
 def is_group_member(group_id, user_id): 
@@ -90,6 +113,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender_username = self.user.username
         action = data.get("action")
         temporary_id = data.get("temporary_id")
+        
         timestamp = timezone.now().isoformat()
         
         if action == "ping": 
@@ -131,7 +155,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await save_message(room_id = room.id, message = message, sender_id = self.user.id, timestamp = timestamp)
                 tasks.send_chat_notification.delay(room.id, message, self.user.username)
                 
-        
+            case "call": 
+                tasks.send_call_notification(sender_username, room_name)
+                
     async def chat_message(self, event):
         room_name = event.get("room")
         message = event.get("message")
