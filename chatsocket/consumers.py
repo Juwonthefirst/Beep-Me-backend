@@ -113,7 +113,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender_username = self.user.username
         action = data.get("action")
         temporary_id = data.get("temporary_id")
-        
+        is_video_call = data.get("is_video_call")
         timestamp = timezone.now().isoformat()
         
         if action == "ping": 
@@ -156,7 +156,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 tasks.send_chat_notification.delay(room.id, message, self.user.username)
                 
             case "call": 
-                tasks.send_call_notification(sender_username, room_name)
+                tasks.send_call_notification(sender_username, room_name, is_video_call)
                 
     async def chat_message(self, event):
         room_name = event.get("room")
