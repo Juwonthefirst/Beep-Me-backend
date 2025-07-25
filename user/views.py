@@ -13,7 +13,8 @@ from chat_room.models import ChatRoom
 from user.serializers import (
 	UsersSerializer, 
 	RetrieveUsersSerializer,
-	FriendRequestSerializer
+	FriendRequestSerializer,
+	CurrentUserSerializer
 )
 from django.conf import settings
 import re
@@ -154,3 +155,14 @@ def sendFriendRequest(request):
 		tasks.send_friend_request_notification.delay(request.user.username, friend_id, action)
 		return Response({"status": "ok"})
 	return Response({"error": serializer.errors}, status = bad_request)
+	
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def update_username(request): 
+    username = request.data.get("username")
+    if not username:
+        return Response({"error": "username not provided"}, status = bad_request)
+        
+    request.user.username = username
+    updated_user = request.user.save(updated_fields = ["username"])
+    return Response(CurrentUserSerializer(updated_user).data)

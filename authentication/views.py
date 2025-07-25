@@ -13,6 +13,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from authlib.integrations.requests_client import OAuth2Session
 from authentication.serializers import LoginSerializer
+from user.serializers import CurrentUserSerializer
 import os
 
 
@@ -78,13 +79,7 @@ def google_login_by_id_token(request):
 			
 	response = Response({
 		"access": str(refresh_token.access_token),
-		"user" : {
-			"id": user.id,
-			"username": user.username,
-			"email": user.email,
-			"firstname": user.first_name,
-			"lastname": user.last_name
-		},
+		"user" : CurrentUserSerializer(user).data,
 		"new_user": new_user
 	})
 	
@@ -135,13 +130,7 @@ def google_login_by_code_token(request):
 	refresh_token = RefreshToken.for_user(user)
 	response = Response({
 		"access": str(refresh_token.access_token),
-		"user" : {
-			"id": user.id,
-			"username": user.username,
-			"email": user.email,
-			"firstname": user.first_name,
-			"lastname": user.last_name
-		},
+		"user" : CurrentUserSerializer(user).data,
 		"new_user": new_user
 	})
 	
@@ -181,13 +170,8 @@ def loginView(request):
 	refresh_token = RefreshToken.for_user(user)
 	response = Response({
 		"access": str(refresh_token.access_token),
-		"user" : {
-			"id": user.id,
-			"username": user.username,
-			"email": user.email,
-			"firstname": user.first_name,
-			"lastname": user.last_name
-		}
+		"user" : CurrentUserSerializer(user).data,
+		"new_user": new_user
 	})
 	
 	response.set_cookie(
@@ -241,3 +225,4 @@ class CustomTokenRefreshView(TokenRefreshView):
 			)
 			
 		return response
+		

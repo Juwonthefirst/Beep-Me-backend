@@ -4,6 +4,11 @@ from BeepMe.cache import cache
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
+class CurrentUserSerializer(serializers.ModelSerializer): 
+	class Meta: 
+		model = User
+		fields = ["id", "username", "email"]
+		
 class UsersSerializer(serializers.ModelSerializer): 
 	is_following_me = serializers.BooleanField(read_only = True)
 	is_followed_by_me = serializers.BooleanField(read_only = True)
