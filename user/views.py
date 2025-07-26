@@ -164,5 +164,5 @@ def update_username(request):
         return Response({"error": "username not provided"}, status = bad_request)
         
     request.user.username = username
-    updated_user = request.user.save(updated_fields = ["username"])
+    updated_user = request.user.save(update_fields = ["username"])
     return Response(CurrentUserSerializer(updated_user).data)
