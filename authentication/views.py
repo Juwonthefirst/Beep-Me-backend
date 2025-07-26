@@ -171,7 +171,6 @@ def loginView(request):
 	response = Response({
 		"access": str(refresh_token.access_token),
 		"user" : CurrentUserSerializer(user).data,
-		"new_user": new_user
 	})
 	
 	response.set_cookie(
