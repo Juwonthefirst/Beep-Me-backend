@@ -7,7 +7,7 @@ from django.http import FileResponse
 from django.core.files.storage import default_storage
 from .models import ProfilePicture, Attachment
 from .tasks import resize_and_save
-# Create your views here.
+
 
 class UploadProfilePictureView(APIView): 
 	parser_classes = [MultiPartParser]
