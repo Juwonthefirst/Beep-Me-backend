@@ -46,7 +46,7 @@ def get_room_messages(request, room_name):
 			jsonified_data = [json.dumps(message_object) for message_object in serialized_data]
 			cache_messages.delay(jsonified_data)
 
-		return paginator.get_paginated_response(serializer)
+		return paginator.get_paginated_response(serialized_data)
 		
 	except ChatRoom.DoesNotExist: 
 		return Response({"error": "This chat room doesn't exist"}, status = not_found)
