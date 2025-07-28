@@ -23,13 +23,13 @@ forbidden = HTTP_403_FORBIDDEN
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_room_messages(request, pk): 
+def get_room_messages(request, room_name): 
 	paginator = PageNumberPagination()
 	paginator.page_size = 50
 	page = request.query_params.get("page", "1")
 	
 	try:
-		room = ChatRoom.objects.get(id = pk)
+		room = ChatRoom.objects.get(name = room_name)
 		if not room.members.filter(id = request.user.id).exists(): 
 			raise PermissionDenied
 			
