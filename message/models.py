@@ -7,7 +7,7 @@ from upload.models import Attachment
 class Message(models.Model):
     body = models.TextField()
     attachment = models.OneToOneField(
-        Attachment, related_name="message", on_delete=models.CASCADE, null=True
+        Attachment, related_name="message_parent", on_delete=models.CASCADE, null=True
     )
     timestamp = models.DateTimeField()
     sender = models.ForeignKey(

@@ -41,7 +41,7 @@ class Cache:
             if are_users_online[index]
         }
 
-    async def add_active_member(self, room_name, user_id):
+    async def add_active_member(self, room_name: str, user_id: int):
         await self.redis.sadd(f"{room_name}_online_members", user_id)
 
     async def get_active_members(self, room_name):

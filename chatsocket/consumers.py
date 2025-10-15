@@ -73,7 +73,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await database_sync_to_async(self.user.mark_last_online)()
         tasks.send_online_status_notification.delay(self.user.id, True)
 
-    async def disconnect(self, close_code):
+    async def disconnect(self, code):
         if self.currentRoom:
             await self.group_leave()
         if not self.user:
@@ -133,8 +133,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         if not re.match(r"^(chat\-[1-9]+\-[1-9]+|group.[1-9]+){1,100}$", room_name):
             # prevent invalid room_name
-            await self.respond_with_error("Invalid room name")
-            return
+            return await self.respond_with_error("Invalid room name")
 
         match (action):
             case "group_join":
@@ -197,6 +196,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         message = event.get("message")
         sender_username = event.get("sender_username")
         uuid = event.get("uuid")
+        attachment_url = event.get("attachment_url")
         timestamp = event.get("timestamp")
 
         await self.send_json(
@@ -206,6 +206,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "sender_username": sender_username,
                 "timestamp": timestamp,
                 "uuid": uuid,
+                "attachment_url": attachment_url,
             }
         )
 
@@ -233,16 +234,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
 class NotificationConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
-        user = self.scope["user"]
+        user = self.scope.get("user")
         if not user:
             await self.close(code=4001)
+            return
+
         self.room_name = f"user_{user.id}_notifications"
-
         await self.channel_layer.group_add(self.room_name, self.channel_name)
-
         await self.accept()
 
-    async def disconnect(self, close_code):
+    async def disconnect(self, code):
         await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
     async def receive_json(self, content):

@@ -20,7 +20,6 @@ schema_view = views.get_schema_view(
 
 
 urlpatterns = [
-    path("", include("home.urls")),
     path("admin/", admin.site.urls),
     path("api/auth/", include("authentication.urls")),
     path(
@@ -31,5 +30,5 @@ urlpatterns = [
     path("api/chats/", include("chat_room.urls")),
     path("api/groups/", include("group.urls")),
     path("api/users/", include("user.urls")),
-    path("api/uploads/", include("upload.urls")),
+    path("uploads/", include("upload.urls")),
 ]
