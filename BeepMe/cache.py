@@ -1,3 +1,4 @@
+from typing import Iterable
 import redis.asyncio as async_redis
 import os
 from dotenv import load_dotenv
@@ -50,16 +51,16 @@ class Cache:
     async def remove_active_member(self, user_id, room_name):
         await self.redis.srem(f"{room_name}_online_members", user_id)
 
-    async def is_user_active_member(self, room_name, *users_id):
-        are_users_online = await self.redis.smismember(room_name, *users_id)
+    async def is_user_active_member(self, room_name, users_id):
+        are_users_online = await self.redis.smismember(room_name, users_id)
         return {
             user_id for index, user_id in enumerate(users_id) if are_users_online[index]
         }
 
     async def get_online_inactive_members(self, room_name, members_id):
-        online_members_id = await self.get_online_userst(*members_id)
+        online_members_id = await self.get_online_users(members_id)
         active_group_members_id = await self.is_user_active_member(
-            room_name, *online_members_id
+            room_name, online_members_id
         )
         online_inactive_members_id = online_members_id - active_group_members_id
         return online_inactive_members_id

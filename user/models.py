@@ -1,3 +1,4 @@
+import profile
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.core.validators import RegexValidator
@@ -22,6 +23,7 @@ class ActiveUserManager(UserManager):
 
 
 class CustomUser(AbstractUser):
+    profile_picture = models.ImageField(upload_to="uploads/profile_picture/", null=True)
     last_online = models.DateTimeField(auto_now_add=True)
     username = models.CharField(
         max_length=60,

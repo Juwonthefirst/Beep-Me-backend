@@ -234,29 +234,29 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
 class NotificationConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
-        user = self.scope.get("user")
-        if not user:
+        self.user = self.scope.get("user")
+        if not self.user:
             await self.close(code=4001)
             return
 
-        self.room_name = f"user_{user.id}_notifications"
+        self.room_name = f"user_{self.user.id}_notifications"
         await self.channel_layer.group_add(self.room_name, self.channel_name)
         await self.accept()
 
     async def disconnect(self, code):
         await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
-    async def receive_json(self, content):
+    # async def receive_json(self, content):
 
-        action = content.get("action")
-        notification_detail = content.get("notification_detail")
-        await self.channel_layer.group_send(
-            self.room_name,
-            {
-                "type": f"notification.{action}",
-                "notification_detail": notification_detail,
-            },
-        )
+    #     action = content.get("action")
+    #     notification_detail = content.get("notification_detail")
+    #     await self.channel_layer.group_send(
+    #         self.room_name,
+    #         {
+    #             "type": f"notification.{action}",
+    #             "notification_detail": notification_detail,
+    #         },
+    #     )
 
     async def notification_chat(self, event):
         # notification for chat messages for user to user and group
@@ -264,11 +264,8 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(
             content={
                 "type": "chat_notification",
-                "sender": notification_detail.get("sender"),
-                "receiver": notification_detail.get("receiver"),
-                "message": notification_detail.get("message"),
-                "is_group": notification_detail.get("is_group"),
                 "timestamp": timezone.now().isoformat(),
+                **notification_detail,
             }
         )
 
@@ -278,9 +275,8 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(
             content={
                 "type": "online_status_notification",
-                "user": notification_detail.get("user"),
-                "status": notification_detail.get("status"),
                 "timestamp": timezone.now().isoformat(),
+                **notification_detail,
             }
         )
 
@@ -305,13 +301,14 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 
     async def notification_group(self, event):
         # notification for group chat related events excluding chats
-        notification_detail = event.get("notification")
+        notification_detail = event.get("notification_detail")
         group_id = notification_detail.get("group_id")
+        notification = notification_detail.get("notification")
         timestamp = timezone.now().isoformat()
         await self.send_json(
             content={
                 "type": "group_notification",
-                "notification": notification_detail,
+                "notification": notification,
                 "group_id": group_id,
                 "timestamp": timestamp,
             }
@@ -327,7 +324,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 
     async def notification_call(self, event):
         # notification for calling
-        notification_detail = event.get("notification")
+        notification_detail = event.get("notification_detail")
         is_video = notification_detail.get("is_video")
         caller_username = notification_detail.get("caller")
         room_name = notification_detail.get("room_name")

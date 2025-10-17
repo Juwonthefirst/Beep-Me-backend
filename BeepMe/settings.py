@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     "drf_yasg",
     "authentication",
     "user",
-    "home",
     "message",
     "group",
     "notification",

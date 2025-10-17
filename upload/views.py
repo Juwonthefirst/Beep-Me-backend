@@ -1,33 +1,30 @@
-from rest_framework.parsers import MultiPartParser
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.http import FileResponse
 from django.core.files.storage import default_storage
-from .models import ProfilePicture, Attachment
-from .tasks import resize_and_save
+from group.models import Group
+from .models import Attachment
+from django.contrib.auth import get_user_model
 
-
-class UploadProfilePictureView(APIView):
-    parser_classes = [MultiPartParser]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        file = request.FILES.get("file")
-        resize_and_save.delay(file, request.user)
-        return Response({"status": "ok"})
+User = get_user_model()
 
 
 class GetProfilePictureView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, user_id):
-        file_path = "upload/profile/0"  # default profile picture
+        file_path = "uploads/profile_picture/0"  # default profile picture
         try:
-            profile_picture = ProfilePicture.objects.get(uploader_id=user_id)
-            file = profile_picture.file
-        except ProfilePicture.DoesNotExist:
+            user = User.objects.get(id=user_id)
+            profile_picture = user.profile_picture
+            if profile_picture:
+                file = profile_picture.file
+            else:
+                raise User.DoesNotExist
+
+        except User.DoesNotExist:
             file = default_storage.open(file_path)
 
         return FileResponse(
@@ -39,11 +36,16 @@ class GetGroupPictureView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, group_id):
-        file_path = "upload/profile/0"  # default profile picture
+        file_path = "uploads/profile_picture/0"  # default profile picture
         try:
-            profile_picture = ProfilePicture.objects.get(group_id=group_id)
-            file = profile_picture.file
-        except ProfilePicture.DoesNotExist:
+            group = Group.objects.get(id=group_id)
+            profile_picture = group.avatar
+            if profile_picture:
+                file = profile_picture.file
+            else:
+                raise Group.DoesNotExist
+
+        except Group.DoesNotExist:
             file = default_storage.open(file_path)
 
         return FileResponse(

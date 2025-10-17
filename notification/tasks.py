@@ -53,7 +53,7 @@ def send_group_notification(room_id, notification, sender_id):
             {
                 "type": "notification.group",
                 "notification_detail": {
-                    "group_id": group_id,
+                    "group_id": room.group.id,
                     "notification": notification,
                 },
             },
@@ -74,7 +74,7 @@ def send_online_status_notification(user_id, status):
             {
                 "type": "notification.online",
                 "notification_detail": {
-                    "user": user,
+                    "user": user.id,
                     "status": status,
                 },
             },

@@ -32,3 +32,10 @@ class ChatRoom(models.Model):
 
     def get_last_message(self):
         return self.messages.filter().last()
+
+    def is_member(self, user_id):
+        room = self
+        if self.is_group:
+            room = self.group
+
+        return room.members.filter(id=user_id).exists()
