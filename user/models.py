@@ -31,6 +31,7 @@ class CustomUser(AbstractUser):
         validators=[username_validator],
         error_messages={"unique": "a user with this username already exists"},
         db_index=True,
+        null=True,
     )
     email = models.EmailField(unique=True, db_index=True)
     following = models.ManyToManyField(

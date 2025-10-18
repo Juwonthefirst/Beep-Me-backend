@@ -18,22 +18,19 @@ def make_migrations_and_migrate():
 
 
 collectstatic = lambda: subprocess.run(["uv", "run", "manage.py", "collectstatic"])
-runserver = lambda: subprocess.run(
-    ["daphne", "BeepMe.asgi:application", "-b", "0.0.0.0"]
-)
+run_devserver = lambda: subprocess.run(["uv", "run", "manage.py", "runserver"])
 
 
 def run_development_server():
     start_database()
-    collectstatic()
-    runserver()
+    run_devserver()
 
 
 def run_production_server():
     subprocess.run(["uv", "run", "createsuperuser.py"])
     make_migrations_and_migrate()
     collectstatic()
-    runserver()
+    subprocess.run(["daphne", "BeepMe.asgi:application", "-b", "0.0.0.0"])
 
 
 def run_tests():

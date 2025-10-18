@@ -1,4 +1,3 @@
-from pyexpat import model
 from django.db import models
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import PermissionDenied
@@ -53,20 +52,16 @@ class Role(models.Model):
     is_base_role = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        # make there to always be a role with is_master and is_base_role
-        # there can only one base role
-        constraints = [models]
+    # class Meta:
+    #     # make there to always be a role with is_master and is_base_role
+    #     # there can only one base role
+    #     constraints = [models]
 
 
 class MemberDetail(models.Model):
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    role = models.ForeignKey(
-        Role,
-        on_delete=models.SET_DEFAULT,
-        default=Role.objects.filter(is_base_role=True).first,
-    )
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

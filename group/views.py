@@ -140,6 +140,9 @@ class EditRolesView(RetrieveUpdateDestroyAPIView):
     queryset = Role.objects.prefetch_related("permissions")
     lookup_field = "role_id"
 
+    def delete(self, request):
+        return super().delete(request)
+
 
 class PermissionsView(ListAPIView):
     queryset = Permission.objects.all()

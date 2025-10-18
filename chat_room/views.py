@@ -1,3 +1,4 @@
+import asyncio
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from rest_framework.response import Response
@@ -13,6 +14,7 @@ from chat_room.permissions import block_non_members
 from chat_room.serializers import RoomDetailsSerializer
 from chat_room.models import ChatRoom
 from chat_room.tasks import cache_messages
+from notification.tasks import send_call_notification
 from message.serializers import MessagesSerializer
 from BeepMe.cache import cache
 import json, os
@@ -74,15 +76,12 @@ class RoomDetailsView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-@block_non_members
-def get_livekit_JWT_token(request, room_name, roomObject):
+def get_livekit_JWT_token(request, room_name, room_object):
     user = request.user
     is_video_admin = False
 
-    if roomObject.is_group:
-        user_group_role = roomObject.group.get_user_role(user.id)
+    if room_object.is_group:
+        user_group_role = room_object.group.get_user_role(user.id)
         is_video_admin = user_group_role.permissions.filter(
             action="video admin"
         ).exists()
@@ -93,8 +92,9 @@ def get_livekit_JWT_token(request, room_name, roomObject):
         .with_name(user.username)
         .with_grants(
             api.VideoGrants(
-                room=roomObject.name,
+                room=room_object.name,
                 room_join=True,
+                room_create=False,
                 room_admin=is_video_admin,
                 can_publish=True,
                 can_publish_data=True,
@@ -104,4 +104,33 @@ def get_livekit_JWT_token(request, room_name, roomObject):
         .to_jwt()
     )
 
-    return Response({"token": token})
+    return {"token": token}
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@block_non_members
+def join_livekit_room(request, room_name, room_object):
+    return Response(get_livekit_JWT_token(request, room_name, room_object))
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+@block_non_members
+def create_livekit_room(request, room_name, room_object):
+
+    async def inner():
+        async with api.LiveKitAPI() as client:
+            await client.room.create_room(
+                api.CreateRoomRequest(name=room_name, empty_timeout=300)
+            )
+        livekit_token = get_livekit_JWT_token(request, room_name, room_object)
+        send_call_notification.delay(
+            caller_id=request.user.id,
+            caller_username=request.user.username,
+            room_name=room_name,
+            is_video=request.data.get("is_video", False),
+        )
+        return Response({"room_url": os.getenv("LIVEKIT_URL"), **livekit_token})
+
+    return asyncio.run(inner())

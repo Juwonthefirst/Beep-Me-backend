@@ -97,20 +97,19 @@ def send_friend_request_notification(username, friend_id, action):
 
 
 @shared_task
-def send_call_notification(caller_id, caller_username, room_id, video_call=False):
+def send_call_notification(caller_id, caller_username, room_name, is_video=False):
+    from chat_room.models import ChatRoom
+
     try:
-        from chat_room.models import ChatRoom
-
-        room = ChatRoom.objects.select_related("group").get(id=room_id)
+        room = ChatRoom.objects.select_related("group").get(name=room_name)
         if room.is_group:
-            members_id = room.group.members.values_list("id", flat=True)
+            members = room.group.members
         else:
-            room_name = room.name
-            members_id = room_name.split("_")[1:]
+            members = room.members
 
-        online_members_id = async_to_sync(cache.online_members_id)(members_id) - {
-            caller_id
-        }
+        members_id = list(members.exclude(id=caller_id).values_list("id", flat=True))
+
+        online_members_id = async_to_sync(cache.get_online_users)(members_id)
         for member_id in online_members_id:
 
             async_to_sync(channel_layer.group_send)(
@@ -119,10 +118,10 @@ def send_call_notification(caller_id, caller_username, room_id, video_call=False
                     "type": "notification.call",
                     "notification_detail": {
                         "caller": caller_username,
-                        "room_name": room.name,
-                        "is_video": video_call,
+                        "room_name": room_name,
+                        "is_video": is_video,
                         "is_group": room.is_group,
-                        "room_id": room.id,
+                        # "room_id": room.id,
                     },
                 },
             )
