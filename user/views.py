@@ -156,12 +156,14 @@ class receivedFriendRequestView(ListAPIView):
 @permission_classes([IsAuthenticated])
 def sendFriendRequest(request):
     serializer = FriendRequestSerializer(data=request.data)
-    user_id = request.user.id
     if serializer.is_valid():
+        user_id = request.user.id
         friend_id = serializer.validated_data.get("friend_id")
-        action = serializer.validated_data.get("action")
         request.user.following.add(friend_id)
-        if action == "accept":
+        is_following = request.user.is_friend_of(friend_id)
+        action = "sent"
+        if is_following:
+            action = "accepted"
             room_name = f"chat-{user_id}-{friend_id}"
             if friend_id < user_id:
                 room_name = f"chat-{friend_id}-{user_id}"

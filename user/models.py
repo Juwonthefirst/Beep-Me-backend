@@ -31,7 +31,6 @@ class CustomUser(AbstractUser):
         validators=[username_validator],
         error_messages={"unique": "a user with this username already exists"},
         db_index=True,
-        null=True,
     )
     email = models.EmailField(unique=True, db_index=True)
     following = models.ManyToManyField(
@@ -46,7 +45,7 @@ class CustomUser(AbstractUser):
     def is_friend_of(self, user_id):
         return (
             self.followers.filter(id=user_id).exists()
-            and self.following.filter(id=user_id).exists()
+            and self.following.filter(id=user_id, following_id=user_id).exists()
         )
 
     def get_friends(self):
@@ -54,11 +53,11 @@ class CustomUser(AbstractUser):
 
     def get_unmutual_following(self):
         friends = self.get_friends().values_list("id", flat=True)
-        return set(self.following.values_list("id", flat=True)) - set(friends)
+        return self.following.exclude(id__in=friends).values_list("id", flat=True)
 
     def get_unmutual_followers(self):
         friends = self.get_friends().values_list("id", flat=True)
-        return set(self.followers.values_list("id", flat=True)) - set(friends)
+        return set(self.followers.exclude(id__in=friends).values_list("id", flat=True))
 
     def save(self, *args, **kwargs):
         self.username = self.username.capitalize()

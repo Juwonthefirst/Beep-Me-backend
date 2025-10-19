@@ -316,7 +316,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 
         await create_notification(
             "group_notification",
-            notification_detail,
+            notification,
             self.user,
             timestamp,
             group_id=group_id,
@@ -328,14 +328,14 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         is_video = notification_detail.get("is_video")
         caller_username = notification_detail.get("caller")
         room_name = notification_detail.get("room_name")
-        room_id = notification_detail.get("room_id")
+        # room_id = notification_detail.get("room_id")
         is_group = notification_detail.get("is_group")
         await self.send_json(
             content={
                 "type": "call_notification",
                 "caller": caller_username,
                 "room_name": room_name,
-                "room_id": room_id,
+                # "room_id": room_id,
                 "is_video": is_video,
                 "is_group": is_group,
             }

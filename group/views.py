@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
+from notification import tasks
 from notification.serializers import NotificationSerializer
 from rest_framework.generics import (
     ListAPIView,
@@ -88,6 +89,15 @@ def delete_group_members(request, pk):
         group = Group.objects.get(id=pk)
 
         group.delete_members(member_ids)
+        no_of_people = (
+            f"{len(member_ids)} people" if len(member_ids) == 1 else "one person"
+        )
+
+        tasks.send_group_notification.delay(
+            group.chat.id,
+            f"{request.user.username} removed {no_of_people}",
+            request.user.id,
+        )
         return Response({"status": "success"})
     except Group.DoesNotExist:
         return Response({"error": "This group does not exist"}, status=bad_request)
@@ -106,6 +116,15 @@ def add_group_members(request, pk):
         group = Group.objects.get(id=pk)
 
         group.add_members(member_ids)
+        no_of_people = (
+            f"{len(member_ids)} people" if len(member_ids) == 1 else "one person"
+        )
+
+        tasks.send_group_notification.delay(
+            group.chat.id,
+            f"{request.user.username} added {no_of_people}",
+            request.user.id,
+        )
         return Response({"status": "success"})
     except Group.DoesNotExist:
         return Response({"error": "This group does not exist"}, status=bad_request)

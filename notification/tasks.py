@@ -42,12 +42,11 @@ def send_group_notification(room_id, notification, sender_id):
     from chat_room.models import ChatRoom
 
     room = ChatRoom.objects.select_related("group").get(id=room_id)
-    members_id = room.group.members.values_list("id", flat=True)
+    members_id = list(room.group.members.values_list("id", flat=True))
     online_inactive_members_id = async_to_sync(cache.get_online_inactive_members)(
         room.name, members_id
     ) - {sender_id}
     for member_id in online_inactive_members_id:
-
         async_to_sync(channel_layer.group_send)(
             f"user_{member_id}_notifications",
             {

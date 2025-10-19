@@ -63,6 +63,8 @@ class MemberDetail(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
+    last_read_message_timestamp = models.DateTimeField()
+    last_read_notification_timestamp = models.DateTimeField()
 
     class Meta:
         constraints = [
