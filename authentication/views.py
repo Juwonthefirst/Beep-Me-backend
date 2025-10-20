@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -179,9 +180,16 @@ def loginView(request):
     refresh_token = RefreshToken.for_user(user)
     response = Response(
         {
-            "access": str(refresh_token.access_token),
             "user": CurrentUserSerializer(user).data,
         }
+    )
+    response.set_cookie(
+        key="access_token",
+        value=str(refresh_token.access_token),
+        secure=True,
+        httponly=True,
+        max_age=60 * 60,
+        samesite="None",
     )
 
     response.set_cookie(
@@ -208,6 +216,7 @@ def logoutView(request):
         token.blacklist()
         response = Response(status=status.HTTP_205_RESET_CONTENT)
         response.delete_cookie("refresh_token")
+        response.delete_cookie("access_token")
         return response
     except:
         return Response({"error": "invalid token"}, status=bad_request)

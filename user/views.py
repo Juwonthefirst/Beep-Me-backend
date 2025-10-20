@@ -5,7 +5,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from django.db.models import Max, Exists, OuterRef
+from django.db.models import Max, Exists, OuterRef, Count
 from notification.serializers import NotificationSerializer
 from notification import tasks
 from chat_room.serializers import UserChatRoomSerializer
@@ -84,7 +84,10 @@ class UserChatRoomsView(ListAPIView):
             ChatRoom.objects.select_related("group")
             .prefetch_related("members", "messages")
             .filter(members=user)
-            .annotate(last_message_time=Max("messages__timestamp"))
+            .annotate(
+                last_message_time=Max("messages__timestamp"),
+                unread_message_count=Count(),
+            )
             .order_by("-last_message_time")
         )
 
