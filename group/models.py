@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import PermissionDenied
@@ -63,8 +64,7 @@ class MemberDetail(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
-    last_read_message_timestamp = models.DateTimeField()
-    last_read_notification_timestamp = models.DateTimeField()
+    last_read_message_at = models.DateTimeField(default=timezone.now())
 
     class Meta:
         constraints = [

@@ -5,7 +5,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from django.db.models import Max, Exists, OuterRef, Count
+from django.db.models import Exists, OuterRef
 from notification.serializers import NotificationSerializer
 from notification import tasks
 from chat_room.serializers import UserChatRoomSerializer
@@ -18,6 +18,8 @@ from user.serializers import (
 )
 from django.conf import settings
 import re
+
+from user.services import get_user_rooms
 
 User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
@@ -73,6 +75,20 @@ class RetrieveUserView(RetrieveAPIView):
         )
 
 
+class RetrieveUserChatRoomView(RetrieveAPIView):
+    serializer_class = UserChatRoomSerializer
+    lookup_field = "name"
+
+    def get_queryset(self):
+        user = self.request.user
+        return get_user_rooms(user)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["user_id"] = self.request.user.id
+        return context
+
+
 class UserChatRoomsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserChatRoomSerializer
@@ -80,16 +96,7 @@ class UserChatRoomsView(ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return (
-            ChatRoom.objects.select_related("group")
-            .prefetch_related("members", "messages")
-            .filter(members=user)
-            .annotate(
-                last_message_time=Max("messages__timestamp"),
-                unread_message_count=Count(),
-            )
-            .order_by("-last_message_time")
-        )
+        return get_user_rooms(user)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

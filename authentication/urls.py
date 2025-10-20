@@ -9,6 +9,7 @@ urlpatterns = [
     path("social/google/code/", views.google_login_by_code_token),
     path("token/refresh/", views.CustomTokenRefreshView.as_view()),
     path("user/rooms/", user_views.UserChatRoomsView.as_view()),
+    path("user/rooms/<str:name>/", user_views.RetrieveUserChatRoomView.as_view()),
     path("user/notifications/", user_views.UserNotificationsView.as_view()),
     path("user/friends/", user_views.FriendListView.as_view()),
     path("user/friend-requests/sent/", user_views.SentFriendRequestView.as_view()),
