@@ -18,6 +18,7 @@ class RoomDetailsSerializer(serializers.ModelSerializer):
 class UserChatRoomSerializer(serializers.ModelSerializer):
     parent = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
+    unread_message_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = ChatRoom

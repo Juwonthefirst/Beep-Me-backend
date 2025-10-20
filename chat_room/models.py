@@ -10,9 +10,7 @@ User = get_user_model()
 class ChatRoom(models.Model):
     name = models.CharField(max_length=100, unique=True, db_index=True)
     is_group = models.BooleanField(default=False)
-    members = models.ManyToManyField(
-        User, through="MemberDetail", related_name="rooms", blank=True
-    )
+    members = models.ManyToManyField(User, through="MemberDetail", related_name="rooms")
     group = models.OneToOneField(
         Group, related_name="chat", on_delete=models.CASCADE, blank=True, null=True
     )
@@ -44,23 +42,17 @@ class ChatRoom(models.Model):
 
         return room.members.filter(id=user_id).exists()
 
-    @classmethod
-    def get_member_details(cls, member_id):
-        if self.is_group:
-            return GroupMemberDetail.objects.filter(
-                member_id=member_id, group=self.group
-            )
-        return MemberDetail.objects.filter(id=member_id, room=self)
-
 
 class MemberDetail(models.Model):
-    member = models.ForeignKey(User, on_delete=models.CASCADE)
+    member = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="room_roles"
+    )
     room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
-    last_read_message_at = models.DateTimeField(default=timezone.now())
+    last_read_message_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["member", "room"], name="unique-group-member"
+                fields=["member", "room"], name="unique-chat-member"
             )
         ]

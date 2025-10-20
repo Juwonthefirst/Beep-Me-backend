@@ -1,9 +1,7 @@
-from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
-from django.conf.urls.static import static
 from drf_yasg import openapi, views
-
+from rest_framework.permissions import AllowAny
 
 schema_view = views.get_schema_view(
     openapi.Info(
@@ -16,6 +14,7 @@ schema_view = views.get_schema_view(
     ),
     public=True,
     url="https://beep-me-api.onrender.com",
+    permission_classes=[AllowAny],
 )
 
 
