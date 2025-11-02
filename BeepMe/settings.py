@@ -224,9 +224,6 @@ CHANNEL_LAYERS = {
 # }
 
 
-# CELERY
-CELERY_BROKER_URL = os.getenv("REDIS_URL")
-
 USERNAME_REGEX = r"^[a-zA-Z](?:[a-zA-Z0-9]*(?:[-_][a-zA-Z0-9])?)*[a-zA-Z0-9]+$"
 
 if os.getenv("ENVIRONMENT") == "production":

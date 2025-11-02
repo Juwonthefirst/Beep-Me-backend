@@ -13,8 +13,8 @@ from asgiref.sync import async_to_sync
 from chat_room.permissions import block_non_members
 from chat_room.serializers import RoomDetailsSerializer
 from chat_room.models import ChatRoom
-from chat_room.tasks import cache_messages
-from notification.tasks import send_call_notification
+from chat_room.services import cache_messages
+from notification.services import send_call_notification
 from message.serializers import MessagesSerializer
 from BeepMe.cache import cache
 import json, os
@@ -50,7 +50,7 @@ def get_room_messages(request, room_name, roomObject):
         jsonified_data = [
             json.dumps(message_object) for message_object in serialized_data
         ]
-        cache_messages.delay(room_name, jsonified_data)
+        cache_messages(room_name, jsonified_data)
 
     return paginator.get_paginated_response(serialized_data)
 
@@ -125,10 +125,10 @@ def create_livekit_room(request, room_name, room_object):
                 api.CreateRoomRequest(name=room_name, empty_timeout=300)
             )
         livekit_token = get_livekit_JWT_token(request, room_name, room_object)
-        send_call_notification.delay(
+        send_call_notification(
             caller_id=request.user.id,
             caller_username=request.user.username,
-            room_name=room_name,
+            room=room_object,
             is_video=request.data.get("is_video", False),
         )
         return Response({"room_url": os.getenv("LIVEKIT_URL"), **livekit_token})

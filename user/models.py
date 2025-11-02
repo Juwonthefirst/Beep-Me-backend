@@ -36,7 +36,6 @@ class CustomUser(AbstractUser):
     following = models.ManyToManyField(
         "self", symmetrical=False, related_name="followers"
     )
-    # objects = ActiveUserManager()
 
     def mark_last_online(self):
         self.last_online = timezone.now()

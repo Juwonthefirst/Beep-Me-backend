@@ -1,5 +1,8 @@
+import asyncio
 from functools import wraps
+from asgiref.sync import async_to_sync
 import os
+from threading import Thread
 
 is_prod_enviroment = os.getenv("ENVIROMENT") == "production"
 
@@ -34,5 +37,23 @@ def cookify_response_tokens(f):
             )
 
         return response
+
+    return wrapped_function
+
+
+def async_background_task(f):
+    @wraps(f)
+    def wrapped_function(*args, **kwargs):
+        return asyncio.create_task(f(*args, **kwargs))
+
+    return wrapped_function
+
+
+def background_task(f):
+    @wraps(f)
+    def wrapped_function(*args, **kwargs):
+        if asyncio.iscoroutinefunction(f):
+            f = async_to_sync(f)
+        Thread(target=f, args=[*args], kwargs={**kwargs}, daemon=True)
 
     return wrapped_function

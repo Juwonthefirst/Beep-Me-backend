@@ -16,6 +16,23 @@ class Cache:
     async def set(self, key, value, expiry_time=60):
         await self.redis.set(key, value, ex=expiry_time)
 
+    async def set_hash(self, key, mapping, expiry_time):
+        await self.redis.hset(key, mapping=mapping)
+        if expiry_time:
+            await self.redis.expire(key, expiry_time)
+
+    async def set_hash_field(self, hash_key, field_key, value):
+        await self.redis.hset(hash_key, field_key, value)
+
+    async def delete_hash_field(self, hash_key, field_key):
+        await self.redis.hdel(hash_key, field_key)
+
+    async def get_hash_field(self, hash_key, field_key):
+        return await self.redis.hget(hash_key, field_key)
+
+    async def get_hash(self, hash_key):
+        return await self.redis.hgetall(hash_key)
+
     async def get(self, key):
         return await self.redis.get(key)
 

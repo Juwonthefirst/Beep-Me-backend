@@ -3,7 +3,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from BeepMe.cache import cache
 from django.utils import timezone
-from notification import tasks
+from notification import services
 
 
 @database_sync_to_async
@@ -34,7 +34,11 @@ def get_room(room_name):
     from chat_room.models import ChatRoom
 
     try:
-        return ChatRoom.objects.get(name=room_name)
+        return (
+            ChatRoom.objects.select_related("group")
+            .prefetch_related("members", "messages")
+            .get(name=room_name)
+        )
     except ChatRoom.DoesNotExist:
         return None
 
@@ -71,7 +75,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self.currentRoom = None
         await self.accept()
         await database_sync_to_async(self.user.mark_last_online)()
-        tasks.send_online_status_notification.delay(self.user.id, True)
+        services.send_online_status_notification(self.user, True)
 
     async def disconnect(self, code):
         if self.currentRoom:
@@ -80,7 +84,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return
         await database_sync_to_async(self.user.mark_last_online)()
         await cache.remove_user_online(self.user.id)
-        tasks.send_online_status_notification.delay(self.user.id, False)
+        services.send_online_status_notification(self.user, False)
 
     async def group_join(self, room_name):
         if self.currentRoom:
@@ -101,11 +105,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_add(room_name, self.channel_name)
 
         self.currentRoom = room
-        await cache.add_active_member(
-            room_name,
-            self.user.id,
-        )
+        await cache.add_active_member(room_name, self.user.id)
 
+    # on group leave, set the user last online timestamp and use that for unread messages
     async def group_leave(self):
         if not self.currentRoom:
             return
@@ -125,13 +127,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         sender_username = self.user.username
         action = content.get("action")
         uuid = content.get("uuid")
-        # is_video_call = data.get("is_video_call")
         timestamp = timezone.now().isoformat()
 
         if action == "ping":
             return await self.ping_user_is_online()
 
-        if not re.match(r"^(chat\-[1-9]+\-[1-9]+|group.[1-9]+){1,100}$", room_name):
+        if not re.fullmatch(r"^(chat\-[1-9]+\-[1-9]+|group.[1-9]+){1,100}$", room_name):
             # prevent invalid room_name
             return await self.respond_with_error("Invalid room name")
 
@@ -187,9 +188,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     sender_id=self.user.id,
                     timestamp=timestamp,
                 )
-                tasks.send_chat_notification.delay(
-                    room.id, message, self.user.username, self.user.id
-                )
+                services.send_chat_notification(room, message, self.user)
 
     async def chat_message(self, event):
         room_name = event.get("room")

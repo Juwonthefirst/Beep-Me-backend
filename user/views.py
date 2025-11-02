@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef
 from notification.serializers import NotificationSerializer
-from notification import tasks
+from notification import services
 from chat_room.serializers import UserChatRoomSerializer
 from chat_room.models import ChatRoom
 from user.serializers import (
@@ -19,7 +19,8 @@ from user.serializers import (
 from django.conf import settings
 import re
 
-from user.services import get_user_rooms
+from chat_room.queries import get_user_rooms
+from user.queries import is_username_taken
 
 User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
@@ -118,7 +119,7 @@ class DoesUsernameExistView(APIView):
 
     def post(self, request):
         requested_username = request.data.get("username").capitalize()
-        username_taken = User.objects.filter(username=requested_username).exists()
+        username_taken = is_username_taken(requested_username)
         if username_taken:
             return Response({"exists": username_taken}, status=bad_request)
         if not re.match(settings.USERNAME_REGEX, requested_username):
@@ -179,7 +180,7 @@ def sendFriendRequest(request):
                 room_name = f"chat-{friend_id}-{user_id}"
 
             ChatRoom.create_with_members(room_name)
-        tasks.send_friend_request_notification.delay(
+        services.send_friend_request_notification(
             request.user.username, friend_id, action
         )
         return Response({"status": "ok"})

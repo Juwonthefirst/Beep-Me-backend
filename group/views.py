@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from notification import tasks
+from notification import services
 from notification.serializers import NotificationSerializer
 from rest_framework.generics import (
     ListAPIView,
@@ -93,8 +93,8 @@ def delete_group_members(request, pk):
             f"{len(member_ids)} people" if len(member_ids) == 1 else "one person"
         )
 
-        tasks.send_group_notification.delay(
-            group.chat.id,
+        services.send_group_notification(
+            group.chat,
             f"{request.user.username} removed {no_of_people}",
             request.user.id,
         )
@@ -120,8 +120,8 @@ def add_group_members(request, pk):
             f"{len(member_ids)} people" if len(member_ids) == 1 else "one person"
         )
 
-        tasks.send_group_notification.delay(
-            group.chat.id,
+        services.send_group_notification(
+            group.chat,
             f"{request.user.username} added {no_of_people}",
             request.user.id,
         )

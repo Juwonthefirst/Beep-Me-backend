@@ -3,10 +3,6 @@ from chat_room.models import ChatRoom
 from user.serializers import UsersSerializer
 from message.serializers import MessagesSerializer
 from group.serializers import GroupSerializer
-from BeepMe.cache import cache
-from asgiref.sync import async_to_sync
-from chat_room.tasks import cache_messages
-import json
 
 
 class RoomDetailsSerializer(serializers.ModelSerializer):

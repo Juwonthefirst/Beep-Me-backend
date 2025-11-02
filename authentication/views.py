@@ -1,3 +1,6 @@
+import json
+import re
+from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -15,8 +18,8 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from authlib.integrations.requests_client import OAuth2Session
 from authentication.serializers import LoginSerializer, SignupSerializer
-from authentication.tasks import send_user_otp
-from authentication.utils import cookify_response_tokens
+from authentication.services import send_user_otp
+from BeepMe.utils import cookify_response_tokens
 from user.serializers import CurrentUserSerializer
 import os
 import secrets
@@ -102,6 +105,7 @@ def verify_id_token(token):
 @cookify_response_tokens
 @ensure_csrf_cookie
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def google_login_by_code_token(request):
     code = request.data.get("code")
     if not code:
@@ -143,25 +147,31 @@ def google_login_by_code_token(request):
 @cookify_response_tokens
 @ensure_csrf_cookie
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def loginView(request):
     serializer = LoginSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=bad_request)
 
-    username = serializer.validated_data.get("username")
-    email = serializer.validated_data.get("email")
+    identification = serializer.validated_data.get("identification")
     password = serializer.validated_data.get("password")
 
     try:
-        user = User.objects.get(Q(username=username) | Q(email=email))
-    except User.DoesNotExist:
+        if re.fullmatch(settings.USERNAME_REGEX, identification):
+            user = User.objects.get(username=identification)
+        elif "@" in identification and "." in identification:
+            user = User.objects.get(email=identification)
+        else:
+            raise ValueError
+
+    except (User.DoesNotExist, ValueError):
         return Response(
-            {"error": "Unable to login with provided credentials"}, status=unauthorized
+            {"error": "Unable to login with provided credentials"}, status=bad_request
         )
 
     if not user.check_password(password):
         return Response(
-            {"error": "Unable to login with provided credentials"}, status=unauthorized
+            {"error": "Unable to login with provided credentials"}, status=bad_request
         )
 
     refresh_token = RefreshToken.for_user(user)
@@ -195,6 +205,7 @@ def logoutView(request):
 
 @method_decorator(cookify_response_tokens, name="post")
 @method_decorator(csrf_protect, name="dispatch")
+@method_decorator(permission_classes([AllowAny]), name="dispatch")
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
@@ -210,8 +221,10 @@ class CustomTokenRefreshView(TokenRefreshView):
             return Response({"error": "user doesn't exist"}, status=bad_request)
 
 
-@method_decorator(ensure_csrf_cookie, name="post")
+@method_decorator(ensure_csrf_cookie, name="dispatch")
 class RetrieveOTPView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         email = request.data.get("email")
         if User.objects.filter(email=email).exists():
@@ -221,24 +234,41 @@ class RetrieveOTPView(APIView):
         otp = "".join([str(secrets.randbelow(10)) for _ in range(6)])
         otp_hash = hashlib.sha256(otp.encode()).hexdigest()
 
-        async_to_sync(cache.set)(
+        async_to_sync(cache.set_hash)(
             f"signup_session:{session_id}",
-            {"email": email, "otp_hash": otp_hash, "verified": False, "attempts": 0},
+            mapping={
+                "email": email,
+                "otp_hash": otp_hash,
+                "verified": 0,
+                "attempts": 0,
+            },
             expiry_time=600,
         )
 
-        send_user_otp.delay(otp, to=email)
-
-        return Response({"session_id": session_id})
+        send_user_otp(otp, to=email)
+        response = Response({"status": "sent"})
+        response.set_cookie(
+            "signup_session_id",
+            session_id,
+            secure=os.getenv("ENVIROMENT") == "production",
+            httponly=True,
+            max_age=60 * 10,
+            samesite="None",
+        )
+        return response
 
 
 @method_decorator(ensure_csrf_cookie, name="post")
 class VerifyOTPView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
-        session_id = request.data.get("session_id")
+        session_id = request.COOKIES.get("signup_session_id")
         user_otp = request.data.get("otp")
 
-        session = async_to_sync(cache.get)(f"signup_session:{session_id}")
+        session = json.loads(
+            async_to_sync(cache.get_hash)(f"signup_session:{session_id}")
+        )
         if not session:
             return Response({"error": "Invalid session"}, status=bad_request)
 
@@ -251,12 +281,13 @@ class VerifyOTPView(APIView):
         user_hash = hashlib.sha256(user_otp.encode()).hexdigest()
 
         if secrets.compare_digest(session["otp_hash"], user_hash):
-            session["verified"] = True
-            del session["otp_hash"]
-            async_to_sync(cache.set)(
-                f"signup_session:{session_id}", session, expiry_time=900
+            async_to_sync(cache.set_hash_field)(
+                f"signup_session:{session_id}", "verified", 1
             )
-            return Response({"session_id": session_id, "status": "verified"})
+            async_to_sync(cache.delete_hash_field)(
+                f"signup_session:{session_id}", "otp_hash"
+            )
+            return Response({"status": "verified"})
         else:
             session["attempts"] += 1
             async_to_sync(cache.set)(
@@ -268,22 +299,29 @@ class VerifyOTPView(APIView):
 @method_decorator(cookify_response_tokens, name="post")
 @method_decorator(ensure_csrf_cookie, name="post")
 class CompleteSignupView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=bad_request)
 
-        session_id = serializer.validated_data.get("session_id")
+        session_id = request.COOKIES.get("signup_session_id")
         username = serializer.validated_data.get("username")
         password = serializer.validated_data.get("password")
 
-        session = async_to_sync(cache.get)(f"signup_session:{session_id}")
-        if not session or not session.get("verified"):
+        is_session_verified = async_to_sync(cache.get_hash_field)(
+            f"signup_session:{session_id}", "verified"
+        )
+        if not is_session_verified:
             return Response({"error": "Not verified"}, status=bad_request)
 
+        user_email = async_to_sync(cache.get_hash_field)(
+            f"signup_session:{session_id}", "email"
+        )
         async_to_sync(cache.delete)(f"signup_session:{session_id}")
 
-        if User.objects.filter(email=session["email"]).exists():
+        if User.objects.filter(email=user_email).exists():
             return Response({"error": "email taken"}, status=bad_request)
 
         if User.objects.filter(username=username).exists():
@@ -291,7 +329,7 @@ class CompleteSignupView(APIView):
 
         try:
             user = User.objects.create_user(
-                username=username, email=session["email"], password=password
+                username=username, email=user_email, password=password
             )
 
             refresh_token = RefreshToken.for_user(user)

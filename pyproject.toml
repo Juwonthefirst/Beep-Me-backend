@@ -8,7 +8,6 @@ dependencies = [
     "argon2-cffi==23.1.0",
     "authlib>=1.6.5",
     "boto3>=1.40.50",
-    "celery>=5.5.3",
     "channels==4.2.2",
     "channels-redis==4.2.1",
     "daphne>=4.2.1",
