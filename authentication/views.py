@@ -1,4 +1,3 @@
-import json
 import re
 from django.conf import settings
 from rest_framework import status
@@ -102,7 +101,16 @@ def verify_id_token(token):
 #     return response
 
 
-@cookify_response_tokens
+@cookify_response_tokens(
+    {
+        "refresh_token": {
+            "max_age": settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+        },
+        "access_token": {
+            "max_age": settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
+        },
+    },
+)
 @ensure_csrf_cookie
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -137,14 +145,23 @@ def google_login_by_code_token(request):
     refresh_token = RefreshToken.for_user(user)
     return Response(
         {
-            "refresh": str(refresh_token),
-            "access": str(refresh_token.access_token),
+            "refresh_token": str(refresh_token),
+            "access_token": str(refresh_token.access_token),
             "user": CurrentUserSerializer(user).data,
         }
     )
 
 
-@cookify_response_tokens
+@cookify_response_tokens(
+    {
+        "refresh_token": {
+            "max_age": settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+        },
+        "access_token": {
+            "max_age": settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
+        },
+    },
+)
 @ensure_csrf_cookie
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -158,9 +175,9 @@ def loginView(request):
 
     try:
         if re.fullmatch(settings.USERNAME_REGEX, identification):
-            user = User.objects.get(username=identification)
+            user = User.objects.get(username=identification.capitalize())
         elif "@" in identification and "." in identification:
-            user = User.objects.get(email=identification)
+            user = User.objects.get(email=identification.lower())
         else:
             raise ValueError
 
@@ -178,8 +195,8 @@ def loginView(request):
     return Response(
         {
             "user": CurrentUserSerializer(user).data,
-            "refresh": str(refresh_token),
-            "access": str(refresh_token),
+            "refresh_token": str(refresh_token),
+            "access_token": str(refresh_token),
         }
     )
 
@@ -205,8 +222,9 @@ def logoutView(request):
 
 @method_decorator(cookify_response_tokens, name="post")
 @method_decorator(csrf_protect, name="dispatch")
-@method_decorator(permission_classes([AllowAny]), name="dispatch")
 class CustomTokenRefreshView(TokenRefreshView):
+    permission_classes = [AllowAny]
+
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
@@ -222,13 +240,24 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
+@method_decorator(
+    cookify_response_tokens(
+        {"signup_session_id": {"max_age": settings.OTP_EXPIRY_TIME}},
+    ),
+    name="post",
+)
 class RetrieveOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get("email")
+        email = request.data.get("email").lower()
         if User.objects.filter(email=email).exists():
             return Response({"error": "email taken"}, status=bad_request)
+
+        if request.COOKIES.get("signup_session_id"):
+            async_to_sync(cache.delete)(
+                f"signup_session:{request.COOKIES.get('signup_session_id')}"
+            )
 
         session_id = secrets.token_urlsafe(32)
         otp = "".join([str(secrets.randbelow(10)) for _ in range(6)])
@@ -242,33 +271,32 @@ class RetrieveOTPView(APIView):
                 "verified": 0,
                 "attempts": 0,
             },
-            expiry_time=600,
+            expiry_time=settings.OTP_EXPIRY_TIME,
         )
 
         send_user_otp(otp, to=email)
-        response = Response({"status": "sent"})
-        response.set_cookie(
-            "signup_session_id",
-            session_id,
-            secure=os.getenv("ENVIROMENT") == "production",
-            httponly=True,
-            max_age=60 * 10,
-            samesite="None",
-        )
-        return response
+        return Response({"status": "sent", "signup_session_id": session_id})
+        # response.set_cookie(
+        #     "signup_session_id",
+        #     session_id,
+        #     secure=os.getenv("ENVIROMENT") == "production",
+        #     httponly=True,
+        #     max_age=settings.OTP_EXPIRY_TIME,
+        #     samesite="None",
+        # )
+        # return response
 
 
-@method_decorator(ensure_csrf_cookie, name="post")
+@method_decorator(csrf_protect, name="post")
 class VerifyOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         session_id = request.COOKIES.get("signup_session_id")
         user_otp = request.data.get("otp")
+        print(session_id)
+        session = async_to_sync(cache.get_hash)(f"signup_session:{session_id}")
 
-        session = json.loads(
-            async_to_sync(cache.get_hash)(f"signup_session:{session_id}")
-        )
         if not session:
             return Response({"error": "Invalid session"}, status=bad_request)
 
@@ -289,15 +317,14 @@ class VerifyOTPView(APIView):
             )
             return Response({"status": "verified"})
         else:
-            session["attempts"] += 1
-            async_to_sync(cache.set)(
-                f"signup_session:{session_id}", session, expiry_time=600
+            async_to_sync(cache.increase_hash_field)(
+                f"signup_session:{session_id}", "attempts"
             )
             return Response({"error": "Invalid code"}, status=bad_request)
 
 
 @method_decorator(cookify_response_tokens, name="post")
-@method_decorator(ensure_csrf_cookie, name="post")
+@method_decorator(csrf_protect, name="post")
 class CompleteSignupView(APIView):
     permission_classes = [AllowAny]
 

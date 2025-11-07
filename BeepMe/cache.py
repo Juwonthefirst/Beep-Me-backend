@@ -27,6 +27,9 @@ class Cache:
     async def delete_hash_field(self, hash_key, field_key):
         await self.redis.hdel(hash_key, field_key)
 
+    async def increase_hash_field(self, hash_key, field_key, amount=1):
+        await self.redis.hincrby(hash_key, field_key, amount)
+
     async def get_hash_field(self, hash_key, field_key):
         return await self.redis.hget(hash_key, field_key)
 

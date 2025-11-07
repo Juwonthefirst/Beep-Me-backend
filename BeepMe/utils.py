@@ -7,38 +7,32 @@ from threading import Thread
 is_prod_enviroment = os.getenv("ENVIROMENT") == "production"
 
 
-def cookify_response_tokens(f):
-    @wraps(f)
-    def wrapped_function(*args, **kwargs):
-        response = f(*args, **kwargs)
-        if (
-            "access" in response.data
-            and "refresh" in response.data
-            and response.status_code == 200
-        ):
-            new_access_token = response.data.pop("access")
-            new_refresh_token = response.data.pop("refresh")
-            response.set_cookie(
-                key="access_token",
-                value=new_access_token,
-                secure=is_prod_enviroment,
-                httponly=True,
-                max_age=60 * 60,
-                samesite="None",
-            )
+def cookify_response_tokens(tokens_to_cookify: dict[str, dict]):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped_function(*args, **kwargs):
+            response = f(*args, **kwargs)
+            if response.status_code == 200:
+                for token_name in tokens_to_cookify:
+                    token = response.data.pop(token_name, None)
+                    token_config = tokens_to_cookify.get(token_name, {})
+                    if not token:
+                        continue
 
-            response.set_cookie(
-                key="refresh_token",
-                value=new_refresh_token,
-                secure=is_prod_enviroment,
-                httponly=True,
-                max_age=60 * 60 * 24 * 30,
-                samesite="None",
-            )
+                    response.set_cookie(
+                        key=token_name,
+                        value=token,
+                        secure=is_prod_enviroment,
+                        httponly=True,
+                        samesite="None" if is_prod_enviroment else "Lax",
+                        max_age=token_config.pop("max_age", 60 * 60 * 60 * 24),
+                        **token_config,
+                    )
+            return response
 
-        return response
+        return wrapped_function
 
-    return wrapped_function
+    return wrapper
 
 
 def async_background_task(f):
@@ -52,8 +46,11 @@ def async_background_task(f):
 def background_task(f):
     @wraps(f)
     def wrapped_function(*args, **kwargs):
+        func = f
         if asyncio.iscoroutinefunction(f):
-            f = async_to_sync(f)
-        Thread(target=f, args=[*args], kwargs={**kwargs}, daemon=True)
+            func = async_to_sync(f)
+        thread = Thread(target=func, args=[*args], kwargs={**kwargs}, daemon=True)
+        thread.start()
+        return thread
 
     return wrapped_function

@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef
 from notification.serializers import NotificationSerializer
@@ -116,13 +116,12 @@ class UserNotificationsView(ListAPIView):
 
 
 class DoesUsernameExistView(APIView):
+    permission_classes = [AllowAny]
 
-    def post(self, request):
-        requested_username = request.data.get("username").capitalize()
+    def get(self, request, username):
+        requested_username = username.capitalize()
         username_taken = is_username_taken(requested_username)
-        if username_taken:
-            return Response({"exists": username_taken}, status=bad_request)
-        if not re.match(settings.USERNAME_REGEX, requested_username):
+        if not re.fullmatch(settings.USERNAME_REGEX, requested_username):
             return Response(
                 {
                     "error": "username should only have numbers, letters, and non-repeating underscore and hyphen"

@@ -123,7 +123,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def receive_json(self, content):
         message = content.get("message")
         attachment = content.get("attachment")
-        room_name = content.get("room")
+        room_name = content.get("room_name")
         sender_username = self.user.username
         action = content.get("action")
         uuid = content.get("uuid")
@@ -148,16 +148,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     return await self.respond_with_error(
                         "you can't type in a room you haven't joined"
                     )
-                if not self.currentRoom.name == room_name:
-                    return await self.respond_with_error(
-                        "join room before sending messages"
-                    )
+                # if not self.currentRoom.name == room_name:
+                #     return await self.respond_with_error(
+                #         "join room before sending messages"
+                #     )
 
                 await self.channel_layer.group_send(
                     room_name,
                     {
                         "type": "chat.typing",
-                        "room": room_name,
+                        "room_name": self.currentRoom.name,
                         "sender_username": sender_username,
                     },
                 )
@@ -166,13 +166,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 room = self.currentRoom
                 if not room:
                     return await self.respond_with_error("You aren't in any room")
-                if room.name != room_name:
-                    return await self.respond_with_error("You aren't in this room")
+                # if room.name != room_name:
+                #     return await self.respond_with_error("You aren't in this room")
                 await self.channel_layer.group_send(
                     room_name,
                     {
                         "type": "chat.message",
-                        "room": room_name,
+                        "room_name": room.name,
                         "message": message,
                         "attachment_url": attachment.get("url", ""),
                         "uuid": uuid,
@@ -191,7 +191,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 services.send_chat_notification(room, message, self.user)
 
     async def chat_message(self, event):
-        room_name = event.get("room")
+        room_name = event.get("room_name")
         message = event.get("message")
         sender_username = event.get("sender_username")
         uuid = event.get("uuid")
@@ -200,7 +200,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.send_json(
             content={
-                "room": room_name,
+                "room_name": room_name,
                 "message": message,
                 "sender_username": sender_username,
                 "timestamp": timestamp,
@@ -210,12 +210,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def chat_typing(self, event):
-        room_name = event.get("room")
+        room_name = event.get("room_name")
         sender_username = event.get("sender_username")
 
         await self.send_json(
             content={
-                "room": room_name,
+                "room_name": room_name,
                 "typing": True,
                 "sender_username": sender_username,
             }

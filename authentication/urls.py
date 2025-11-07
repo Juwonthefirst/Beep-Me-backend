@@ -21,5 +21,5 @@ urlpatterns = [
         "user/friends/requests/receive/", user_views.receivedFriendRequestView.as_view()
     ),
     path("user/update/username/", user_views.update_username),
-    path("", include("djoser.urls")),
+    # path("", include("djoser.urls")),
 ]
