@@ -121,8 +121,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await cache.ping(user_id)
 
     async def receive_json(self, content):
-        message = content.get("message")
-        attachment = content.get("attachment")
+        message: str = content.get("message")
+        attachment: dict[str, int | str] = content.get("attachment")
         room_name = content.get("room_name")
         sender_username = self.user.username
         action = content.get("action")
