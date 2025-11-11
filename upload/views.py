@@ -1,5 +1,4 @@
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.http import FileResponse
@@ -12,10 +11,9 @@ User = get_user_model()
 
 
 class GetProfilePictureView(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, user_id):
-        file_path = "uploads/profile_picture/0"  # default profile picture
+        file_path = "uploads/profile_picture/0.jpg"  # default profile picture
         try:
             user = User.objects.get(id=user_id)
             profile_picture = user.profile_picture
@@ -28,12 +26,11 @@ class GetProfilePictureView(APIView):
             file = default_storage.open(file_path)
 
         return FileResponse(
-            file, as_attachment=False, filename=f"user_{user_id}'s picture"
+            file, as_attachment=True, filename=f"user_{user_id}'s picture.webp"
         )
 
 
 class GetGroupPictureView(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, group_id):
         file_path = "uploads/profile_picture/0"  # default profile picture
@@ -49,19 +46,20 @@ class GetGroupPictureView(APIView):
             file = default_storage.open(file_path)
 
         return FileResponse(
-            file, as_attachment=False, filename=f"group_{group_id}'s picture"
+            file, as_attachment=True, filename=f"group_{group_id}'s picture.webp"
         )
 
 
 class GetAttachmentFileView(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, message_id):
         try:
             attachment = Attachment.objects.get(source_message_id=message_id)
             file = attachment.file
             return FileResponse(
-                file, as_attachment=False, filename=f"message_{message_id}'s attachment"
+                file,
+                as_attachment=True,
+                filename=f"message_{message_id}'s attachment.webp",
             )
         except Attachment.DoesNotExist:
             return Response({"error": "File not found"}, status=HTTP_400_BAD_REQUEST)

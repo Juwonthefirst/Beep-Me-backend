@@ -1,4 +1,5 @@
 import re
+from traceback import print_stack
 from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -11,13 +12,15 @@ from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.utils.datastructures import MultiValueDict
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
-from django.db.models import Q
-from secrets import token_hex
-from google.oauth2 import id_token
-from google.auth.transport import requests
+
 from authlib.integrations.requests_client import OAuth2Session
 from authentication.serializers import LoginSerializer, SignupSerializer
-from authentication.services import send_user_otp
+from authentication.services import (
+    create_email_verification_session,
+    generateOTP,
+    send_user_otp,
+    verify_google_id_token,
+)
 from BeepMe.utils import cookify_response_tokens
 from user.serializers import CurrentUserSerializer
 import os
@@ -36,12 +39,23 @@ client = OAuth2Session(
     google_client_id, google_client_secret, redirect_uri="postmessage"
 )
 
+cookify_auth_tokens = cookify_response_tokens(
+    {
+        "refresh_token": {
+            "max_age": settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+        },
+        "access_token": {
+            "max_age": settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
+        },
+    },
+)
 
-def verify_id_token(token):
-    try:
-        return id_token.verify_oauth2_token(token, requests.Request())
-    except:
-        return None
+cookify_signup_tokens = cookify_response_tokens(
+    {
+        "pending_google_signup": {"max_age": settings.OTP_EXPIRY_TIME},
+        "signup_session_id": {"max_age": settings.OTP_EXPIRY_TIME},
+    }
+)
 
 
 # @ensure_csrf_cookie
@@ -101,16 +115,8 @@ def verify_id_token(token):
 #     return response
 
 
-@cookify_response_tokens(
-    {
-        "refresh_token": {
-            "max_age": settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
-        },
-        "access_token": {
-            "max_age": settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
-        },
-    },
-)
+@cookify_signup_tokens
+@cookify_auth_tokens
 @ensure_csrf_cookie
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -119,12 +125,14 @@ def google_login_by_code_token(request):
     if not code:
         return Response({"error": "No code provided"}, status=bad_request)
 
-    token = client.fetch_token("https://oauth2.googleapis.com/token", code=code)
-    id_token = token.get("id_token")
-    id_info = verify_id_token(id_token)
-    email = id_info.get("email")
-    first_name = id_info.get("given_name")
-    last_name = id_info.get("family_name")
+    try:
+
+        token = client.fetch_token("https://oauth2.googleapis.com/token", code=code)
+        id_token = token.get("id_token")
+        id_info = verify_google_id_token(id_token)
+        email: str = id_info.get("email")
+    except:
+        return Response({"error": "Unable to connect to Google"}, status=bad_request)
 
     if not email:
         return Response(
@@ -133,35 +141,22 @@ def google_login_by_code_token(request):
 
     try:
         user = User.objects.get(email=email)
+        refresh_token = RefreshToken.for_user(user)
+        return Response(
+            {
+                "refresh_token": str(refresh_token),
+                "access_token": str(refresh_token.access_token),
+                "user": CurrentUserSerializer(user).data,
+            }
+        )
     except User.DoesNotExist:
-        user = User.objects.create_user(
-            username=email.rstrip("@gmail.com"),
-            email=email,
-            password=f"pass_{token_hex(32)}",
-            first_name=first_name,
-            last_name=last_name,
+        session_id = create_email_verification_session(email, is_google_auth=True)
+        return Response(
+            {"signup_session_id": session_id, "pending_google_signup": True}
         )
 
-    refresh_token = RefreshToken.for_user(user)
-    return Response(
-        {
-            "refresh_token": str(refresh_token),
-            "access_token": str(refresh_token.access_token),
-            "user": CurrentUserSerializer(user).data,
-        }
-    )
 
-
-@cookify_response_tokens(
-    {
-        "refresh_token": {
-            "max_age": settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
-        },
-        "access_token": {
-            "max_age": settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
-        },
-    },
-)
+@cookify_auth_tokens
 @ensure_csrf_cookie
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -220,7 +215,7 @@ def logoutView(request):
         return Response({"error": "invalid token"}, status=bad_request)
 
 
-@method_decorator(cookify_response_tokens, name="post")
+@method_decorator(cookify_auth_tokens, name="post")
 @method_decorator(csrf_protect, name="dispatch")
 class CustomTokenRefreshView(TokenRefreshView):
     permission_classes = [AllowAny]
@@ -240,51 +235,26 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
-@method_decorator(
-    cookify_response_tokens(
-        {"signup_session_id": {"max_age": settings.OTP_EXPIRY_TIME}},
-    ),
-    name="post",
-)
+@method_decorator(cookify_signup_tokens, name="post")
 class RetrieveOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         email = request.data.get("email").lower()
         if User.objects.filter(email=email).exists():
-            return Response({"error": "email taken"}, status=bad_request)
+            return Response(
+                {"error": "This email is already in use"}, status=bad_request
+            )
 
         if request.COOKIES.get("signup_session_id"):
             async_to_sync(cache.delete)(
                 f"signup_session:{request.COOKIES.get('signup_session_id')}"
             )
 
-        session_id = secrets.token_urlsafe(32)
-        otp = "".join([str(secrets.randbelow(10)) for _ in range(6)])
-        otp_hash = hashlib.sha256(otp.encode()).hexdigest()
-
-        async_to_sync(cache.set_hash)(
-            f"signup_session:{session_id}",
-            mapping={
-                "email": email,
-                "otp_hash": otp_hash,
-                "verified": 0,
-                "attempts": 0,
-            },
-            expiry_time=settings.OTP_EXPIRY_TIME,
-        )
-
+        [otp, otp_hash] = generateOTP()
+        session_id = create_email_verification_session(email, otp_hash=otp_hash)
         send_user_otp(otp, to=email)
         return Response({"status": "sent", "signup_session_id": session_id})
-        # response.set_cookie(
-        #     "signup_session_id",
-        #     session_id,
-        #     secure=os.getenv("ENVIROMENT") == "production",
-        #     httponly=True,
-        #     max_age=settings.OTP_EXPIRY_TIME,
-        #     samesite="None",
-        # )
-        # return response
 
 
 @method_decorator(csrf_protect, name="post")
@@ -294,20 +264,19 @@ class VerifyOTPView(APIView):
     def post(self, request):
         session_id = request.COOKIES.get("signup_session_id")
         user_otp = request.data.get("otp")
-        print(session_id)
         session = async_to_sync(cache.get_hash)(f"signup_session:{session_id}")
 
         if not session:
             return Response({"error": "Invalid session"}, status=bad_request)
 
-        if session["attempts"] >= 5:
+        if int(session["attempts"]) >= 5:
             async_to_sync(cache.delete)(f"signup_session:{session_id}")
             return Response(
-                {"error": "Too many attempts"}, status=status.HTTP_429_TOO_MANY_REQUESTS
+                {"error": "Too many attempts, Request for a new token"},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
 
         user_hash = hashlib.sha256(user_otp.encode()).hexdigest()
-
         if secrets.compare_digest(session["otp_hash"], user_hash):
             async_to_sync(cache.set_hash_field)(
                 f"signup_session:{session_id}", "verified", 1
@@ -315,15 +284,19 @@ class VerifyOTPView(APIView):
             async_to_sync(cache.delete_hash_field)(
                 f"signup_session:{session_id}", "otp_hash"
             )
+            async_to_sync(cache.set_expire_time)(
+                f"signup_session:{session_id}", 20 * 60
+            )
+
             return Response({"status": "verified"})
         else:
             async_to_sync(cache.increase_hash_field)(
                 f"signup_session:{session_id}", "attempts"
             )
-            return Response({"error": "Invalid code"}, status=bad_request)
+            return Response({"error": "Wrong OTP code"}, status=bad_request)
 
 
-@method_decorator(cookify_response_tokens, name="post")
+@method_decorator(cookify_auth_tokens, name="post")
 @method_decorator(csrf_protect, name="post")
 class CompleteSignupView(APIView):
     permission_classes = [AllowAny]
@@ -331,41 +304,53 @@ class CompleteSignupView(APIView):
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
         if not serializer.is_valid():
+            print(serializer.errors)
             return Response(serializer.errors, status=bad_request)
 
         session_id = request.COOKIES.get("signup_session_id")
         username = serializer.validated_data.get("username")
+        profile_picture = serializer.validated_data.get("profile_picture", None)
         password = serializer.validated_data.get("password")
 
-        is_session_verified = async_to_sync(cache.get_hash_field)(
-            f"signup_session:{session_id}", "verified"
+        signup_session: dict | None = async_to_sync(cache.get_hash)(
+            f"signup_session:{session_id}",
         )
-        if not is_session_verified:
+        if not (signup_session and signup_session.get("verified") == "1"):
             return Response({"error": "Not verified"}, status=bad_request)
 
-        user_email = async_to_sync(cache.get_hash_field)(
-            f"signup_session:{session_id}", "email"
-        )
-        async_to_sync(cache.delete)(f"signup_session:{session_id}")
+        user_email: str = signup_session.get("email")
+        is_google_auth: bool = signup_session.get("is_google_auth")
 
         if User.objects.filter(email=user_email).exists():
-            return Response({"error": "email taken"}, status=bad_request)
+            return Response({"error": "email is already in use"}, status=bad_request)
 
         if User.objects.filter(username=username).exists():
-            return Response({"error": "username taken"}, status=bad_request)
+            return Response({"error": "username is already in use"}, status=bad_request)
+
+        if is_google_auth:
+            password = f"pass_{secrets.token_hex(32)}"
 
         try:
             user = User.objects.create_user(
-                username=username, email=user_email, password=password
+                username=username,
+                email=user_email,
+                password=password,
+                profile_picture=profile_picture,
             )
 
+            async_to_sync(cache.delete)(f"signup_session:{session_id}")
+
             refresh_token = RefreshToken.for_user(user)
-            return Response(
+            response = Response(
                 {
-                    "refresh": str(refresh_token),
-                    "access": str(refresh_token.access_token),
+                    "refresh_token": str(refresh_token),
+                    "access_token": str(refresh_token.access_token),
                     "user": CurrentUserSerializer(user).data,
                 }
             )
+            response.delete_cookie("signup_session_id")
+            response.delete_cookie("pending_google_signup")
+            return response
+
         except Exception as e:
             return Response({"error": str(e)}, status=bad_request)

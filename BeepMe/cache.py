@@ -42,6 +42,9 @@ class Cache:
     async def delete(self, key):
         await self.redis.delete(key)
 
+    async def set_expire_time(self, key: str, amount: int):
+        await self.redis.expire(key, amount)
+
     async def ping(self, user_id):
         await self.redis.set(f"user_{user_id}_is_online", 1, ex=50)
 
