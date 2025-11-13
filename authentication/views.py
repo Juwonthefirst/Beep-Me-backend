@@ -1,5 +1,4 @@
 import re
-from traceback import print_stack
 from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -191,7 +190,7 @@ def loginView(request):
         {
             "user": CurrentUserSerializer(user).data,
             "refresh_token": str(refresh_token),
-            "access_token": str(refresh_token),
+            "access_token": str(refresh_token.access_token),
         }
     )
 
@@ -229,9 +228,19 @@ class CustomTokenRefreshView(TokenRefreshView):
             )
         request._full_data = MultiValueDict({"refresh": [refresh_token]})
         try:
-            return super().post(request, *args, **kwargs)
+            response = super().post(request, *args, **kwargs)
+            access_token = response.data.pop("access")
+            refresh_token = response.data.pop("refresh")
+            response.data = {
+                "refresh_token": refresh_token,
+                "access_token": access_token,
+            }
+
+            return response
         except User.DoesNotExist:
-            return Response({"error": "user doesn't exist"}, status=bad_request)
+            response = Response({"error": "user doesn't exist"}, status=bad_request)
+            response.delete_cookie("refresh_token")
+            return response
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")

@@ -20,7 +20,7 @@ class JWTAuthMiddleware:
                     id=validated_token["user_id"]
                 )
                 scope["user"] = user
-            except:
-                pass
+            except Exception as error:
+                print(error)
 
         return await self.app(scope, receive, send)

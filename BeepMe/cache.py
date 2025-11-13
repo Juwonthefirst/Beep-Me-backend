@@ -1,4 +1,3 @@
-from typing import Iterable
 import redis.asyncio as async_redis
 import os
 from dotenv import load_dotenv
@@ -56,7 +55,7 @@ class Cache:
     async def get_cached_messages(self, room_name):
         return await self.redis.lrange(room_name, 0, -1)
 
-    async def set_user_online(self, user_id):
+    async def add_user_online(self, user_id):
         await self.redis.sadd("online_users", user_id)
 
     async def remove_user_online(self, user_id):

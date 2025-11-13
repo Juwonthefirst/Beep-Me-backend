@@ -147,7 +147,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.BasicAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_FILTER_BACKENDS": ["rest_framework.filters.SearchFilter"],
@@ -206,7 +206,6 @@ CHANNEL_LAYERS = {
                 {
                     "address": os.getenv("REDIS_URL"),
                     "connection_class": Connection,
-                    "ssl_cert_reqs": "required",
                 },
             ],
         },

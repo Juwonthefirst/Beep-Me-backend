@@ -1,6 +1,7 @@
 import asyncio
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
 from rest_framework.decorators import api_view, permission_classes
@@ -29,7 +30,7 @@ forbidden = HTTP_403_FORBIDDEN
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 @block_non_members
-def get_room_messages(request, room_name, roomObject):
+def get_room_messages(request: Request, room_name: str, roomObject: ChatRoom):
     paginator = PageNumberPagination()
     paginator.page_size = 50
     page = request.query_params.get("page", "1")
@@ -76,7 +77,7 @@ class RoomDetailsView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
 
-def get_livekit_JWT_token(request, room_name, room_object):
+def get_livekit_JWT_token(request: Request, room_object: ChatRoom):
     user = request.user
     is_video_admin = False
 
@@ -111,7 +112,7 @@ def get_livekit_JWT_token(request, room_name, room_object):
 @permission_classes([IsAuthenticated])
 @block_non_members
 def join_livekit_room(request, room_name, room_object):
-    return Response(get_livekit_JWT_token(request, room_name, room_object))
+    return Response(get_livekit_JWT_token(request, room_object))
 
 
 @api_view(["POST"])
@@ -124,7 +125,7 @@ def create_livekit_room(request, room_name, room_object):
             await client.room.create_room(
                 api.CreateRoomRequest(name=room_name, empty_timeout=300)
             )
-        livekit_token = get_livekit_JWT_token(request, room_name, room_object)
+        livekit_token = get_livekit_JWT_token(request, room_object)
         send_call_notification(
             caller_id=request.user.id,
             caller_username=request.user.username,

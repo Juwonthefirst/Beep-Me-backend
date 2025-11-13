@@ -74,11 +74,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return
         self.currentRoom = None
         await self.accept()
-        await database_sync_to_async(self.user.mark_last_online)()
+        # remake into an hash to acccount for multiple login
+        await cache.add_user_online(self.user.id)
         services.send_online_status_notification(self.user, True)
 
     async def disconnect(self, code):
-        if self.currentRoom:
+        if hasattr(self, "currentRoom"):
             await self.group_leave()
         if not self.user:
             return
@@ -148,10 +149,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     return await self.respond_with_error(
                         "you can't type in a room you haven't joined"
                     )
-                # if not self.currentRoom.name == room_name:
-                #     return await self.respond_with_error(
-                #         "join room before sending messages"
-                #     )
 
                 await self.channel_layer.group_send(
                     room_name,
