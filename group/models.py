@@ -12,6 +12,11 @@ def create_member_rows(cls, group, new_member):
     return cls(group=group, member_id=new_member)
 
 
+def generate_group_avatar_url(instance, filename: str):
+    extension = filename.split(".")[-1]
+    return f"uploads/group-avatar/{instance.pk}.{extension}"
+
+
 class Permission(models.Model):
     action = models.CharField(max_length=200)
 
@@ -22,7 +27,7 @@ class Group(models.Model):
     members = models.ManyToManyField(
         User, related_name="chat_groups", through="MemberDetail", blank=True
     )
-    avatar = models.ImageField(upload_to="uploads/group/avatar/")
+    avatar = models.ImageField(upload_to=generate_group_avatar_url, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def get_user_role(self, member_id):
@@ -64,7 +69,7 @@ class MemberDetail(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
-    last_read_message_at = models.DateTimeField(default=timezone.now)
+    last_active_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         constraints = [

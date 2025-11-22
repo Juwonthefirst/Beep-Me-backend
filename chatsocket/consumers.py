@@ -3,11 +3,12 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from BeepMe.cache import cache
 from django.utils import timezone
+from chat_room.queries import update_user_room_last_active_at
 from notification import services
 
 
 @database_sync_to_async
-def save_message_to_db(room_id, sender_id, message, attachment_id, timestamp):
+def save_message_to_db(room_id, sender_id, message, attachment_id, timestamp, uuid):
     from message.models import Message
 
     return Message.objects.create(
@@ -16,14 +17,15 @@ def save_message_to_db(room_id, sender_id, message, attachment_id, timestamp):
         sender_id=sender_id,
         timestamp=timestamp,
         attachment_id=attachment_id,
+        uuid=uuid,
     )
 
 
 async def save_message(
-    room_id, room_name, sender_id, message, attachment_id, timestamp
+    room_id, room_name, sender_id, message, attachment_id, timestamp, uuid
 ):
     message = await save_message_to_db(
-        room_id, sender_id, message, attachment_id, timestamp
+        room_id, sender_id, message, attachment_id, timestamp, uuid
     )
     jsonified_message = json.dumps(message)
     await cache.cache_message(room_name, jsonified_message)
@@ -114,6 +116,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return
         room_name = self.currentRoom.name
         await self.channel_layer.group_discard(room_name, self.channel_name)
+        await database_sync_to_async(update_user_room_last_active_at)(
+            self.currentRoom.is_group, self.user.id, self.currentRoom.id
+        )
         self.currentRoom = None
         await cache.remove_active_member(self.user.id, room_name)
 
@@ -184,8 +189,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     message=message,
                     sender_id=self.user.id,
                     timestamp=timestamp,
+                    uuid=uuid,
                 )
-                services.send_chat_notification(room, message, self.user)
+                services.send_chat_notification(room, message, timestamp, self.user)
 
     async def chat_message(self, event):
         room_name = event.get("room_name")
@@ -240,7 +246,8 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, code):
-        await self.channel_layer.group_discard(self.room_name, self.channel_name)
+        if hasattr(self, "room_name"):
+            await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
     # async def receive_json(self, content):
 
@@ -260,7 +267,6 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(
             content={
                 "type": "chat_notification",
-                "timestamp": timezone.now().isoformat(),
                 **notification_detail,
             }
         )
@@ -271,7 +277,6 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(
             content={
                 "type": "online_status_notification",
-                "timestamp": timezone.now().isoformat(),
                 **notification_detail,
             }
         )
@@ -281,18 +286,12 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         notification_detail = event.get("notification_detail")
         action = notification_detail.get("action")
         sender = notification_detail.get("sender")
-        timestamp = timezone.now().isoformat()
         await self.send_json(
             content={
                 "type": "friend_notification",
                 "sender": sender,
                 "action": action,
-                "timestamp": timestamp,
             }
-        )
-
-        await create_notification(
-            "friend_notification", action, self.user, timestamp, sender=sender
         )
 
     async def notification_group(self, event):
@@ -300,22 +299,12 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         notification_detail = event.get("notification_detail")
         group_id = notification_detail.get("group_id")
         notification = notification_detail.get("notification")
-        timestamp = timezone.now().isoformat()
         await self.send_json(
             content={
                 "type": "group_notification",
                 "notification": notification,
                 "group_id": group_id,
-                "timestamp": timestamp,
             }
-        )
-
-        await create_notification(
-            "group_notification",
-            notification,
-            self.user,
-            timestamp,
-            group_id=group_id,
         )
 
     async def notification_call(self, event):

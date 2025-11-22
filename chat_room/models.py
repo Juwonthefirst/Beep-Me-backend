@@ -14,6 +14,7 @@ class ChatRoom(models.Model):
     group = models.OneToOneField(
         Group, related_name="chat", on_delete=models.CASCADE, blank=True, null=True
     )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     @classmethod
     def create_with_members(cls, name):
@@ -48,7 +49,7 @@ class MemberDetail(models.Model):
         User, on_delete=models.CASCADE, related_name="room_roles"
     )
     room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
-    last_read_message_at = models.DateTimeField(default=timezone.now)
+    last_active_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         constraints = [

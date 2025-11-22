@@ -1,16 +1,23 @@
+from typing import Literal
 from channels.layers import get_channel_layer
 from BeepMe.cache import cache
 from asgiref.sync import async_to_sync
 from BeepMe.utils import async_background_task, background_task
 from channels.db import database_sync_to_async
 
+from chat_room.models import ChatRoom
 from chat_room.queries import get_room_members_id
+from user.models import CustomUser
 from user.queries import get_user_friends_id
 
 
 @async_background_task
-async def send_chat_notification(room, message, sender):
-    channel_layer = get_channel_layer()
+async def send_chat_notification(
+    room: ChatRoom, message: str, timestamp: str, sender: CustomUser
+):
+    if not (channel_layer := get_channel_layer()):
+        return
+
     members_id = await database_sync_to_async(get_room_members_id)(room)
     if not members_id:
         return
@@ -25,18 +32,25 @@ async def send_chat_notification(room, message, sender):
                 "type": "notification.chat",
                 "notification_detail": {
                     "sender": sender.username,
-                    "receiver": room.group.name,
+                    "sender_profile_picture": (
+                        sender.profile_picture.url
+                        if not (room.group and room.is_group)
+                        else room.group.avatar.url
+                    ),
+                    "group_name": getattr(room.group, "name", None),
                     "message": message,
                     "is_group": room.is_group,
-                    "room_id": room.id,
+                    "room_name": room.name,
+                    "timestamp": timestamp,
                 },
             },
         )
 
 
 @background_task
-async def send_group_notification(room, notification, sender_id):
-    channel_layer = get_channel_layer()
+async def send_group_notification(room: ChatRoom, notification: str, sender_id: int):
+    if not (channel_layer := get_channel_layer()):
+        return
 
     members_id = await database_sync_to_async(get_room_members_id)(room)
     if not members_id:
@@ -59,7 +73,9 @@ async def send_group_notification(room, notification, sender_id):
 
 @async_background_task
 async def send_online_status_notification(user, status):
-    channel_layer = get_channel_layer()
+
+    if not (channel_layer := get_channel_layer()):
+        return
 
     friends_id = await database_sync_to_async(get_user_friends_id)(user)
     if not friends_id:
@@ -80,8 +96,11 @@ async def send_online_status_notification(user, status):
 
 
 @background_task
-async def send_friend_request_notification(username, friend_id, action):
-    channel_layer = get_channel_layer()
+async def send_friend_request_notification(
+    user: CustomUser, friend_id: int, action: Literal["sent", "accepted"]
+):
+    if not (channel_layer := get_channel_layer()):
+        return
 
     if await cache.is_user_online(friend_id):
         async_to_sync(channel_layer.group_send)(
@@ -89,16 +108,20 @@ async def send_friend_request_notification(username, friend_id, action):
             {
                 "type": "notification.friend",
                 "notification_detail": {
-                    "sender": username,
+                    "sender": user.username,
+                    "sender_profile_picture": user.profile_picture.url,
                     "action": action,
                 },
             },
         )
 
 
-@background_task
-async def send_call_notification(caller_id, caller_username, room, is_video=False):
-    channel_layer = get_channel_layer()
+async def send_call_notification(
+    caller_id: int, caller_username: str, room: ChatRoom, is_video: bool = False
+):
+    if not (channel_layer := get_channel_layer()):
+        return
+
     members_id = await database_sync_to_async(get_room_members_id)(room)
     online_members_id = await cache.get_online_users(members_id)
 
@@ -113,7 +136,6 @@ async def send_call_notification(caller_id, caller_username, room, is_video=Fals
                     "room_name": room.name,
                     "is_video": is_video,
                     "is_group": room.is_group,
-                    # "room_id": room.id,
                 },
             },
         )

@@ -1,3 +1,4 @@
+import os
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
@@ -15,7 +16,11 @@ schema_view = views.get_schema_view(
         license=openapi.License(name="MIT license"),
     ),
     public=True,
-    url="https://beep-me-api.onrender.com",
+    url=(
+        "https://beep-me-api.onrender.com"
+        if os.getenv("ENVIROMENT") == "production"
+        else "http://localhost:8000"
+    ),
     permission_classes=[AllowAny],
 )
 

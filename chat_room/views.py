@@ -9,8 +9,10 @@ from rest_framework.generics import (
     RetrieveAPIView,
 )
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.pagination import PageNumberPagination
-from asgiref.sync import async_to_sync
+from rest_framework.pagination import CursorPagination
+from asgiref.sync import async_to_sync, sync_to_async
+from BeepMe.utils import async_background_task
+from chat_room.pagination import MessagePagination
 from chat_room.permissions import block_non_members
 from chat_room.serializers import RoomDetailsSerializer
 from chat_room.models import ChatRoom
@@ -31,11 +33,10 @@ forbidden = HTTP_403_FORBIDDEN
 @permission_classes([IsAuthenticated])
 @block_non_members
 def get_room_messages(request: Request, room_name: str, roomObject: ChatRoom):
-    paginator = PageNumberPagination()
-    paginator.page_size = 50
-    page = request.query_params.get("page", "1")
+    paginator = MessagePagination()
+    cursor = request.query_params.get("cursor", None)
 
-    if page == "1":
+    if not cursor:
         cached_message = async_to_sync(cache.get_cached_messages)(roomObject.name)
         if cached_message:
             paginated_cached_messages = paginator.paginate_queryset(
@@ -47,7 +48,7 @@ def get_room_messages(request: Request, room_name: str, roomObject: ChatRoom):
     room_messages = paginator.paginate_queryset(queryset, request)
 
     serialized_data = MessagesSerializer(room_messages, many=True).data
-    if page == "1":
+    if not cursor and serialized_data:
         jsonified_data = [
             json.dumps(message_object) for message_object in serialized_data
         ]
@@ -119,14 +120,13 @@ def join_livekit_room(request, room_name, room_object):
 @permission_classes([IsAuthenticated])
 @block_non_members
 def create_livekit_room(request, room_name, room_object):
-
     async def inner():
         async with api.LiveKitAPI() as client:
             await client.room.create_room(
                 api.CreateRoomRequest(name=room_name, empty_timeout=300)
             )
-        livekit_token = get_livekit_JWT_token(request, room_object)
-        send_call_notification(
+        livekit_token = await sync_to_async(get_livekit_JWT_token)(request, room_object)
+        async_background_task(send_call_notification)(
             caller_id=request.user.id,
             caller_username=request.user.username,
             room=room_object,

@@ -9,7 +9,7 @@ def block_non_members(f):
     @wraps(f)
     def wrapped_function(*args, **kwargs):
         request = args[0]
-        room_name = args[1]
+        room_name = kwargs.get("room_name", "")
         try:
             chat_room = ChatRoom.objects.select_related("group").get(name=room_name)
             if not chat_room.is_member(request.user.id):

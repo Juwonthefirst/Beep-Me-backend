@@ -22,8 +22,16 @@ class ActiveUserManager(UserManager):
         return ActiveUserQuerySet(self.model, using=self._db)
 
 
+def generate_profile_picture_url(instance, filename: str):
+    extension = filename.split(".")[-1]
+    return f"uploads/profile-picture/{instance.pk}.{extension}"
+
+
 class CustomUser(AbstractUser):
-    profile_picture = models.ImageField(upload_to="uploads/profile_picture/", null=True)
+    profile_picture = models.ImageField(
+        upload_to=generate_profile_picture_url,
+        null=True,
+    )
     last_online = models.DateTimeField(auto_now_add=True)
     username = models.CharField(
         max_length=60,
@@ -44,7 +52,7 @@ class CustomUser(AbstractUser):
     def is_friend_of(self, user_id):
         return (
             self.followers.filter(id=user_id).exists()
-            and self.following.filter(id=user_id, following_id=user_id).exists()
+            and self.following.filter(id=user_id).exists()
         )
 
     def get_friends(self):

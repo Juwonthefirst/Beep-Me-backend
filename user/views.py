@@ -6,13 +6,16 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef
+from chat_room.pagination import ChatRoomPagination
 from notification.serializers import NotificationSerializer
 from notification import services
 from chat_room.serializers import UserChatRoomSerializer
 from chat_room.models import ChatRoom
+from drf_yasg.utils import swagger_auto_schema
 from user.serializers import (
+    FriendsSerializer,
     UsersSerializer,
-    RetrieveUsersSerializer,
+    RetrieveUserSerializer,
     FriendRequestSerializer,
     CurrentUserSerializer,
 )
@@ -27,10 +30,14 @@ bad_request = status.HTTP_400_BAD_REQUEST
 not_found = status.HTTP_404_NOT_FOUND
 
 
+class CurrentUserView(APIView):
+    def get(self, request):
+        return Response(CurrentUserSerializer(self.request.user).data)
+
+
 class UsersView(ListAPIView):
     """View to get all user in the database, this meant to be used with filtering and pagination"""
 
-    permission_classes = [IsAuthenticated]
     serializer_class = UsersSerializer
     search_fields = ["username"]
 
@@ -57,8 +64,7 @@ class UsersView(ListAPIView):
 class RetrieveUserView(RetrieveAPIView):
     """View to get a particular user in the database"""
 
-    permission_classes = [IsAuthenticated]
-    serializer_class = RetrieveUsersSerializer
+    serializer_class = RetrieveUserSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -91,7 +97,7 @@ class RetrieveUserChatRoomView(RetrieveAPIView):
 
 
 class UserChatRoomsView(ListAPIView):
-    permission_classes = [IsAuthenticated]
+    pagination_class = ChatRoomPagination
     serializer_class = UserChatRoomSerializer
     search_fields = ["members__username", "group__name"]
 
@@ -133,8 +139,7 @@ class DoesUsernameExistView(APIView):
 
 
 class FriendListView(ListAPIView):
-    serializer_class = UsersSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = FriendsSerializer
     search_fields = ["username"]
 
     def get_queryset(self):
@@ -144,7 +149,6 @@ class FriendListView(ListAPIView):
 
 class SentFriendRequestView(ListAPIView):
     serializer_class = UsersSerializer
-    permission_classes = [IsAuthenticated]
     search_fields = ["username"]
 
     def get_queryset(self):
@@ -154,7 +158,6 @@ class SentFriendRequestView(ListAPIView):
 
 class receivedFriendRequestView(ListAPIView):
     serializer_class = UsersSerializer
-    permission_classes = [IsAuthenticated]
     search_fields = ["username"]
 
     def get_queryset(self):
@@ -162,8 +165,8 @@ class receivedFriendRequestView(ListAPIView):
         return user.get_unmutual_followers()
 
 
+@swagger_auto_schema(method="post", request_body=FriendRequestSerializer)
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
 def sendFriendRequest(request):
     serializer = FriendRequestSerializer(data=request.data)
     if serializer.is_valid():
@@ -179,9 +182,7 @@ def sendFriendRequest(request):
                 room_name = f"chat-{friend_id}-{user_id}"
 
             ChatRoom.create_with_members(room_name)
-        services.send_friend_request_notification(
-            request.user.username, friend_id, action
-        )
+        services.send_friend_request_notification(request.user, friend_id, action)
         return Response({"status": "ok"})
     return Response({"error": serializer.errors}, status=bad_request)
 

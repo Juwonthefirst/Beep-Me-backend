@@ -11,6 +11,7 @@ urlpatterns = [
     # path("social/google/ID/", views.google_login_by_id_token),
     path("social/google/code/", views.google_login_by_code_token),
     path("token/refresh/", views.CustomTokenRefreshView.as_view()),
+    path("user/", user_views.CurrentUserView.as_view()),
     path("user/rooms/", user_views.UserChatRoomsView.as_view()),
     path("user/rooms/<str:name>/", user_views.RetrieveUserChatRoomView.as_view()),
     path("user/notifications/", user_views.UserNotificationsView.as_view()),

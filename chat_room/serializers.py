@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from chat_room.models import ChatRoom
-from user.serializers import UsersSerializer
+from user.serializers import RetrieveFriendSerializer
 from message.serializers import MessagesSerializer
 from group.serializers import GroupSerializer
 
@@ -12,31 +12,34 @@ class RoomDetailsSerializer(serializers.ModelSerializer):
 
 
 class UserChatRoomSerializer(serializers.ModelSerializer):
-    parent = serializers.SerializerMethodField()
+    group = GroupSerializer()
     last_message = serializers.SerializerMethodField()
+    friend = serializers.SerializerMethodField()
     unread_message_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = ChatRoom
         fields = [
-            "parent",
+            "friend",
             "last_message",
             "id",
             "name",
+            "group",
             "is_group",
             "unread_message_count",
+            "created_at",
         ]
 
     def get_last_message(self, obj):
         last_message_object = obj.get_last_message()
         return MessagesSerializer(last_message_object).data
 
-    def get_parent(self, obj):
+    def get_friend(self, obj: ChatRoom):
         if obj.is_group:
-            return GroupSerializer(obj.group).data
+            return None
         user_id = self.context.get("user_id")
         other_member = obj.members.exclude(id=user_id).first()
-        return UsersSerializer(other_member).data
+        return RetrieveFriendSerializer(other_member).data
 
 
 # class ChatRoomAndMessagesSerializer(serializers.ModelSerializer):

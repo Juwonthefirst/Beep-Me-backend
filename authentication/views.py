@@ -21,6 +21,7 @@ from authentication.services import (
     verify_google_id_token,
 )
 from BeepMe.utils import cookify_response_tokens
+from user.models import CustomUser
 from user.serializers import CurrentUserSerializer
 import os
 import secrets
@@ -340,12 +341,13 @@ class CompleteSignupView(APIView):
             password = f"pass_{secrets.token_hex(32)}"
 
         try:
-            user = User.objects.create_user(
+            user: CustomUser = User.objects.create_user(
                 username=username,
                 email=user_email,
                 password=password,
-                profile_picture=profile_picture,
             )
+            user.profile_picture = profile_picture
+            user.save()
 
             async_to_sync(cache.delete)(f"signup_session:{session_id}")
 

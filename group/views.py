@@ -52,7 +52,6 @@ class GroupMembersView(ListAPIView):
 class CreateGroupView(CreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [IsAuthenticated]
 
 
 class RetrieveGroupMemberView(RetrieveUpdateAPIView):

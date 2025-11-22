@@ -19,7 +19,7 @@ def create_permissions(**kwargs):
         Permission.objects.create(action=permission)
 
 
-@receiver(post_delete, sender=[Group])
+@receiver(post_delete, sender=Group)
 def delete_avatar(sender, instance, **kwargs):
     if instance:
         instance.avatar.file.delete(save=False)

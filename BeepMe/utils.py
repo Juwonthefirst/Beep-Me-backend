@@ -25,7 +25,6 @@ def cookify_response_tokens(tokens_to_cookify: dict[str, dict]):
                         secure=is_prod_enviroment,
                         httponly=True,
                         samesite="None" if is_prod_enviroment else "Lax",
-                        max_age=token_config.pop("max_age", 60 * 60 * 60 * 24),
                         **token_config,
                     )
             return response
@@ -35,6 +34,7 @@ def cookify_response_tokens(tokens_to_cookify: dict[str, dict]):
     return wrapper
 
 
+# used in async views
 def async_background_task(f):
     @wraps(f)
     def wrapped_function(*args, **kwargs):
@@ -43,6 +43,7 @@ def async_background_task(f):
     return wrapped_function
 
 
+# used in sync views
 def background_task(f):
     @wraps(f)
     def wrapped_function(*args, **kwargs):

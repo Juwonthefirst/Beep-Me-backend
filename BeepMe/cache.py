@@ -62,8 +62,8 @@ class Cache:
         await self.redis.delete(f"user_{user_id}_is_online")
         await self.redis.srem("online_users", user_id)
 
-    async def is_user_online(self, user_id):
-        return await self.redis.exists(f"user_{user_id}_is_online")
+    async def is_user_online(self, user_id: int):
+        return await self.redis.sismember("online_users", user_id)
 
     async def get_online_users(self, user_id_list: list[int]):
         are_users_online = await self.redis.smismember("online_users", user_id_list)

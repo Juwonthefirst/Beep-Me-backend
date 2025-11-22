@@ -9,7 +9,7 @@ User = get_user_model()
 class CurrentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email"]
+        fields = ["id", "username", "email", "profile_picture"]
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -24,13 +24,39 @@ class UsersSerializer(serializers.ModelSerializer):
             "email",
             "is_following_me",
             "is_followed_by_me",
-            "last_online",
+            "profile_picture",
         ]
 
 
-class RetrieveUsersSerializer(serializers.ModelSerializer):
+class RetrieveUserSerializer(serializers.ModelSerializer):
     is_following_me = serializers.BooleanField(read_only=True)
     is_followed_by_me = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "is_followed_by_me",
+            "is_following_me",
+            "profile_picture",
+        ]
+
+        extra_kwargs = {"id": {"read_only": True}}
+
+
+class FriendsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "profile_picture",
+        ]
+
+
+class RetrieveFriendSerializer(serializers.ModelSerializer):
     is_online = serializers.SerializerMethodField()
 
     class Meta:
@@ -39,17 +65,14 @@ class RetrieveUsersSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
-            "first_name",
-            "last_name",
-            "is_followed_by_me",
-            "is_following_me",
             "is_online",
+            "profile_picture",
             "last_online",
         ]
         extra_kwargs = {"id": {"read_only": True}}
 
     def get_is_online(self, obj):
-        return async_to_sync(cache.is_user_online)(obj.id)
+        return bool(async_to_sync(cache.is_user_online)(obj.id))
 
 
 class FriendRequestSerializer(serializers.Serializer):

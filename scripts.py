@@ -22,7 +22,9 @@ def make_migrations_and_migrate():
 
 
 collectstatic = lambda: subprocess.run(["uv", "run", "manage.py", "collectstatic"])
-run_devserver = lambda: subprocess.run(["uv", "run", "manage.py", "runserver"])
+run_devserver = lambda: subprocess.run(
+    ["uv", "run", "manage.py", "runserver", "0.0.0.0:8000"]
+)
 
 
 def run_development_server():
