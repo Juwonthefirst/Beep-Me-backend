@@ -85,8 +85,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             await self.group_leave()
         if not self.user:
             return
-        await database_sync_to_async(self.user.mark_last_online)()
+
         await cache.remove_user_online(self.user.id)
+        await database_sync_to_async(self.user.mark_last_online)()
         services.send_online_status_notification(self.user, False)
 
     async def group_join(self, room_name):

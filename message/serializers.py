@@ -3,7 +3,6 @@ from message.models import Message
 
 
 class MessagesSerializer(serializers.ModelSerializer):
-    sender = serializers.CharField(source="sender.username")
     attachment = serializers.FileField(source="attachment.file")
     reply_to = serializers.SerializerMethodField()
 

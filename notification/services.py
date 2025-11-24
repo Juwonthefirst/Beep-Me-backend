@@ -2,9 +2,9 @@ from typing import Literal
 from channels.layers import get_channel_layer
 from BeepMe.cache import cache
 from asgiref.sync import async_to_sync
-from BeepMe.utils import async_background_task, background_task
+from BeepMe.utils import async_background_task, background_task, generate_chat_room_name
 from channels.db import database_sync_to_async
-
+from django.utils import timezone
 from chat_room.models import ChatRoom
 from chat_room.queries import get_room_members_id
 from user.models import CustomUser
@@ -89,6 +89,8 @@ async def send_online_status_notification(user, status):
                 "type": "notification.online",
                 "notification_detail": {
                     "user": user.id,
+                    "room_name": generate_chat_room_name(user.id, friend_id),
+                    "last_online": timezone.now().isoformat(),
                     "status": status,
                 },
             },

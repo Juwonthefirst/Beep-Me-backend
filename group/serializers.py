@@ -5,11 +5,13 @@ from chat_room.models import ChatRoom
 
 class MembersSerializer(serializers.Serializer):
     member_id = serializers.IntegerField()
+    member_username = serializers.ReadOnlyField(source="member.username")
+    member_avatar = serializers.FileField(source="member.profile_picture")
     role = serializers.CharField(max_length=100, required=False)
 
 
 class GroupSerializer(serializers.ModelSerializer):
-    members = MembersSerializer(many=True, write_only=True)
+    members = MembersSerializer(many=True)
 
     class Meta:
         model = Group

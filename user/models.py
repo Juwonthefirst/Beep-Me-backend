@@ -60,11 +60,11 @@ class CustomUser(AbstractUser):
 
     def get_unmutual_following(self):
         friends = self.get_friends().values_list("id", flat=True)
-        return self.following.exclude(id__in=friends).values_list("id", flat=True)
+        return self.following.exclude(id__in=friends)
 
     def get_unmutual_followers(self):
         friends = self.get_friends().values_list("id", flat=True)
-        return set(self.followers.exclude(id__in=friends).values_list("id", flat=True))
+        return self.followers.exclude(id__in=friends)
 
     def save(self, *args, **kwargs):
         self.username = self.username.capitalize()

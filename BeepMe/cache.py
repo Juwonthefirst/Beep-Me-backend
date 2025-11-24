@@ -1,8 +1,8 @@
 import redis.asyncio as async_redis
 import os
-from dotenv import load_dotenv
+from .utils import load_enviroment_variables
 
-load_dotenv()
+load_enviroment_variables()
 
 
 class Cache:

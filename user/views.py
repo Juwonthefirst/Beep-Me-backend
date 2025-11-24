@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef
+from BeepMe.utils import generate_chat_room_name
 from chat_room.pagination import ChatRoomPagination
 from notification.serializers import NotificationSerializer
 from notification import services
@@ -177,10 +178,8 @@ def sendFriendRequest(request):
         action = "sent"
         if is_following:
             action = "accepted"
-            room_name = f"chat-{user_id}-{friend_id}"
-            if friend_id < user_id:
-                room_name = f"chat-{friend_id}-{user_id}"
 
+            room_name = generate_chat_room_name(user_id, friend_id)
             ChatRoom.create_with_members(room_name)
         services.send_friend_request_notification(request.user, friend_id, action)
         return Response({"status": "ok"})

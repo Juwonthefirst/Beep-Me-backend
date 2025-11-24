@@ -3,6 +3,20 @@ from functools import wraps
 from asgiref.sync import async_to_sync
 import os
 from threading import Thread
+from dotenv import load_dotenv
+
+
+def load_enviroment_variables():
+    load_dotenv()
+    is_prod_enviroment = os.getenv("ENVIROMENT") == "production"
+    if is_prod_enviroment:
+        load_dotenv(".env.production", override=True)
+        load_dotenv(".env.production.local", override=True)
+    else:
+        load_dotenv(".env.local", override=True)
+
+
+load_enviroment_variables()
 
 is_prod_enviroment = os.getenv("ENVIROMENT") == "production"
 
@@ -55,3 +69,11 @@ def background_task(f):
         return thread
 
     return wrapped_function
+
+
+def generate_chat_room_name(user_id: int | str, friend_id: int | str):
+    room_name = f"chat-{user_id}-{friend_id}"
+    if friend_id < user_id:
+        room_name = f"chat-{friend_id}-{user_id}"
+
+    return room_name

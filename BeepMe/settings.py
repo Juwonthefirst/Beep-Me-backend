@@ -2,9 +2,10 @@ from pathlib import Path
 from datetime import timedelta
 import os, dj_database_url
 from redis.asyncio.connection import Connection
-from dotenv import load_dotenv
+from .utils import load_enviroment_variables
 
-load_dotenv()
+load_enviroment_variables()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -127,7 +128,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MEDIA_URL = "/media/"
+MEDIA_URL = f"{os.getenv("HOST_DOMAIN") or ''}/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
@@ -194,7 +195,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
-    "http://localhost:8000",
+    os.getenv("HOST_DOMAIN"),
 ]
 
 
@@ -225,7 +226,8 @@ USERNAME_REGEX = r"^[a-zA-Z](?:[a-zA-Z0-9]*(?:[-_][a-zA-Z0-9])?)*[a-zA-Z0-9]+$"
 OTP_EXPIRY_TIME = 600
 
 if os.getenv("ENVIRONMENT") == "production":
-    DEBUG = True
+    print("in prod")
+    DEBUG = False
     STORAGES = {
         "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
         "staticfiles": {
@@ -238,7 +240,7 @@ if os.getenv("ENVIRONMENT") == "production":
     }
 
     CSRF_TRUSTED_ORIGINS = [
-        "https://" + os.getenv("HOST_NAME"),
+        os.getenv("HOST_DOMAIN"),
         "https://" + os.getenv("FRONTEND_HOST_NAME"),
     ]
 
