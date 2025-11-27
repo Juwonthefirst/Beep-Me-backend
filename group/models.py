@@ -38,13 +38,14 @@ class Group(models.Model):
         )
         if not member:
             raise PermissionDenied
+
         return member.role
 
     def add_members(self, new_members):
         return MemberDetail.add(self, new_members)
 
-    def update_members_role(self, role, member_ids):
-        return MemberDetail.update_role(self, role, member_ids)
+    def update_members_role(self, role_id, member_ids):
+        return MemberDetail.update_role(self, role_id, member_ids)
 
     def delete_members(self, member_ids):
         return MemberDetail.remove(self, member_ids)

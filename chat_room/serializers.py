@@ -32,14 +32,16 @@ class UserChatRoomSerializer(serializers.ModelSerializer):
 
     def get_last_message(self, obj):
         last_message_object = obj.get_last_message()
-        return MessagesSerializer(last_message_object).data
+        return MessagesSerializer(
+            last_message_object,
+        ).data
 
     def get_friend(self, obj: ChatRoom):
         if obj.is_group:
             return None
         user_id = self.context.get("user_id")
         other_member = obj.members.exclude(id=user_id).first()
-        return RetrieveFriendSerializer(other_member).data
+        return RetrieveFriendSerializer(other_member, context=self.context).data
 
 
 # class ChatRoomAndMessagesSerializer(serializers.ModelSerializer):

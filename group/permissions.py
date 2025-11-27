@@ -9,9 +9,7 @@ class IsMember(BasePermission):
 
     def has_permission(self, request, view):
         group_id = view.kwargs.get("pk")
-        return Group.objects.filter(
-            id=group_id, member_id__in=[request.user.id]
-        ).exists()
+        return Group.objects.filter(id=group_id, members__in=[request.user]).exists()
 
 
 def has_role_permission(action):

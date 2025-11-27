@@ -28,7 +28,7 @@ User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
 
 
-class UpdateGroupView(RetrieveUpdateDestroyAPIView):
+class RetrieveUpdateGroupView(RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     permission_classes = [

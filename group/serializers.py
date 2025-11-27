@@ -4,9 +4,11 @@ from chat_room.models import ChatRoom
 
 
 class MembersSerializer(serializers.Serializer):
-    member_id = serializers.IntegerField()
-    member_username = serializers.ReadOnlyField(source="member.username")
-    member_avatar = serializers.FileField(source="member.profile_picture")
+    id = serializers.ReadOnlyField(source="member.id")
+    username = serializers.ReadOnlyField(source="member.username")
+    profile_picture = serializers.FileField(
+        source="member.profile_picture", read_only=True
+    )
     role = serializers.CharField(max_length=100, required=False)
 
 
@@ -20,15 +22,17 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         members = validated_data.pop("members")
-        avatar = validated_data.pop("avatar")
+        avatar = validated_data.pop("avatar", None)
         group = Group.objects.create(**validated_data)
-        group.avatar = avatar
-        group.save(update_fields=["avatar"])
-        ChatRoom.objects.create(name=f"group.{group.id}", is_group=True, group=group)
+        if avatar:
+            group.avatar = avatar
+            group.save(update_fields=["avatar"])
+
         owner_role = Role.objects.create(name="owner", group=group, is_master=True)
         owner_role.permissions.add(*Permission.objects.all())
         Role.objects.create(name="member", group=group, is_base_role=True)
         group.add_members(members)
+        ChatRoom.objects.create(name=f"group.{group.id}", is_group=True, group=group)
         return group
 
 

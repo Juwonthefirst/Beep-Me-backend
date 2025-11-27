@@ -11,7 +11,7 @@ class Message(models.Model):
     attachment = models.OneToOneField(
         Attachment, related_name="message_parent", on_delete=models.CASCADE, null=True
     )
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(auto_now_add=True)
     sender = models.ForeignKey(
         get_user_model(), related_name="messages", on_delete=models.SET_NULL, null=True
     )

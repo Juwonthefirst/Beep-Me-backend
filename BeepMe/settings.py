@@ -128,7 +128,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MEDIA_URL = f"{os.getenv("HOST_DOMAIN") or ''}/media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
@@ -226,7 +226,6 @@ USERNAME_REGEX = r"^[a-zA-Z](?:[a-zA-Z0-9]*(?:[-_][a-zA-Z0-9])?)*[a-zA-Z0-9]+$"
 OTP_EXPIRY_TIME = 600
 
 if os.getenv("ENVIRONMENT") == "production":
-    print("in prod")
     DEBUG = False
     STORAGES = {
         "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},

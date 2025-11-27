@@ -47,13 +47,21 @@ class Cache:
     async def ping(self, user_id):
         await self.redis.set(f"user_{user_id}_is_online", 1, ex=50)
 
-    async def cache_message(self, room_name, *messages):
-        cached_messages_length = await self.redis.rpush(room_name, *messages)
-        if cached_messages_length > 50:
-            await self.redis.ltrim(room_name, -50, -1)
+    async def cache_message(self, room_name: str, messages: list[str] | str):
+        try:
+            if isinstance(messages, str):
+                messages = [messages]
+
+            cached_messages_length = await self.redis.lpush(
+                f"{room_name}_messages", *messages
+            )
+            if cached_messages_length > 50:
+                await self.redis.rtrim(f"{room_name}_messages", -50, -1)
+        except Exception as error:
+            print(error)
 
     async def get_cached_messages(self, room_name):
-        return await self.redis.lrange(room_name, 0, -1)
+        return await self.redis.lrange(f"{room_name}_messages", 0, -1)
 
     async def add_user_online(self, user_id):
         await self.redis.sadd("online_users", user_id)
@@ -83,7 +91,9 @@ class Cache:
         await self.redis.srem(f"{room_name}_online_members", user_id)
 
     async def is_user_active_member(self, room_name, users_id):
-        are_users_online = await self.redis.smismember(room_name, users_id)
+        are_users_online = await self.redis.smismember(
+            f"{room_name}_online_members", users_id
+        )
         return {
             user_id for index, user_id in enumerate(users_id) if are_users_online[index]
         }

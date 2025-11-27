@@ -48,16 +48,20 @@ def cookify_response_tokens(tokens_to_cookify: dict[str, dict]):
     return wrapper
 
 
-# used in async views
+# used for async functions
 def async_background_task(f):
     @wraps(f)
     def wrapped_function(*args, **kwargs):
-        return asyncio.create_task(f(*args, **kwargs))
+        try:
+            loop = asyncio.get_running_loop()
+            return loop.create_task(f(*args, **kwargs))
+        except:
+            pass
 
     return wrapped_function
 
 
-# used in sync views
+# used for sync functions
 def background_task(f):
     @wraps(f)
     def wrapped_function(*args, **kwargs):

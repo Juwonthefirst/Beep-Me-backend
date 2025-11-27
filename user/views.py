@@ -33,7 +33,11 @@ not_found = status.HTTP_404_NOT_FOUND
 
 class CurrentUserView(APIView):
     def get(self, request):
-        return Response(CurrentUserSerializer(self.request.user).data)
+        return Response(
+            CurrentUserSerializer(
+                self.request.user, context={"request": self.request}
+            ).data
+        )
 
 
 class UsersView(ListAPIView):
@@ -195,4 +199,6 @@ def update_username(request):
 
     request.user.username = username
     request.user.save(update_fields=["username"])
-    return Response(CurrentUserSerializer(request.user).data)
+    return Response(
+        CurrentUserSerializer(request.user, context={"request": request}).data
+    )

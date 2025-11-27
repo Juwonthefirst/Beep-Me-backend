@@ -1,34 +1,47 @@
 import json, re
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
+from asgiref.sync import sync_to_async
 from BeepMe.cache import cache
-from django.utils import timezone
 from chat_room.queries import update_user_room_last_active_at
+from message.serializers import MessagesSerializer
 from notification import services
 
 
 @database_sync_to_async
-def save_message_to_db(room_id, sender_id, message, attachment_id, timestamp, uuid):
+def save_message_to_db(
+    room_id, sender_id, message, attachment_id, reply_to_message_id, uuid
+):
     from message.models import Message
 
     return Message.objects.create(
         room_id=room_id,
         body=message,
         sender_id=sender_id,
-        timestamp=timestamp,
+        reply_to_id=reply_to_message_id,
         attachment_id=attachment_id,
         uuid=uuid,
     )
 
 
 async def save_message(
-    room_id, room_name, sender_id, message, attachment_id, timestamp, uuid
+    room_id: int,
+    room_name: str,
+    sender_id: int,
+    message: str,
+    reply_to_message_id: int,
+    attachment_id: int,
+    uuid: str,
 ):
-    message = await save_message_to_db(
-        room_id, sender_id, message, attachment_id, timestamp, uuid
+    message_model = await save_message_to_db(
+        room_id, sender_id, message, attachment_id, reply_to_message_id, uuid
     )
-    jsonified_message = json.dumps(message)
+    serialized_message = await sync_to_async(
+        lambda: MessagesSerializer(message_model).data
+    )()
+    jsonified_message = json.dumps(serialized_message)
     await cache.cache_message(room_name, jsonified_message)
+    return serialized_message
 
 
 @database_sync_to_async
@@ -127,19 +140,26 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         user_id = self.user.id
         await cache.ping(user_id)
 
-    async def receive_json(self, content):
+    async def receive_json(self, content: dict):
+        print(content)
         message: str = content.get("message")
-        attachment: dict[str, int | str] = content.get("attachment")
+        attachment_id: int = content.get("attachment")
         room_name = content.get("room_name")
+        reply_to_message_id = content.get("reply_to")
         sender_username = self.user.username
         action = content.get("action")
         uuid = content.get("uuid")
-        timestamp = timezone.now().isoformat()
 
         if action == "ping":
             return await self.ping_user_is_online()
 
-        if not re.fullmatch(r"^(chat\-[1-9]+\-[1-9]+|group.[1-9]+){1,100}$", room_name):
+        if (
+            room_name
+            and action == "group_join"
+            and not re.fullmatch(
+                r"^(chat\-[1-9]+\-[1-9]+|group.[1-9]+){1,100}$", room_name
+            )
+        ):
             # prevent invalid room_name
             return await self.respond_with_error("Invalid room name")
 
@@ -157,7 +177,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     )
 
                 await self.channel_layer.group_send(
-                    room_name,
+                    self.currentRoom.name,
                     {
                         "type": "chat.typing",
                         "room_name": self.currentRoom.name,
@@ -171,47 +191,35 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     return await self.respond_with_error("You aren't in any room")
                 # if room.name != room_name:
                 #     return await self.respond_with_error("You aren't in this room")
+
+                serialized_message = await save_message(
+                    room_id=room.id,
+                    attachment_id=attachment_id,
+                    room_name=room.name,
+                    reply_to_message_id=reply_to_message_id,
+                    message=message,
+                    sender_id=self.user.id,
+                    uuid=uuid,
+                )
+
                 await self.channel_layer.group_send(
-                    room_name,
+                    room.name,
                     {
                         "type": "chat.message",
                         "room_name": room.name,
-                        "message": message,
-                        "attachment_url": attachment.get("url", ""),
-                        "uuid": uuid,
-                        "sender_username": sender_username,
-                        "timestamp": timestamp,
+                        **serialized_message,
                     },
                 )
-                await save_message(
-                    room_id=room.id,
-                    attachment_id=attachment.get("id", None),
-                    room_name=room.name,
-                    message=message,
-                    sender_id=self.user.id,
-                    timestamp=timestamp,
-                    uuid=uuid,
+
+                services.send_chat_notification(
+                    room,
+                    serialized_message.get("body"),
+                    serialized_message.get("timestamp"),
+                    self.user,
                 )
-                services.send_chat_notification(room, message, timestamp, self.user)
 
     async def chat_message(self, event):
-        room_name = event.get("room_name")
-        message = event.get("message")
-        sender_username = event.get("sender_username")
-        uuid = event.get("uuid")
-        attachment_url = event.get("attachment_url")
-        timestamp = event.get("timestamp")
-
-        await self.send_json(
-            content={
-                "room_name": room_name,
-                "message": message,
-                "sender_username": sender_username,
-                "timestamp": timestamp,
-                "uuid": uuid,
-                "attachment_url": attachment_url,
-            }
-        )
+        await self.send_json(content={**event, "event": "chat"})
 
     async def chat_typing(self, event):
         room_name = event.get("room_name")

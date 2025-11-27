@@ -1,18 +1,36 @@
+import os
 from rest_framework import serializers
 from asgiref.sync import async_to_sync
 from BeepMe.cache import cache
 from django.contrib.auth import get_user_model
+from BeepMe.utils import load_enviroment_variables
 
+load_enviroment_variables()
 User = get_user_model()
 
 
-class CurrentUserSerializer(serializers.ModelSerializer):
+class ProfilePictureUrlSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if not request or os.getenv("MODE") == "production":
+            return data
+
+        if data.get("profile_picture"):
+            data["profile_picture"] = request.build_absolute_uri(
+                data["profile_picture"]
+            )
+
+        return data
+
+
+class CurrentUserSerializer(ProfilePictureUrlSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "email", "profile_picture"]
 
 
-class UsersSerializer(serializers.ModelSerializer):
+class UsersSerializer(ProfilePictureUrlSerializer):
     is_following_me = serializers.BooleanField(read_only=True)
     is_followed_by_me = serializers.BooleanField(read_only=True)
 
@@ -28,7 +46,7 @@ class UsersSerializer(serializers.ModelSerializer):
         ]
 
 
-class RetrieveUserSerializer(serializers.ModelSerializer):
+class RetrieveUserSerializer(ProfilePictureUrlSerializer):
     is_following_me = serializers.BooleanField(read_only=True)
     is_followed_by_me = serializers.BooleanField(read_only=True)
 
@@ -46,7 +64,7 @@ class RetrieveUserSerializer(serializers.ModelSerializer):
         extra_kwargs = {"id": {"read_only": True}}
 
 
-class FriendsSerializer(serializers.ModelSerializer):
+class FriendsSerializer(ProfilePictureUrlSerializer):
     class Meta:
         model = User
         fields = [
@@ -56,7 +74,7 @@ class FriendsSerializer(serializers.ModelSerializer):
         ]
 
 
-class RetrieveFriendSerializer(serializers.ModelSerializer):
+class RetrieveFriendSerializer(ProfilePictureUrlSerializer):
     is_online = serializers.SerializerMethodField()
 
     class Meta:

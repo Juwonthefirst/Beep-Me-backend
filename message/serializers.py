@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from message.models import Message
+from upload.serializers import AttachmentSerializer
 
 
 class MessagesSerializer(serializers.ModelSerializer):
-    attachment = serializers.FileField(source="attachment.file")
+    attachment = AttachmentSerializer()
     reply_to = serializers.SerializerMethodField()
 
     class Meta:

@@ -4,7 +4,7 @@ from . import views
 urlpatterns = [
     path("", views.CreateGroupView.as_view()),
     path("permissions/", views.PermissionsView.as_view()),
-    path("<int:pk>/", views.UpdateGroupView.as_view()),
+    path("<int:pk>/", views.RetrieveUpdateGroupView.as_view()),
     path("<int:pk>/members/", views.GroupMembersView.as_view()),
     path("<int:pk>/notifications/", views.GroupNotificationView.as_view()),
     path("<int:pk>/members/delete/", views.delete_group_members),

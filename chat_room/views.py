@@ -37,22 +37,28 @@ def get_room_messages(request: Request, room_name: str, roomObject: ChatRoom):
     cursor = request.query_params.get("cursor", None)
 
     if not cursor:
-        cached_message = async_to_sync(cache.get_cached_messages)(roomObject.name)
-        if cached_message:
-            paginated_cached_messages = paginator.paginate_queryset(
-                [json.loads(message) for message in cached_message], request
+        cached_messages = async_to_sync(cache.get_cached_messages)(roomObject.name)
+        if cached_messages:
+            messages = [json.loads(message) for message in cached_messages]
+
+            return Response(
+                {
+                    "count": len(messages),
+                    "next": None,
+                    "previous": None,
+                    "results": messages,
+                }
             )
-            return paginator.get_paginated_response(paginated_cached_messages)
 
-    queryset = roomObject.messages.all().order_by("-timestamp")
+    queryset = roomObject.messages.all()
     room_messages = paginator.paginate_queryset(queryset, request)
-
     serialized_data = MessagesSerializer(room_messages, many=True).data
     if not cursor and serialized_data:
         jsonified_data = [
             json.dumps(message_object) for message_object in serialized_data
         ]
-        cache_messages(room_name, jsonified_data)
+
+        cache_messages(room_name, jsonified_data[::-1])
 
     return paginator.get_paginated_response(serialized_data)
 
