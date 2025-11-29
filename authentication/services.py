@@ -6,7 +6,6 @@ from google.auth.transport import requests
 import hashlib
 import secrets
 from BeepMe.cache import cache
-from asgiref.sync import async_to_sync
 
 
 @background_task
@@ -34,7 +33,7 @@ def generateOTP():
     return [otp, otp_hash]
 
 
-def create_email_verification_session(
+async def create_email_verification_session(
     email: str,
     is_google_auth: bool = False,
     otp_hash: str | None = None,
@@ -50,7 +49,7 @@ def create_email_verification_session(
     if otp_hash:
         session_data["otp_hash"] = otp_hash
 
-    async_to_sync(cache.set_hash)(
+    await cache.set_hash(
         f"signup_session:{session_id}",
         mapping=session_data,
         expiry_time=settings.OTP_EXPIRY_TIME,

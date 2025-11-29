@@ -213,8 +213,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
                 services.send_chat_notification(
                     room,
-                    serialized_message.get("body"),
-                    serialized_message.get("timestamp"),
+                    serialized_message,
                     self.user,
                 )
 

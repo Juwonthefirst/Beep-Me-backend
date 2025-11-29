@@ -5,12 +5,12 @@ postgres_file_location = "C:\\Program Files\\PostgreSQL\\17\\data"
 
 
 def stop_database():
-    print("stoping database...")
+    print("stoping database server...")
     subprocess.run(["pg_ctl", "-D", postgres_file_location, "stop"])
 
 
 def start_database():
-    print("starting database...")
+    print("starting database server...")
     subprocess.run(["pg_ctl", "-D", postgres_file_location, "start"])
 
 

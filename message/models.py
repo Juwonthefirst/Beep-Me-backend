@@ -11,9 +11,13 @@ class Message(models.Model):
     attachment = models.OneToOneField(
         Attachment, related_name="message_parent", on_delete=models.CASCADE, null=True
     )
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
     sender = models.ForeignKey(
-        get_user_model(), related_name="messages", on_delete=models.SET_NULL, null=True
+        get_user_model(),
+        related_name="messages",
+        on_delete=models.SET_NULL,
+        null=True,
+        db_index=True,
     )
     reply_to = models.ForeignKey(
         "self", on_delete=models.SET_NULL, related_name="replies", null=True

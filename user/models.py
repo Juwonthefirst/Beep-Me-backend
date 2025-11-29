@@ -42,7 +42,7 @@ class CustomUser(AbstractUser):
     )
     email = models.EmailField(unique=True, db_index=True)
     following = models.ManyToManyField(
-        "self", symmetrical=False, related_name="followers"
+        "self", symmetrical=False, related_name="followers", db_index=True
     )
 
     def mark_last_online(self):

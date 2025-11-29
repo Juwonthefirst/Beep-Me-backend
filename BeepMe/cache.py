@@ -56,7 +56,8 @@ class Cache:
                 f"{room_name}_messages", *messages
             )
             if cached_messages_length > 50:
-                await self.redis.rtrim(f"{room_name}_messages", -50, -1)
+                await self.redis.ltrim(f"{room_name}_messages", 0, 49)
+
         except Exception as error:
             print(error)
 

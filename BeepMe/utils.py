@@ -55,8 +55,8 @@ def async_background_task(f):
         try:
             loop = asyncio.get_running_loop()
             return loop.create_task(f(*args, **kwargs))
-        except:
-            pass
+        except Exception as error:
+            raise error
 
     return wrapped_function
 

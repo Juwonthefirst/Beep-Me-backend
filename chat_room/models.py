@@ -46,9 +46,9 @@ class ChatRoom(models.Model):
 
 class MemberDetail(models.Model):
     member = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="room_roles"
+        User, on_delete=models.CASCADE, related_name="room_roles", db_index=True
     )
-    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
+    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, db_index=True)
     last_active_at = models.DateTimeField(default=timezone.now)
 
     class Meta:

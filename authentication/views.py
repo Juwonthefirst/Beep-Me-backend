@@ -150,7 +150,9 @@ def google_login_by_code_token(request):
             }
         )
     except User.DoesNotExist:
-        session_id = create_email_verification_session(email, is_google_auth=True)
+        session_id = async_to_sync(create_email_verification_session)(
+            email, is_google_auth=True
+        )
         return Response(
             {"signup_session_id": session_id, "pending_google_signup": True}
         )
@@ -262,7 +264,9 @@ class RetrieveOTPView(APIView):
             )
 
         [otp, otp_hash] = generateOTP()
-        session_id = create_email_verification_session(email, otp_hash=otp_hash)
+        session_id = async_to_sync(create_email_verification_session)(
+            email, otp_hash=otp_hash
+        )
         send_user_otp(otp, to=email)
         return Response({"status": "sent", "signup_session_id": session_id})
 

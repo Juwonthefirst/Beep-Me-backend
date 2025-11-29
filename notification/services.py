@@ -12,14 +12,11 @@ from user.queries import get_user_friends_id
 
 
 @async_background_task
-async def send_chat_notification(
-    room: ChatRoom, message: str, timestamp: str, sender: CustomUser
-):
+async def send_chat_notification(room: ChatRoom, message: dict, sender: CustomUser):
     if not (channel_layer := get_channel_layer()):
         return
 
     members_id = await database_sync_to_async(get_room_members_id)(room)
-    print(members_id)
     if not members_id:
         return
     online_inactive_members_id = await cache.get_online_inactive_members(
@@ -27,12 +24,13 @@ async def send_chat_notification(
     ) - {sender.id}
 
     for member_id in online_inactive_members_id:
+        print(f"sending chat notification to {member_id}")
         await channel_layer.group_send(
             f"user_{member_id}_notifications",
             {
                 "type": "notification.chat",
                 "notification_detail": {
-                    "sender": sender.username,
+                    "sender_username": sender.username,
                     "sender_profile_picture": (
                         sender.profile_picture.url
                         if not (room.group and room.is_group)
@@ -42,7 +40,6 @@ async def send_chat_notification(
                     "message": message,
                     "is_group": room.is_group,
                     "room_name": room.name,
-                    "timestamp": timestamp,
                 },
             },
         )
