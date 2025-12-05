@@ -56,9 +56,7 @@ class CreateGroupView(CreateAPIView):
 
 class RetrieveGroupMemberView(RetrieveUpdateAPIView):
     serializer_class = GroupMemberSerializer
-    permission_classes = [
-        IsAuthenticated,
-    ]
+
     lookup_field = "member_id"
 
     def get_queryset(self):

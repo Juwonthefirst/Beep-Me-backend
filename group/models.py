@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
-from rest_framework.exceptions import PermissionDenied
+
 
 User = get_user_model()
 
@@ -30,17 +30,6 @@ class Group(models.Model):
     avatar = models.ImageField(upload_to=generate_group_avatar_url, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def get_user_role(self, member_id):
-        member = (
-            MemberDetail.objects.select_related("role")
-            .filter(group_id=self.id, member_id=member_id)
-            .first()
-        )
-        if not member:
-            raise PermissionDenied
-
-        return member.role
-
     def add_members(self, new_members):
         return MemberDetail.add(self, new_members)
 
@@ -66,8 +55,11 @@ class Role(models.Model):
 
 
 class MemberDetail(models.Model):
-    member = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, db_index=True)
+    member = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
     last_active_at = models.DateTimeField(default=timezone.now)
@@ -78,6 +70,8 @@ class MemberDetail(models.Model):
                 fields=["member", "group"], name="unique-group-member"
             )
         ]
+
+        indexes = [models.Index(fields=["member", "group"])]
 
     @classmethod
     def add(cls, group, new_members):

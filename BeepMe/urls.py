@@ -37,7 +37,7 @@ urlpatterns = [
     path("api/chats/", include("chat_room.urls")),
     path("api/groups/", include("group.urls")),
     path("api/users/", include("user.urls")),
-    path("uploads/", include("upload.urls")),
+    path("api/uploads/", include("upload.urls")),
 ]
 
 if settings.DEBUG:

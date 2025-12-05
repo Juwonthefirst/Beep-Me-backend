@@ -2,7 +2,6 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import PermissionDenied
-from group.models import Group, MemberDetail as GroupMemberDetail
 
 User = get_user_model()
 
@@ -12,9 +11,22 @@ class ChatRoom(models.Model):
     is_group = models.BooleanField(default=False)
     members = models.ManyToManyField(User, through="MemberDetail", related_name="rooms")
     group = models.OneToOneField(
-        Group, related_name="chat", on_delete=models.CASCADE, blank=True, null=True
+        "group.Group",
+        related_name="chat",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    last_message = models.ForeignKey(
+        "message.Message",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
+    last_room_activity = models.DateTimeField(default=timezone.now, db_index=True)
 
     @classmethod
     def create_with_members(cls, name):
@@ -33,14 +45,10 @@ class ChatRoom(models.Model):
         MemberDetail.objects.create(member_id=users[1], room=room)
         return room
 
-    def get_last_message(self):
-        return self.messages.filter().last()
-
     def is_member(self, user_id):
         room = self
         if self.is_group:
             room = self.group
-
         return room.members.filter(id=user_id).exists()
 
 
@@ -56,4 +64,8 @@ class MemberDetail(models.Model):
             models.UniqueConstraint(
                 fields=["member", "room"], name="unique-chat-member"
             )
+        ]
+
+        indexes = [
+            models.Index(fields=["member", "room"]),
         ]

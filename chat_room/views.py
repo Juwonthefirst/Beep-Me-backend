@@ -11,6 +11,7 @@ from chat_room.pagination import MessagePagination, create_next_cursor
 from chat_room.permissions import block_non_members
 from chat_room.serializers import RoomDetailsSerializer
 from chat_room.models import ChatRoom
+from group.queries import has_group_permission
 from notification.services import send_call_notification
 from message.serializers import MessagesSerializer
 from BeepMe.cache import cache
@@ -31,7 +32,6 @@ async def get_room_messages(request: Request, room_name: str, roomObject: ChatRo
     cursor = request.query_params.get("cursor", None)
 
     if not cursor:
-        print("no cursor")
         cached_messages = await cache.get_cached_messages(roomObject.name)
 
         if cached_messages:
@@ -89,11 +89,9 @@ async def get_livekit_JWT_token(request: Request, room_object: ChatRoom):
     is_video_admin = False
 
     if room_object.is_group:
-        is_video_admin = await database_sync_to_async(
-            room_object.group.get_user_role(user.id)
-            .permissions.filter(action="video admin")
-            .exists
-        )()
+        is_video_admin = await database_sync_to_async(has_group_permission)(
+            room_object.group.id, user.id, "video admin"
+        )
 
     token = (
         api.AccessToken(os.getenv("LIVEKIT_API_KEY"), os.getenv("LIVEKIT_API_SECRET"))

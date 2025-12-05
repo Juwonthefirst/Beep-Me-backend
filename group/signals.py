@@ -11,7 +11,7 @@ def create_permissions(**kwargs):
         "can delete group message",
         "can update group details",
         "can create group role",
-        "is video admin",
+        "video admin",
     ]
 
     permission_count = Permission.objects.count()

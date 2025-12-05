@@ -3,44 +3,51 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
 from BeepMe.cache import cache
-from chat_room.queries import update_user_room_last_active_at
-from message.serializers import MessagesSerializer
-from notification import services
+from django.db import transaction
 
 
 @database_sync_to_async
 def save_message_to_db(
-    room_id, sender_id, message, attachment_id, reply_to_message_id, uuid
+    room, sender_id, message, attachment_id, reply_to_message_id, uuid
 ):
     from message.models import Message
 
-    return Message.objects.create(
-        room_id=room_id,
-        body=message,
-        sender_id=sender_id,
-        reply_to_id=reply_to_message_id,
-        attachment_id=attachment_id,
-        uuid=uuid,
-    )
+    with transaction.atomic():
+
+        message = Message.objects.create(
+            room_id=room.id,
+            body=message,
+            sender_id=sender_id,
+            reply_to_id=reply_to_message_id,
+            attachment_id=attachment_id,
+            uuid=uuid,
+        )
+
+        room.last_message = message
+        room.last_room_activity = message.timestamp
+        room.save(update_fields=["last_message", "last_room_activity"])
+
+    return message
 
 
 async def save_message(
-    room_id: int,
-    room_name: str,
+    room,
     sender_id: int,
     message: str,
     reply_to_message_id: int,
     attachment_id: int,
     uuid: str,
 ):
+    from message.serializers import MessagesSerializer
+
     message_model = await save_message_to_db(
-        room_id, sender_id, message, attachment_id, reply_to_message_id, uuid
+        room, sender_id, message, attachment_id, reply_to_message_id, uuid
     )
     serialized_message = await sync_to_async(
         lambda: MessagesSerializer(message_model).data
     )()
     jsonified_message = json.dumps(serialized_message)
-    await cache.cache_message(room_name, jsonified_message)
+    await cache.cache_message(room.name, jsonified_message)
     return serialized_message
 
 
@@ -82,7 +89,10 @@ def is_group_member(group_id, user_id):
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
+
     async def connect(self):
+        from notification.services import send_online_status_notification
+
         self.user = self.scope.get("user")
         if not self.user:
             await self.close(code=4001)
@@ -91,9 +101,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.accept()
         # remake into an hash to acccount for multiple login
         await cache.add_user_online(self.user.id)
-        services.send_online_status_notification(self.user, True)
+        send_online_status_notification(self.user, True)
 
     async def disconnect(self, code):
+        from notification.services import send_online_status_notification
+
         if hasattr(self, "currentRoom"):
             await self.group_leave()
         if not self.user:
@@ -101,7 +113,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await cache.remove_user_online(self.user.id)
         await database_sync_to_async(self.user.mark_last_online)()
-        services.send_online_status_notification(self.user, False)
+        send_online_status_notification(self.user, False)
 
     async def group_join(self, room_name):
         if self.currentRoom:
@@ -126,6 +138,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     # on group leave, set the user last online timestamp and use that for unread messages
     async def group_leave(self):
+        from chat_room.queries import update_user_room_last_active_at
+
         if not self.currentRoom:
             return
         room_name = self.currentRoom.name
@@ -186,6 +200,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 )
 
             case "chat":
+                from notification.services import send_chat_notification
+
                 room = self.currentRoom
                 if not room:
                     return await self.respond_with_error("You aren't in any room")
@@ -193,9 +209,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 #     return await self.respond_with_error("You aren't in this room")
 
                 serialized_message = await save_message(
-                    room_id=room.id,
+                    room=room,
                     attachment_id=attachment_id,
-                    room_name=room.name,
                     reply_to_message_id=reply_to_message_id,
                     message=message,
                     sender_id=self.user.id,
@@ -211,7 +226,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     },
                 )
 
-                services.send_chat_notification(
+                send_chat_notification(
                     room,
                     serialized_message,
                     self.user,

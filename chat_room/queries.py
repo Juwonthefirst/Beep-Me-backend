@@ -1,33 +1,18 @@
 from chat_room.models import ChatRoom
-from django.db.models import OuterRef, Count, Q, Subquery, Case, When, F, Max
-from django.db.models.functions import Greatest
+from django.db.models import OuterRef, Count, Q, Subquery, Case, When, F
 from django.utils import timezone
 from group.models import MemberDetail as GroupMemberDetail
 from chat_room.models import MemberDetail as ChatMemberDetail
 from user.models import CustomUser
-from message.models import Message
 
 
 def get_user_rooms(user: CustomUser):
-    user_last_message_sent_timestamp = Subquery(
-        Message.objects.filter(room=OuterRef("pk"), sender=user)
-        .order_by("-timestamp", "-id")
-        .values("timestamp")[:1]
-    )
-
-    last_message_time_subquery = Subquery(
-        Message.objects.filter(room=OuterRef("pk"))
-        .order_by("-timestamp", "-id")
-        .values("timestamp")[:1]
-    )
 
     return (
-        ChatRoom.objects.select_related("group")
-        .prefetch_related("members", "messages")
+        ChatRoom.objects.select_related("group", "last_message")
         .filter(members=user)
         .annotate(
-            last_message_time=last_message_time_subquery,
-            last_read_at=Case(
+            last_active=Case(
                 When(
                     is_group=True,
                     then=Subquery(
@@ -44,14 +29,9 @@ def get_user_rooms(user: CustomUser):
             ),
             unread_message_count=Count(
                 "messages",
-                filter=Q(
-                    messages__timestamp__gt=Greatest(
-                        F("last_read_at"), user_last_message_sent_timestamp
-                    )
-                ),
+                filter=Q(messages__timestamp__gt=F("last_active")),
             ),
         )
-        .order_by("-last_message_time", "id")
     )
 
 

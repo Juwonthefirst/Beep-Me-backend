@@ -252,7 +252,10 @@ class RetrieveOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get("email").lower()
+        email = request.data.get("email", "").lower()
+        if not email:
+            return Response({"error": "No email provided"}, status=bad_request)
+
         if User.objects.filter(email=email).exists():
             return Response(
                 {"error": "This email is already in use"}, status=bad_request
@@ -318,7 +321,6 @@ class CompleteSignupView(APIView):
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
         if not serializer.is_valid():
-            print(serializer.errors)
             return Response(serializer.errors, status=bad_request)
 
         session_id = request.COOKIES.get("signup_session_id")

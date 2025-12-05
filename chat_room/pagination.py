@@ -4,7 +4,7 @@ from rest_framework.pagination import Cursor
 
 class ChatRoomPagination(CursorPagination):
     page_size = 20
-    ordering = ["-last_message_time", "id"]
+    ordering = ["-last_room_activity", "id"]
 
 
 class MessagePagination(CursorPagination):
