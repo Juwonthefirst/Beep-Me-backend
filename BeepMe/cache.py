@@ -53,16 +53,16 @@ class Cache:
                 messages = [messages]
 
             cached_messages_length = await self.redis.lpush(
-                f"{room_name}_messages", *messages
+                f"{room_name}:messages", *messages
             )
             if cached_messages_length > 50:
-                await self.redis.ltrim(f"{room_name}_messages", 0, 49)
+                await self.redis.ltrim(f"{room_name}:messages", 0, 49)
 
         except Exception as error:
             print(error)
 
     async def get_cached_messages(self, room_name):
-        return await self.redis.lrange(f"{room_name}_messages", 0, -1)
+        return await self.redis.lrange(f"{room_name}:messages", 0, -1)
 
     async def add_user_online(self, user_id):
         await self.redis.sadd("online_users", user_id)
@@ -83,17 +83,17 @@ class Cache:
         }
 
     async def add_active_member(self, room_name: str, user_id: int):
-        await self.redis.sadd(f"{room_name}_online_members", user_id)
+        await self.redis.sadd(f"{room_name}:online_members", user_id)
 
     async def get_active_members(self, room_name):
-        return await self.redis.smembers(f"{room_name}_online_members")
+        return await self.redis.smembers(f"{room_name}:online_members")
 
     async def remove_active_member(self, user_id, room_name):
-        await self.redis.srem(f"{room_name}_online_members", user_id)
+        await self.redis.srem(f"{room_name}:online_members", user_id)
 
     async def is_user_active_member(self, room_name, users_id):
         are_users_online = await self.redis.smismember(
-            f"{room_name}_online_members", users_id
+            f"{room_name}:online_members", users_id
         )
         return {
             user_id for index, user_id in enumerate(users_id) if are_users_online[index]

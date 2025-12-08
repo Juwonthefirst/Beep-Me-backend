@@ -1,15 +1,14 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
-
+from uuid import uuid4
 
 User = get_user_model()
 
 
-def create_member_rows(cls, group, new_member):
-    if isinstance(new_member, dict):
-        return cls(group=group, **new_member)
-    return cls(group=group, member_id=new_member)
+def create_member_rows(cls, group, new_member_id: int):
+
+    return cls(group=group, member_id=new_member_id)
 
 
 def generate_group_avatar_url(instance, filename: str):
@@ -17,8 +16,9 @@ def generate_group_avatar_url(instance, filename: str):
     return f"uploads/group-avatar/{instance.pk}.{extension}"
 
 
-class Permission(models.Model):
+class GroupPermission(models.Model):
     action = models.CharField(max_length=200)
+    code = models.IntegerField(unique=True)
 
 
 class Group(models.Model):
@@ -29,6 +29,7 @@ class Group(models.Model):
     )
     avatar = models.ImageField(upload_to=generate_group_avatar_url, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    base_role_permissions = models.ManyToManyField(GroupPermission)
 
     def add_members(self, new_members):
         return MemberDetail.add(self, new_members)
@@ -42,16 +43,9 @@ class Group(models.Model):
 
 class Role(models.Model):
     name = models.CharField(max_length=200)
-    permissions = models.ManyToManyField(Permission)
+    permissions = models.ManyToManyField(GroupPermission)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="roles")
-    is_master = models.BooleanField(default=False)
-    is_base_role = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    # class Meta:
-    #     # make there to always be a role with is_master and is_base_role
-    #     # there can only one base role
-    #     constraints = [models]
 
 
 class MemberDetail(models.Model):

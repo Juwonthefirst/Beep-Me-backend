@@ -1,4 +1,4 @@
-from .models import Group, Permission
+from .models import Group, GroupPermission
 from django.dispatch import receiver
 from django.db.models.signals import post_migrate, post_delete
 
@@ -6,17 +6,17 @@ from django.db.models.signals import post_migrate, post_delete
 @receiver(post_migrate)
 def create_permissions(**kwargs):
     permissions = [
-        "can delete member",
-        "can add member",
-        "can delete group message",
-        "can update group details",
-        "can create group role",
-        "video admin",
+        {"action": "can delete member", "code": 101},
+        {"action": "can add member", "code": 102},
+        {"action": "can delete group message", "code": 103},
+        {"action": "can update group details", "code": 104},
+        {"action": "can create group role", "code": 105},
+        {"action": "video admin", "code": 106},
     ]
 
-    permission_count = Permission.objects.count()
+    permission_count = GroupPermission.objects.count()
     for permission in permissions[permission_count:]:
-        Permission.objects.create(action=permission)
+        GroupPermission.objects.create(**permission)
 
 
 @receiver(post_delete, sender=Group)

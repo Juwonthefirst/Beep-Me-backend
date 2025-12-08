@@ -1,6 +1,8 @@
 from chat_room.models import MemberDetail
 from rest_framework.exceptions import PermissionDenied
 
+from group.models import Group, Role
+
 
 def get_group_member(group_id: int, member_id: int):
     return (
@@ -16,3 +18,7 @@ def has_group_permission(group_id: int, member_id: int, permission: str):
         raise PermissionDenied
 
     return member.role.permissions.filters(action=permission).exists()
+
+
+def create_member(group: Group, member_id: int, role: Role):
+    return MemberDetail.objects.create(group=group, member_id=member_id, role=role)

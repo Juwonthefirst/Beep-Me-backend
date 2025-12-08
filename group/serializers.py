@@ -1,6 +1,9 @@
 from rest_framework import serializers
+
+from group.queries import create_member
 from .models import Group, MemberDetail, Role, Permission
 from chat_room.models import ChatRoom
+from django.db import transaction
 
 
 class MembersSerializer(serializers.Serializer):
@@ -23,16 +26,26 @@ class GroupSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         members = validated_data.pop("members")
         avatar = validated_data.pop("avatar", None)
-        group = Group.objects.create(**validated_data)
-        if avatar:
-            group.avatar = avatar
-            group.save(update_fields=["avatar"])
+        with transaction.atomic():
+            group = Group.objects.create(**validated_data)
+            if avatar:
+                group.avatar = avatar
+                group.save(update_fields=["avatar"])
 
-        owner_role = Role.objects.create(name="owner", group=group, is_master=True)
-        owner_role.permissions.add(*Permission.objects.all())
-        Role.objects.create(name="member", group=group, is_base_role=True)
-        group.add_members(members)
-        ChatRoom.objects.create(name=f"group.{group.id}", is_group=True, group=group)
+            owner_role = Role.objects.create(name="owner", group=group, is_master=True)
+            owner_role.permissions.add(*Permission.objects.all())
+            current_user = self.context.get("request").user
+            create_member(group, current_user.id, owner_role)
+            members_id = [
+                member.get("id")
+                for member in members
+                if member.get("id") != current_user.id
+            ]
+            Role.objects.create(name="member", group=group, is_base_role=True)
+            group.add_members(members_id)
+            ChatRoom.objects.create(
+                name=f"group.{group.id}", is_group=True, group=group
+            )
         return group
 
 

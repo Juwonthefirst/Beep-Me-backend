@@ -11,6 +11,7 @@ def save_message_to_db(
     room, sender_id, message, attachment_id, reply_to_message_id, uuid
 ):
     from message.models import Message
+    from chat_room.queries import update_user_room_last_active_at
 
     with transaction.atomic():
 
@@ -26,6 +27,7 @@ def save_message_to_db(
         room.last_message = message
         room.last_room_activity = message.timestamp
         room.save(update_fields=["last_message", "last_room_activity"])
+        update_user_room_last_active_at(room.is_group, sender_id, room.id)
 
     return message
 
@@ -136,7 +138,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self.currentRoom = room
         await cache.add_active_member(room_name, self.user.id)
 
-    # on group leave, set the user last online timestamp and use that for unread messages
     async def group_leave(self):
         from chat_room.queries import update_user_room_last_active_at
 
@@ -236,8 +237,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(content={**event, "event": "chat"})
 
     async def chat_typing(self, event):
+
         room_name = event.get("room_name")
         sender_username = event.get("sender_username")
+        if sender_username == self.user.username:
+            return
 
         await self.send_json(
             content={

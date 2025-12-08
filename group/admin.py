@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import Group, MemberDetail, Permission, Role
+from .models import Group, MemberDetail, GroupPermission, Role
 
 admin.site.register(Group)
 admin.site.register(MemberDetail)
-admin.site.register(Permission)
+admin.site.register(GroupPermission)
 admin.site.register(Role)
