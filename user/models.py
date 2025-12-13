@@ -5,6 +5,8 @@ from django.core.validators import RegexValidator
 from django.utils import timezone
 from django.conf import settings
 
+from upload.utils import generate_profile_picture_url
+
 username_validator = RegexValidator(
     regex=settings.USERNAME_REGEX,
     message="Your username should only have letters, number and non-repeating underscore and hyphen",
@@ -22,15 +24,9 @@ class ActiveUserManager(UserManager):
         return ActiveUserQuerySet(self.model, using=self._db)
 
 
-def generate_profile_picture_url(instance, filename: str):
-    extension = filename.split(".")[-1]
-    return f"uploads/profile-picture/{instance.pk}.{extension}"
-
-
 class CustomUser(AbstractUser):
-    profile_picture = models.ImageField(
-        upload_to=generate_profile_picture_url,
-        null=True,
+    profile_picture = models.CharField(
+        max_length=300, default=generate_profile_picture_url
     )
     last_online = models.DateTimeField(auto_now_add=True)
     username = models.CharField(

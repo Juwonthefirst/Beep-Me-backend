@@ -76,6 +76,7 @@ def background_task(f):
 
 
 def generate_chat_room_name(user_id: int | str, friend_id: int | str):
+
     room_name = f"chat-{user_id}-{friend_id}"
     if friend_id < user_id:
         room_name = f"chat-{friend_id}-{user_id}"

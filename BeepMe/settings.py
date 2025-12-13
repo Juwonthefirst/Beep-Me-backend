@@ -1,10 +1,12 @@
+from .utils import load_enviroment_variables
+
+load_enviroment_variables()
+
 from pathlib import Path
 from datetime import timedelta
 import os, dj_database_url
 from redis.asyncio.connection import Connection
-from .utils import load_enviroment_variables
 
-load_enviroment_variables()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,7 +17,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = True
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
-
 # SECURITY WARNING: don't run with debug turned on in production!
 ALLOWED_HOSTS = [os.getenv("HOST_NAME"), "localhost"]
 
@@ -34,9 +35,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "adrf",
-    # "djoser",
-    # "corsheaders",
-    "storages",
     "drf_yasg",
     "authentication",
     "user",
@@ -47,11 +45,13 @@ INSTALLED_APPS = [
     "upload",
 ]
 
+if DEBUG:
+    INSTALLED_APPS += ["corsheaders"]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    # "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -59,6 +59,9 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.contrib.sites.middleware.CurrentSiteMiddleware",
 ]
+
+if DEBUG:
+    MIDDLEWARE += ["corsheaders.middleware.CorsMiddleware"]
 
 ROOT_URLCONF = "BeepMe.urls"
 
@@ -187,10 +190,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
-# CORS_ALLOWED_ORIGINS = [
-#     "https://" + os.getenv("HOST_NAME"),
-#     "http://0.0.0.0:8000",
-# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -229,7 +230,6 @@ OTP_EXPIRY_TIME = 600
 if os.getenv("ENVIRONMENT") == "production":
     DEBUG = False
     STORAGES = {
-        "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
         },
@@ -251,20 +251,13 @@ if os.getenv("ENVIRONMENT") == "production":
     CSRF_COOKIE_SAMESITE = "None"
     SESSION_COOKIE_SAMESITE = "None"
 
-    # Storage
-    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-    AWS_ACCESS_KEY_ID = ""
-    AWS_SECRET_ACCESS_KEY = ""
-    AWS_STORAGE_BUCKET_NAME = ""
-    AWS_S3_ENDPOINT_URL = ""
-    AWS_S3_FILE_OVERWRITE = True
-    AWS_S3_REGION_NAME = "auto"
-    AWS_DEFAULT_ACL = "public-read"
-    AWS_QUERYSTRING_AUTH = False
-    AWS_S3_VERIFY = True
-    AWS_S3_USE_SSL = True
+# Storage
+PUBLIC_BUCKET_ACCESS_KEY = ""
+PUBLIC_BUCKET_SECRET_KEY = ""
+PUBLIC_BUCKET_NAME = ""
+PUBLIC_BUCKET_ENDPOINT_URL = ""
 
 PRIVATE_BUCKET_NAME = os.getenv("PRIVATE_BUCKET_NAME")
-PRIVATE_BUCKET_ENDPOINT = os.getenv("PRIVATE_BUCKET_ENDPOINT")
+PRIVATE_BUCKET_ENDPOINT_URL = os.getenv("PRIVATE_BUCKET_ENDPOINT")
 PRIVATE_BUCKET_ACCESS_KEY = os.getenv("PRIVATE_BUCKET_ACCESS_KEY")
 PRIVATE_BUCKET_SECRET_KEY = os.getenv("PRIVATE_BUCKET_SECRET_KEY")

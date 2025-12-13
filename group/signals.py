@@ -1,6 +1,7 @@
 from .models import Group, GroupPermission
 from django.dispatch import receiver
 from django.db.models.signals import post_migrate, post_delete
+from BeepMe.storage import public_storage
 
 
 @receiver(post_migrate)
@@ -20,6 +21,6 @@ def create_permissions(**kwargs):
 
 
 @receiver(post_delete, sender=Group)
-def delete_avatar(sender, instance, **kwargs):
-    if instance:
-        instance.avatar.file.delete(save=False)
+def delete_avatar(sender, instance: Group, **kwargs):
+    if instance and instance.avatar:
+        public_storage.delete_file(instance.avatar)

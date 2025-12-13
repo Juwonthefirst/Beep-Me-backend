@@ -1,7 +1,6 @@
-from chat_room.models import MemberDetail
 from rest_framework.exceptions import PermissionDenied
 
-from group.models import Group, Role
+from group.models import Group, Role, MemberDetail
 
 
 def get_group_member(group_id: int, member_id: int):

@@ -95,11 +95,6 @@ class RetrieveUserChatRoomView(RetrieveAPIView):
         user = self.request.user
         return get_user_rooms(user)
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context["user_id"] = self.request.user.id
-        return context
-
 
 class UserChatRoomsView(ListAPIView):
     pagination_class = ChatRoomPagination

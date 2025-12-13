@@ -6,10 +6,9 @@ from rest_framework.decorators import permission_classes
 from adrf.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from channels.db import database_sync_to_async
-from BeepMe.utils import async_background_task
+from BeepMe.utils import async_background_task, load_enviroment_variables
 from chat_room.pagination import MessagePagination, create_next_cursor
 from chat_room.permissions import block_non_members
-from chat_room.serializers import RoomDetailsSerializer
 from chat_room.models import ChatRoom
 from group.queries import has_group_permission
 from notification.services import send_call_notification
@@ -21,6 +20,8 @@ from livekit import api
 User = get_user_model()
 not_found = HTTP_404_NOT_FOUND
 forbidden = HTTP_403_FORBIDDEN
+
+load_enviroment_variables()
 
 
 @api_view(["GET"])

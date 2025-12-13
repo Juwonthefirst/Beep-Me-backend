@@ -13,7 +13,7 @@ from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from .models import Group, MemberDetail, Role, Permission
+from .models import Group, MemberDetail, Role, GroupPermission
 from notification.models import Notification
 from .permissions import has_role_permission, IsMember
 from .serializers import (
@@ -161,6 +161,6 @@ class EditRolesView(RetrieveUpdateDestroyAPIView):
 
 
 class PermissionsView(ListAPIView):
-    queryset = Permission.objects.all()
+    queryset = GroupPermission.objects.all()
     serializer_class = PermissionSerializer
     permission_classes = [IsAuthenticated]

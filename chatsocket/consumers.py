@@ -27,7 +27,7 @@ def save_message_to_db(
         room.last_message = message
         room.last_room_activity = message.timestamp
         room.save(update_fields=["last_message", "last_room_activity"])
-        update_user_room_last_active_at(room.is_group, sender_id, room.id)
+        update_user_room_last_active_at(room, sender_id)
 
     return message
 
@@ -146,7 +146,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         room_name = self.currentRoom.name
         await self.channel_layer.group_discard(room_name, self.channel_name)
         await database_sync_to_async(update_user_room_last_active_at)(
-            self.currentRoom.is_group, self.user.id, self.currentRoom.id
+            self.currentRoom, self.user.id
         )
         self.currentRoom = None
         await cache.remove_active_member(self.user.id, room_name)

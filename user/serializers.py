@@ -1,8 +1,10 @@
 import os
+from django.conf import settings
 from rest_framework import serializers
 from asgiref.sync import async_to_sync
 from BeepMe.cache import cache
 from django.contrib.auth import get_user_model
+from BeepMe.storage import public_storage
 from BeepMe.utils import load_enviroment_variables
 
 load_enviroment_variables()
@@ -13,13 +15,15 @@ class ProfilePictureUrlSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         request = self.context.get("request")
-        if not request or os.getenv("MODE") == "production":
-            return data
 
         if data.get("profile_picture"):
-            data["profile_picture"] = request.build_absolute_uri(
-                data["profile_picture"]
+            data["profile_picture"] = public_storage.generate_file_url(
+                key=data["profile_picture"]
             )
+            if settings.DEBUG and request:
+                data["profile_picture"] = request.build_absolute_uri(
+                    data["profile_picture"]
+                )
 
         return data
 

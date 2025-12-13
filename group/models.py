@@ -1,7 +1,8 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
-from uuid import uuid4
+
+from upload.utils import generate_group_avatar_url
 
 User = get_user_model()
 
@@ -9,11 +10,6 @@ User = get_user_model()
 def create_member_rows(cls, group, new_member_id: int):
 
     return cls(group=group, member_id=new_member_id)
-
-
-def generate_group_avatar_url(instance, filename: str):
-    extension = filename.split(".")[-1]
-    return f"uploads/group-avatar/{instance.pk}.{extension}"
 
 
 class GroupPermission(models.Model):
@@ -27,9 +23,11 @@ class Group(models.Model):
     members = models.ManyToManyField(
         User, related_name="chat_groups", through="MemberDetail", blank=True
     )
-    avatar = models.ImageField(upload_to=generate_group_avatar_url, null=True)
+    avatar = models.CharField(max_length=300, default=generate_group_avatar_url)
     created_at = models.DateTimeField(auto_now_add=True)
-    base_role_permissions = models.ManyToManyField(GroupPermission)
+    base_role_permissions = models.ManyToManyField(
+        GroupPermission, related_name="base_roles"
+    )
 
     def add_members(self, new_members):
         return MemberDetail.add(self, new_members)
@@ -43,7 +41,7 @@ class Group(models.Model):
 
 class Role(models.Model):
     name = models.CharField(max_length=200)
-    permissions = models.ManyToManyField(GroupPermission)
+    permissions = models.ManyToManyField(GroupPermission, related_name="roles")
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="roles")
     created_at = models.DateTimeField(auto_now_add=True)
 

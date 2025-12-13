@@ -10,4 +10,3 @@ class LoginSerializer(serializers.Serializer):
 class SignupSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=60)
     password = serializers.CharField(write_only=True)
-    profile_picture = serializers.ImageField(required=False)

@@ -9,6 +9,7 @@ from chat_room.models import ChatRoom
 from chat_room.queries import get_room_members_id
 from user.models import CustomUser
 from user.queries import get_user_friends_id
+from BeepMe.storage import public_storage
 
 
 @async_background_task
@@ -32,9 +33,9 @@ async def send_chat_notification(room: ChatRoom, message: dict, sender: CustomUs
                 "notification_detail": {
                     "sender_username": sender.username,
                     "sender_profile_picture": (
-                        sender.profile_picture.url
+                        public_storage.generate_file_url(key=sender.profile_picture)
                         if not (room.group and room.is_group)
-                        else room.group.avatar.url
+                        else public_storage.generate_file_url(key=room.group.avatar)
                     ),
                     "group_name": getattr(room.group, "name", None),
                     "message": message,
@@ -109,7 +110,9 @@ async def send_friend_request_notification(
                 "type": "notification.friend",
                 "notification_detail": {
                     "sender": user.username,
-                    "sender_profile_picture": user.profile_picture.url,
+                    "sender_profile_picture": public_storage.generate_file_url(
+                        key=user.profile_picture
+                    ),
                     "action": action,
                 },
             },

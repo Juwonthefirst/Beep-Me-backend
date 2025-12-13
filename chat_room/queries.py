@@ -10,7 +10,7 @@ def get_user_rooms(user: CustomUser):
 
     return (
         ChatRoom.objects.select_related("group", "last_message")
-        .filter(members=user)
+        .filter(Q(members=user) | Q(group__members=user))
         .annotate(
             last_active=Case(
                 When(
@@ -43,12 +43,12 @@ def get_room_members_id(room: ChatRoom):
         return room_name.split("-")[1:]
 
 
-def update_user_room_last_active_at(is_group: bool, user_id: int, room_id: int):
-    if is_group:
-        GroupMemberDetail.objects.filter(member_id=user_id, room_id=room_id).update(
-            last_active_at=timezone.now()
-        )
+def update_user_room_last_active_at(room: ChatRoom, user_id: int):
+    if room.is_group and room.group:
+        GroupMemberDetail.objects.filter(
+            member_id=user_id, group_id=room.group.id
+        ).update(last_active_at=timezone.now())
     else:
-        ChatMemberDetail.objects.filter(member_id=user_id, room_id=room_id).update(
+        ChatMemberDetail.objects.filter(member_id=user_id, room=room).update(
             last_active_at=timezone.now()
         )

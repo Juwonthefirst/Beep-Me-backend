@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.utils.decorators import method_decorator
 from django.utils.datastructures import MultiValueDict
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
@@ -21,6 +22,7 @@ from authentication.services import (
     verify_google_id_token,
 )
 from BeepMe.utils import cookify_response_tokens
+from BeepMe.storage import public_storage
 from user.models import CustomUser
 from user.serializers import CurrentUserSerializer
 import os
@@ -270,7 +272,8 @@ class RetrieveOTPView(APIView):
         session_id = async_to_sync(create_email_verification_session)(
             email, otp_hash=otp_hash
         )
-        send_user_otp(otp, to=email)
+        print(f"User {email} new otp: {otp}")
+        # send_user_otp(otp, to=email)
         return Response({"status": "sent", "signup_session_id": session_id})
 
 
@@ -347,26 +350,29 @@ class CompleteSignupView(APIView):
             password = f"pass_{secrets.token_hex(32)}"
 
         try:
-            user: CustomUser = User.objects.create_user(
-                username=username,
-                email=user_email,
-                password=password,
-            )
-            user.profile_picture = profile_picture
-            user.save()
+            with transaction.atomic():
+                user: CustomUser = User.objects.create_user(
+                    username=username,
+                    email=user_email,
+                    password=password,
+                )
 
-            async_to_sync(cache.delete)(f"signup_session:{session_id}")
+                refresh_token = RefreshToken.for_user(user)
+                new_user = CurrentUserSerializer(user).data
+                response = Response(
+                    {
+                        "refresh_token": str(refresh_token),
+                        "access_token": str(refresh_token.access_token),
+                        "user": new_user,
+                        "avatar_upload_link": request.build_absolute_uri(
+                            public_storage.generate_upload_url(key=user.profile_picture)
+                        ),
+                    }
+                )
+                response.delete_cookie("signup_session_id")
+                response.delete_cookie("pending_google_signup")
+                async_to_sync(cache.delete)(f"signup_session:{session_id}")
 
-            refresh_token = RefreshToken.for_user(user)
-            response = Response(
-                {
-                    "refresh_token": str(refresh_token),
-                    "access_token": str(refresh_token.access_token),
-                    "user": CurrentUserSerializer(user).data,
-                }
-            )
-            response.delete_cookie("signup_session_id")
-            response.delete_cookie("pending_google_signup")
             return response
 
         except Exception as e:

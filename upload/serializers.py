@@ -11,3 +11,8 @@ class AttachmentSerializer(serializers.ModelSerializer):
 
 class CreateAttachmentUploadURLSerializer(serializers.Serializer):
     filenames = serializers.ListField(child=serializers.CharField())
+
+
+class GetUploadURLSerializer(serializers.Serializer):
+    owner_id = serializers.IntegerField()
+    upload_type = serializers.ChoiceField(choices=["profile_picture", "group_avatar"])
