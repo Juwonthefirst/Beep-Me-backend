@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
-from .models import Group, MemberDetail
+
+from group.queries import has_group_permission
+from .models import MemberDetail
 
 
 class IsMember(BasePermission):
@@ -9,7 +11,9 @@ class IsMember(BasePermission):
 
     def has_permission(self, request, view):
         group_id = view.kwargs.get("pk")
-        return Group.objects.filter(id=group_id, members__in=[request.user]).exists()
+        return MemberDetail.objects.filter(
+            group_id=group_id, member=request.user
+        ).exists()
 
 
 def has_role_permission(action):
@@ -18,9 +22,10 @@ def has_role_permission(action):
     class BaseGroupPermission(BasePermission):
         def has_permission(self, request, view):
             group_id = view.kwargs.get("pk")
-            member = MemberDetail.objects.filter(group_id=group_id, member=request.user)
             if not request.method in SAFE_METHODS:
-                return member.role.permissions.filter(action=action).exists()
+                return has_group_permission(
+                    group_id=group_id, member_id=request.user.id, permission=action
+                )
 
             return IsMember().has_permission(request, view)
 

@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
+from rest_framework import status
 from rest_framework.decorators import permission_classes
 from adrf.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
@@ -10,16 +10,18 @@ from BeepMe.utils import async_background_task, load_enviroment_variables
 from chat_room.pagination import MessagePagination, create_next_cursor
 from chat_room.permissions import block_non_members
 from chat_room.models import ChatRoom
-from group.queries import has_group_permission
+from group.queries import get_group_member, get_group_member_role, has_group_permission
 from notification.services import send_call_notification
 from message.serializers import MessagesSerializer
 from BeepMe.cache import cache
 import json, os
 from livekit import api
 
+from user.serializers import FriendsSerializer
+
 User = get_user_model()
-not_found = HTTP_404_NOT_FOUND
-forbidden = HTTP_403_FORBIDDEN
+not_found = status.HTTP_404_NOT_FOUND
+forbidden = status.HTTP_403_FORBIDDEN
 
 load_enviroment_variables()
 
@@ -27,13 +29,13 @@ load_enviroment_variables()
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 @block_non_members
-async def get_room_messages(request: Request, room_name: str, roomObject: ChatRoom):
+async def get_room_messages(request: Request, room_name: str, room_object: ChatRoom):
     paginator = MessagePagination()
     paginator.base_url = request.build_absolute_uri(request.path)
     cursor = request.query_params.get("cursor", None)
 
     if not cursor:
-        cached_messages = await cache.get_cached_messages(roomObject.name)
+        cached_messages = await cache.get_cached_messages(room_object.name)
 
         if cached_messages:
             messages = [json.loads(message) for message in cached_messages]
@@ -53,7 +55,7 @@ async def get_room_messages(request: Request, room_name: str, roomObject: ChatRo
                 }
             )
 
-    queryset = roomObject.messages.all()
+    queryset = room_object.messages.all()
     room_messages = await database_sync_to_async(paginator.paginate_queryset)(
         queryset, request
     )
@@ -88,10 +90,16 @@ async def get_room_messages(request: Request, room_name: str, roomObject: ChatRo
 async def get_livekit_JWT_token(request: Request, room_object: ChatRoom):
     user = request.user
     is_video_admin = False
+    user_role = None
 
     if room_object.is_group:
+        user_role = await database_sync_to_async(get_group_member_role)(
+            room_object.group.id,
+            user.id,
+        )
+
         is_video_admin = await database_sync_to_async(has_group_permission)(
-            room_object.group.id, user.id, "video admin"
+            role=user_role, permission="video admin"
         )
 
     token = (
@@ -109,6 +117,7 @@ async def get_livekit_JWT_token(request: Request, room_object: ChatRoom):
                 can_subscribe=True,
             )
         )
+        .with_metadata(json.dumps({**FriendsSerializer(user).data, "role": user_role}))
         .to_jwt()
     )
 
@@ -119,22 +128,42 @@ async def get_livekit_JWT_token(request: Request, room_object: ChatRoom):
 @permission_classes([IsAuthenticated])
 @block_non_members
 async def join_livekit_room(request, room_name, room_object):
-    return Response(await get_livekit_JWT_token(request, room_object))
+    livekit_JWT_token = await get_livekit_JWT_token(request, room_object)
+
+    return Response({"room_url": os.getenv("LIVEKIT_URL"), **livekit_JWT_token})
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @block_non_members
-async def create_livekit_room(request, room_name, room_object):
-    async with api.LiveKitAPI() as client:
-        await client.room.create_room(
-            api.CreateRoomRequest(name=room_name, empty_timeout=300)
+async def create_livekit_room(request: Request, room_name: str, room_object: ChatRoom):
+    is_video_call = request.data.get("is_video", False)
+    try:
+        async with api.LiveKitAPI() as client:
+            await client.room.create_room(
+                api.CreateRoomRequest(
+                    name=room_name,
+                    empty_timeout=60,
+                    metadata=json.dumps(
+                        {
+                            "is_video_call": is_video_call,
+                            "host_id": request.user.id,
+                            "is_group": room_object.is_group,
+                        }
+                    ),
+                )
+            )
+        livekit_token = await get_livekit_JWT_token(request, room_object)
+        async_background_task(send_call_notification)(
+            caller_id=request.user.id,
+            caller_username=request.user.username,
+            room=room_object,
+            is_video=is_video_call,
         )
-    livekit_token = await get_livekit_JWT_token(request, room_object)
-    async_background_task(send_call_notification)(
-        caller_id=request.user.id,
-        caller_username=request.user.username,
-        room=room_object,
-        is_video=request.data.get("is_video", False),
-    )
-    return Response({"room_url": os.getenv("LIVEKIT_URL"), **livekit_token})
+        return Response({"room_url": os.getenv("LIVEKIT_URL"), **livekit_token})
+    except Exception as error:
+        print(error)
+        return Response(
+            {"error": "Unable to connect to livekit"},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )

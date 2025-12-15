@@ -11,12 +11,28 @@ def get_group_member(group_id: int, member_id: int):
     )
 
 
-def has_group_permission(group_id: int, member_id: int, permission: str):
+def get_group_member_role(group_id: int, member_id: int):
     member = get_group_member(group_id, member_id)
     if not member:
         raise PermissionDenied
+    return member.role
 
-    return member.role.permissions.filters(action=permission).exists()
+
+def has_group_permission(
+    *, group_id: int, member_id: int, role: Role | None, permission: str
+):
+    if role:
+        member_role = role
+
+    elif group_id and member_id:
+        member_role = get_group_member_role(group_id, member_id)
+    else:
+        return False
+
+    return (
+        bool(member_role)
+        and member_role.permissions.filters(action=permission).exists()
+    )
 
 
 def create_member(group: Group, member_id: int, role: Role):

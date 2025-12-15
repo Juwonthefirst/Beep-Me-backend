@@ -40,13 +40,13 @@ async def save_message(
     attachment_id: int,
     uuid: str,
 ):
-    from message.serializers import MessagesSerializer
+    from message.serializers import LastMessageSerializer
 
     message_model = await save_message_to_db(
         room, sender_id, message, attachment_id, reply_to_message_id, uuid
     )
     serialized_message = await sync_to_async(
-        lambda: MessagesSerializer(message_model).data
+        lambda: LastMessageSerializer(message_model).data
     )()
     jsonified_message = json.dumps(serialized_message)
     await cache.cache_message(room.name, jsonified_message)

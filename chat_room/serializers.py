@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from chat_room.models import ChatRoom
 from user.serializers import RetrieveFriendSerializer
-from message.serializers import MessagesSerializer
+from message.serializers import LastMessageSerializer
 from group.serializers import GroupSerializer
 
 
@@ -13,7 +13,7 @@ class RoomDetailsSerializer(serializers.ModelSerializer):
 
 class UserChatRoomSerializer(serializers.ModelSerializer):
     group = GroupSerializer()
-    last_message = MessagesSerializer()
+    last_message = LastMessageSerializer()
     friend = serializers.SerializerMethodField()
     unread_message_count = serializers.IntegerField(read_only=True)
 

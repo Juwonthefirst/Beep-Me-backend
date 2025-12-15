@@ -1,3 +1,4 @@
+from ast import Is
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from notification import services
@@ -55,15 +56,9 @@ class CreateGroupView(CreateAPIView):
 
 
 class RetrieveGroupMemberView(RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated, IsMember]
     serializer_class = GroupMemberSerializer
-
-    lookup_field = "member_id"
-
-    def get_queryset(self):
-        group_id = self.kwargs.get("pk")
-        return MemberDetail.objects.select_related("role", "member").filter(
-            group_id=group_id
-        )
+    queryset = MemberDetail.objects.select_related("role", "member")
 
 
 class GroupNotificationView(ListAPIView):
@@ -149,12 +144,12 @@ class RolesView(ListCreateAPIView):
 
 class EditRolesView(RetrieveUpdateDestroyAPIView):
     permission_classes = [
-        has_role_permission("can create group role"),
         IsAuthenticated,
+        has_role_permission("can create group role"),
     ]
     serializer_class = RoleSerializer
-    queryset = Role.objects.prefetch_related("permissions")
-    lookup_field = "role_id"
+    queryset = Role.objects.prefetch_related("permissions").all()
+    # lookup_field = "rid"
 
     def delete(self, request):
         return super().delete(request)

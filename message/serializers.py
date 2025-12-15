@@ -21,6 +21,7 @@ class ReplyToMessagesSerializer(serializers.ModelSerializer):
 class MessagesSerializer(serializers.ModelSerializer):
     attachment = AttachmentSerializer()
     reply_to = serializers.SerializerMethodField()
+    sender_username = serializers.ReadOnlyField(source="sender.username")
 
     class Meta:
         model = Message
@@ -29,3 +30,7 @@ class MessagesSerializer(serializers.ModelSerializer):
     def get_reply_to(self, obj: Message):
         if obj.reply_to:
             return ReplyToMessagesSerializer(obj.reply_to, context=self.context).data
+
+
+class LastMessageSerializer(MessagesSerializer):
+    sender_username = serializers.ReadOnlyField(source="sender.username")

@@ -18,7 +18,7 @@ def block_non_members(f):
 
             if not await database_sync_to_async(chat_room.is_member)(request.user.id):
                 raise PermissionDenied
-            return await f(*args, **kwargs, roomObject=chat_room)
+            return await f(*args, **kwargs, room_object=chat_room)
 
         except ChatRoom.DoesNotExist:
             return Response(

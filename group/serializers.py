@@ -7,17 +7,32 @@ from group.models import Group, MemberDetail, Role, GroupPermission
 from chat_room.models import ChatRoom
 from django.db import transaction
 
+from user.serializers import ProfilePictureUrlSerializer
 
-class MembersSerializer(serializers.Serializer):
+
+# class MembersSerializer(serializers.ModelSerializer):
+#     id = serializers.ReadOnlyField(source="member.id")
+#     username = serializers.ReadOnlyField(source="member.username")
+#     avatar = serializers.FileField(source="member.avatar", read_only=True)
+#     role = serializers.CharField(max_length=100, required=False)
+
+#     class Meta:
+
+
+class GroupMemberSerializer(ProfilePictureUrlSerializer):
     id = serializers.ReadOnlyField(source="member.id")
     username = serializers.ReadOnlyField(source="member.username")
-    avatar = serializers.FileField(source="member.avatar", read_only=True)
-    role = serializers.CharField(max_length=100, required=False)
+    profile_picture = serializers.ReadOnlyField(source="member.profile_picture")
+    role = serializers.ReadOnlyField(source="role.name")
+
+    class Meta:
+        model = MemberDetail
+        fields = ["id", "username", "profile_picture", "role"]
 
 
 class GroupSerializer(serializers.ModelSerializer):
     room_name = serializers.ReadOnlyField(source="chat.name")
-    members = MembersSerializer(many=True, required=False)
+    members = serializers.SerializerMethodField()
     avatar_upload_link = serializers.SerializerMethodField()
 
     class Meta:
@@ -50,14 +65,24 @@ class GroupSerializer(serializers.ModelSerializer):
         return data
 
     def get_avatar_upload_link(self, instance: Group):
+        request = self.context.get("request")
         if (
             upload_link := public_storage.generate_upload_url(key=instance.avatar)
-        ) == "failed":
+        ) == "failed" or (request and request.method not in ("POST", "PATCH")):
             return
 
-        if settings.DEBUG and (request := self.context.get("request")):
+        if settings.DEBUG and request:
             return request.build_absolute_uri(upload_link)
+
         return upload_link
+
+    def get_members(self, instance: Group):
+        members = (
+            MemberDetail.objects.filter(group=instance)
+            .select_related("member", "role")
+            .order_by("joined_at")
+        )
+        return GroupMemberSerializer(members, many=True, context=self.context).data
 
     def create(self, validated_data):
         members = validated_data.pop("members", None)
@@ -78,16 +103,6 @@ class GroupSerializer(serializers.ModelSerializer):
                 name=f"group-{group.id}", is_group=True, group=group
             )
         return group
-
-
-class GroupMemberSerializer(serializers.ModelSerializer):
-    member_username = serializers.ReadOnlyField(source="member.username")
-    role_name = serializers.ReadOnlyField(source="role.name")
-
-    class Meta:
-        model = MemberDetail
-        fields = ["role_id", "joined_at", "member_id", "member_username", "role_name"]
-        extra_kwargs = {"joined_at": {"read_only": True}}
 
 
 class GroupMemberChangeSerializer(serializers.Serializer):
