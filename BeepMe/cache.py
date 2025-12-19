@@ -74,7 +74,7 @@ class Cache:
     async def is_user_online(self, user_id: int):
         return await self.redis.sismember("online_users", user_id)
 
-    async def get_online_users(self, user_id_list: list[int]):
+    async def get_online_users(self, user_id_list: list[int | str]):
         are_users_online = await self.redis.smismember("online_users", user_id_list)
         return {
             user_id

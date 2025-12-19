@@ -34,7 +34,9 @@ from asgiref.sync import async_to_sync
 User = get_user_model()
 bad_request = status.HTTP_400_BAD_REQUEST
 unauthorized = status.HTTP_401_UNAUTHORIZED
+conflict = status.HTTP_409_CONFLICT
 forbidden = status.HTTP_403_FORBIDDEN
+
 google_client_id = os.getenv("GOOGLE_CLIENT_ID")
 google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
 client = OAuth2Session(
@@ -341,10 +343,10 @@ class CompleteSignupView(APIView):
         is_google_auth: bool = signup_session.get("is_google_auth")
 
         if User.objects.filter(email=user_email).exists():
-            return Response({"error": "email is already in use"}, status=bad_request)
+            return Response({"error": "email is already in use"}, status=conflict)
 
         if User.objects.filter(username=username).exists():
-            return Response({"error": "username is already in use"}, status=bad_request)
+            return Response({"error": "username is already in use"}, status=conflict)
 
         if is_google_auth:
             password = f"pass_{secrets.token_hex(32)}"

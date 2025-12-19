@@ -1,9 +1,10 @@
-from chat_room.models import ChatRoom
+from chat_room.models import CallHistory, ChatRoom
 from django.db.models import OuterRef, Count, Q, Subquery, Case, When, F
 from django.utils import timezone
 from group.models import MemberDetail as GroupMemberDetail
 from chat_room.models import MemberDetail as ChatMemberDetail
 from user.models import CustomUser
+from livekit.api import LiveKitAPI, ListRoomsRequest
 
 
 def get_user_rooms(user: CustomUser):
@@ -29,7 +30,7 @@ def get_user_rooms(user: CustomUser):
             ),
             unread_message_count=Count(
                 "messages",
-                filter=Q(messages__timestamp__gt=F("last_active")),
+                filter=Q(messages__created_at__gt=F("last_active")),
             ),
         )
     )
@@ -52,3 +53,12 @@ def update_user_room_last_active_at(room: ChatRoom, user_id: int):
         ChatMemberDetail.objects.filter(member_id=user_id, room=room).update(
             last_active_at=timezone.now()
         )
+
+
+async def does_room_exist(client: LiveKitAPI, room_name: str):
+    response = await client.room.list_rooms(ListRoomsRequest(names=[room_name]))
+    for room in response.rooms:
+        if room.name == room_name:
+            return True
+
+    return False

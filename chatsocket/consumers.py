@@ -25,7 +25,7 @@ def save_message_to_db(
         )
 
         room.last_message = message
-        room.last_room_activity = message.timestamp
+        room.last_room_activity = message.created_at
         room.save(update_fields=["last_message", "last_room_activity"])
         update_user_room_last_active_at(room, sender_id)
 
@@ -78,7 +78,7 @@ def create_notification(
         notification=notification,
         receiver=receiver,
         sender=sender,
-        timestamp=time,
+        created_at=time,
         group_id=group_id,
     )
 
@@ -335,20 +335,16 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def notification_call(self, event):
-        # notification for calling
+        # notification for call events
         notification_detail = event.get("notification_detail")
-        is_video = notification_detail.get("is_video")
-        caller_username = notification_detail.get("caller")
-        room_name = notification_detail.get("room_name")
-        # room_id = notification_detail.get("room_id")
-        is_group = notification_detail.get("is_group")
+        # is_video = notification_detail.get("is_video")
+        # caller_username = notification_detail.get("caller")
+        # room_name = notification_detail.get("room_name")
+        # # room_id = notification_detail.get("room_id")
+        # is_group = notification_detail.get("is_group")
         await self.send_json(
             content={
                 "type": "call_notification",
-                "caller": caller_username,
-                "room_name": room_name,
-                # "room_id": room_id,
-                "is_video": is_video,
-                "is_group": is_group,
+                **notification_detail,
             }
         )

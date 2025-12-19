@@ -12,7 +12,7 @@ class Message(models.Model):
         on_delete=models.CASCADE,
         null=True,
     )
-    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     sender = models.ForeignKey(
         get_user_model(),
         related_name="messages",
@@ -33,4 +33,4 @@ class Message(models.Model):
     is_edited = models.BooleanField(default=False)
 
     class Meta:
-        indexes = [models.Index(fields=["room", "timestamp"])]
+        indexes = [models.Index(fields=["room", "created_at"])]

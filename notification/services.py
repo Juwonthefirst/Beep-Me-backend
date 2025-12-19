@@ -25,7 +25,6 @@ async def send_chat_notification(room: ChatRoom, message: dict, sender: CustomUs
     ) - {sender.id}
 
     for member_id in online_inactive_members_id:
-        print(f"sending chat notification to {member_id}")
         await channel_layer.group_send(
             f"user_{member_id}_notifications",
             {
@@ -120,23 +119,25 @@ async def send_friend_request_notification(
 
 
 async def send_call_notification(
-    caller_id: int, caller_username: str, room: ChatRoom, is_video: bool = False
+    caller, room: ChatRoom, call_id: str, is_video: bool = False
 ):
     if not (channel_layer := get_channel_layer()):
         return
-
     members_id = await database_sync_to_async(get_room_members_id)(room)
-    online_members_id = await cache.get_online_users(members_id)
+    online_members_id = (await cache.get_online_users(members_id)) - {
+        str(caller.get("id"))
+    }
 
-    for member_id in online_members_id - {caller_id}:
-
+    for member_id in online_members_id:
         await channel_layer.group_send(
             f"user_{member_id}_notifications",
             {
                 "type": "notification.call",
                 "notification_detail": {
-                    "caller": caller_username,
+                    "caller_username": caller.get("username"),
+                    "caller_profile_picture": caller.get("profile_picture"),
                     "room_name": room.name,
+                    "call_id": call_id,
                     "is_video": is_video,
                     "is_group": room.is_group,
                 },

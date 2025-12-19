@@ -9,7 +9,7 @@ class ChatRoomPagination(CursorPagination):
 
 class MessagePagination(CursorPagination):
     page_size = 50
-    ordering = ["-timestamp", "-id"]
+    ordering = ["-created_at", "-id"]
 
 
 def create_next_cursor(position: str, paginationInstance: MessagePagination):
