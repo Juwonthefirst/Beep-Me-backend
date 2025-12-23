@@ -41,7 +41,7 @@ def get_room_members_id(room: ChatRoom):
         return list(room.group.members.values_list("id", flat=True))
     else:
         room_name = room.name
-        return room_name.split("-")[1:]
+        return [int(id) for id in room_name.split("-")[1:]]
 
 
 def update_user_room_last_active_at(room: ChatRoom, user_id: int):

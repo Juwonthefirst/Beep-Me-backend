@@ -148,7 +148,6 @@ async def get_livekit_JWT_token(request: Request, room_object: ChatRoom, call_id
 @permission_classes([IsAuthenticated])
 @block_non_members
 async def join_livekit_room(request, room_name, call_id, room_object):
-    print(call_id)
     livekit_JWT_token = await get_livekit_JWT_token(request, room_object, call_id)
     if "error" in livekit_JWT_token:
         return Response(livekit_JWT_token, status=status.HTTP_404_NOT_FOUND)
@@ -209,12 +208,6 @@ async def create_livekit_room(request: Request, room_name: str, room_object: Cha
         )
 
 
-@async_background_task
-@database_sync_to_async
-def on_room_close(call_id: str):
-    CallHistory.objects.get(id=int(call_id)).end_call()
-
-
 class ReceiveLivekitWebHookEvent(APIView):
     permission_classes = [AllowAny]
     parser_classes = [LiveKitwebhookParser]
@@ -239,21 +232,28 @@ class ReceiveLivekitWebHookEvent(APIView):
 
         match (event.event):
             case "participant_joined":
-                async_background_task(
-                    database_sync_to_async(
-                        CallHistory.objects.get(id=call_history_id).accept_call
-                    )
-                )(int(new_participant.identity))
+                if not call_history_model.room.is_group:
+                    await database_sync_to_async(call_history_model.start_call)()
+
+                await database_sync_to_async(call_history_model.accept_call)(
+                    int(new_participant.identity)
+                )
 
             case "participant_left":
                 if not call_history_model.room.is_group:
-                    async with api.LiveKitAPI() as client:
-                        client.room.delete_room(
-                            api.DeleteRoomRequest(name=livekitRoom.name)
-                        )
+                    try:
+                        async with api.LiveKitAPI() as client:
+                            await client.room.delete_room(
+                                api.DeleteRoomRequest(room=livekitRoom.name)
+                            )
+                    except api.twirp_client.TwirpError as error:
+                        print("Error deleting livekit room:", error)
+
+                    except Exception as error:
+                        print("Error deleting livekit room:", error)
 
             case "room_finished":
-                on_room_close(call_history_id)
+                await database_sync_to_async(call_history_model.end_call)()
 
         return Response(
             status=status.HTTP_204_NO_CONTENT,

@@ -1,4 +1,3 @@
-from time import time
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -49,21 +48,17 @@ class UsersView(ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return (
-            User.objects.filter(is_active=True)
-            .exclude(username=user.username)
-            .annotate(
-                is_followed_by_me=Exists(
-                    User.following.through.objects.filter(
-                        from_customuser_id=user.id, to_customuser_id=OuterRef("pk")
-                    )
-                ),
-                is_following_me=Exists(
-                    User.following.through.objects.filter(
-                        from_customuser_id=OuterRef("pk"), to_customuser_id=user.id
-                    )
-                ),
-            )
+        return User.objects.exclude(username=user.username).annotate(
+            is_followed_by_me=Exists(
+                User.following.through.objects.filter(
+                    from_customuser_id=user.id, to_customuser_id=OuterRef("pk")
+                )
+            ),
+            is_following_me=Exists(
+                User.following.through.objects.filter(
+                    from_customuser_id=OuterRef("pk"), to_customuser_id=user.id
+                )
+            ),
         )
 
 

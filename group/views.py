@@ -70,7 +70,7 @@ class GroupNotificationView(ListAPIView):
         return Notification.objects.filter(group_id=group_id)
 
 
-@api_view(["PATCH"])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated, has_role_permission("can delete member")])
 def delete_group_members(request, pk):
     data = GroupMemberChangeSerializer(data=request.data)
@@ -97,7 +97,7 @@ def delete_group_members(request, pk):
         return Response({"error": "user ids should be in a list"}, status=bad_request)
 
 
-@api_view(["PATCH"])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated, has_role_permission("can add member")])
 def add_group_members(request, pk):
     data = GroupMemberChangeSerializer(data=request.data)

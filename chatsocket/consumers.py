@@ -164,9 +164,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         sender_username = self.user.username
         action = content.get("action")
         uuid = content.get("uuid")
+        call_id = content.get("call_id")
 
         if action == "ping":
             return await self.ping_user_is_online()
+
+        if action == "call_decline":
+            from chat_room.services import decline_call
+
+            return await decline_call(self.user.id, call_id)
 
         if (
             room_name

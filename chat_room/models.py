@@ -100,7 +100,7 @@ class CallHistory(models.Model):
         indexes = [models.Index(fields=["room", "created_at"])]
 
     @classmethod
-    def create_call(cls, room: ChatRoom, is_video_call: bool, sender_id):
+    def create_call(cls, room: ChatRoom, is_video_call: bool, sender_id: int):
         return cls.objects.create(
             status="S",
             call_type="V" if is_video_call else "A",
@@ -117,7 +117,7 @@ class CallHistory(models.Model):
     def end_call(self):
         updated_fields = []
         if not self.end_time:
-            self.start_time = timezone.now()
+            self.end_time = timezone.now()
             updated_fields.append("end_time")
 
         if self.status != "E":
@@ -127,8 +127,8 @@ class CallHistory(models.Model):
         if updated_fields:
             self.save(update_fields=updated_fields)
 
-    def decline_call(self, user):
-        self.declined_users.add(user_id=user.id)
+    def decline_call(self, user_id: int):
+        self.declined_users.add(user_id)
 
-    def accept_call(self, user_id):
-        self.joined_users.add(user_id=user_id)
+    def accept_call(self, user_id: int):
+        self.joined_users.add(user_id)

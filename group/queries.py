@@ -19,7 +19,11 @@ def get_group_member_role(group_id: int, member_id: int):
 
 
 def has_group_permission(
-    *, group_id: int, member_id: int, role: Role | None, permission: str
+    *,
+    group_id: int | None = None,
+    member_id: int | None = None,
+    role: Role | None = None,
+    permission: str,
 ):
     if role:
         member_role = role
@@ -30,8 +34,7 @@ def has_group_permission(
         return False
 
     return (
-        bool(member_role)
-        and member_role.permissions.filters(action=permission).exists()
+        bool(member_role) and member_role.permissions.filter(action=permission).exists()
     )
 
 

@@ -124,9 +124,7 @@ async def send_call_notification(
     if not (channel_layer := get_channel_layer()):
         return
     members_id = await database_sync_to_async(get_room_members_id)(room)
-    online_members_id = (await cache.get_online_users(members_id)) - {
-        str(caller.get("id"))
-    }
+    online_members_id = (await cache.get_online_users(members_id)) - {caller.get("id")}
 
     for member_id in online_members_id:
         await channel_layer.group_send(
