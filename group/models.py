@@ -1,3 +1,5 @@
+import json
+import random
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
@@ -55,6 +57,15 @@ class MemberDetail(models.Model):
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
     last_active_at = models.DateTimeField(default=timezone.now)
+    r = models.PositiveSmallIntegerField(
+        default=random.randint(1, 255), verbose_name="R_color_value"
+    )
+    g = models.PositiveSmallIntegerField(
+        default=random.randint(1, 255), verbose_name="G_color_value"
+    )
+    b = models.PositiveSmallIntegerField(
+        default=random.randint(1, 255), verbose_name="B_color_value"
+    )
 
     class Meta:
         constraints = [
