@@ -2,7 +2,7 @@ from typing import Literal
 from channels.layers import get_channel_layer
 from BeepMe.cache import cache
 from asgiref.sync import async_to_sync
-from BeepMe.utils import async_background_task, generate_chat_room_name
+from BeepMe.utils import async_background_task, background_task, generate_chat_room_name
 from channels.db import database_sync_to_async
 from django.utils import timezone
 from chat_room.models import ChatRoom
@@ -45,7 +45,7 @@ async def send_chat_notification(room: ChatRoom, message: dict, sender: CustomUs
         )
 
 
-@async_background_task
+@background_task
 async def send_group_notification(room: ChatRoom, notification: str, sender_id: int):
     if not (channel_layer := get_channel_layer()):
         return

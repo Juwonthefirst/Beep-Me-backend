@@ -11,12 +11,6 @@ class ReplyToMessagesSerializer(serializers.ModelSerializer):
         model = Message
         fields = ["body", "attachment", "sender", "is_deleted"]
 
-    def get_reply_to(self, obj: Message):
-        from .serializers import MessagesSerializer
-
-        if obj.reply_to:
-            return MessagesSerializer(obj.reply_to, context=self.context).data
-
 
 class MessagesSerializer(serializers.ModelSerializer):
     attachment = AttachmentSerializer()
