@@ -27,7 +27,7 @@ class GroupMemberSerializer(ProfilePictureUrlSerializer):
 
     class Meta:
         model = MemberDetail
-        fields = ["id", "username", "profile_picture", "role"]
+        fields = ["id", "username", "profile_picture", "role", "hex_color"]
 
 
 class GroupSerializer(serializers.ModelSerializer):
