@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.decorators import api_view, permission_classes
+from adrf.decorators import api_view as async_api_view
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef
@@ -15,12 +16,13 @@ from chat_room.models import ChatRoom
 from drf_yasg.utils import swagger_auto_schema
 from user.serializers import (
     FriendsSerializer,
-    UsersSerializer,
     RetrieveUserSerializer,
+    UsersSerializer,
     FriendRequestSerializer,
     CurrentUserSerializer,
 )
 from django.conf import settings
+from channels.db import database_sync_to_async
 import re
 
 from chat_room.queries import get_user_rooms
@@ -34,9 +36,7 @@ not_found = status.HTTP_404_NOT_FOUND
 class CurrentUserView(APIView):
     def get(self, request):
         return Response(
-            CurrentUserSerializer(
-                self.request.user, context={"request": self.request}
-            ).data
+            CurrentUserSerializer(self.request.user, context={"request": request}).data
         )
 
 
@@ -66,6 +66,7 @@ class RetrieveUserView(RetrieveAPIView):
     """View to get a particular user in the database"""
 
     serializer_class = RetrieveUserSerializer
+    lookup_field = "username"
 
     def get_queryset(self):
         user = self.request.user
@@ -157,23 +158,41 @@ class receivedFriendRequestView(ListAPIView):
 
 
 @swagger_auto_schema(method="post", request_body=FriendRequestSerializer)
-@api_view(["POST"])
-def sendFriendRequest(request):
+@async_api_view(["POST"])
+async def sendFriendRequest(request):
     serializer = FriendRequestSerializer(data=request.data)
     if serializer.is_valid():
         user_id = request.user.id
         friend_id = serializer.validated_data.get("friend_id")
-        request.user.following.add(friend_id)
-        is_following = request.user.is_friend_of(friend_id)
+        await database_sync_to_async(request.user.following.add)(friend_id)
+        is_following = await database_sync_to_async(request.user.is_friend_of)(
+            friend_id
+        )
         action = "sent"
         if is_following:
             action = "accepted"
 
             room_name = generate_chat_room_name(user_id, friend_id)
-            ChatRoom.create_with_members(room_name)
+            await database_sync_to_async(ChatRoom.create_with_members)(room_name)
         services.send_friend_request_notification(request.user, friend_id, action)
         return Response({"status": "ok"})
     return Response({"error": serializer.errors}, status=bad_request)
+
+
+# @swagger_auto_schema(method="delete", request_body=FriendRequestSerializer)
+# @api_view(["DELETE"])
+# def deleteFriendRequest(request):
+#     serializer = FriendRequestSerializer(data=request.data)
+#     if serializer.is_valid():
+#         user_id = request.user.id
+#         friend_id = serializer.validated_data.get("friend_id")
+#         request.user.following.remove(friend_id)
+
+#         room_name = generate_chat_room_name(user_id, friend_id)
+#         ChatRoom.create_with_members(room_name)
+#         services.send_friend_request_notification(request.user, friend_id, action)
+#         return Response({"status": "ok"})
+#     return Response({"error": serializer.errors}, status=bad_request)
 
 
 @api_view(["PATCH"])

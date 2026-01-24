@@ -1,5 +1,3 @@
-import json
-import random
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
@@ -89,7 +87,7 @@ class MemberDetail(models.Model):
         )
 
     @classmethod
-    def remove(cls, group, member_ids):
+    def remove(cls, group: Group, member_ids: list[int]):
         if not isinstance(member_ids, list):
             raise ValueError
         return cls.objects.filter(group=group, member_id__in=member_ids).delete()

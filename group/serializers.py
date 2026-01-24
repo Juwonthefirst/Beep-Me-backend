@@ -10,24 +10,16 @@ from django.db import transaction
 from user.serializers import ProfilePictureUrlSerializer
 
 
-# class MembersSerializer(serializers.ModelSerializer):
-#     id = serializers.ReadOnlyField(source="member.id")
-#     username = serializers.ReadOnlyField(source="member.username")
-#     avatar = serializers.FileField(source="member.avatar", read_only=True)
-#     role = serializers.CharField(max_length=100, required=False)
-
-#     class Meta:
-
-
 class GroupMemberSerializer(ProfilePictureUrlSerializer):
     id = serializers.ReadOnlyField(source="member.id")
     username = serializers.ReadOnlyField(source="member.username")
     profile_picture = serializers.ReadOnlyField(source="member.profile_picture")
     role = serializers.ReadOnlyField(source="role.name")
+    role_hex = serializers.ReadOnlyField(source="role.hex_color")
 
     class Meta:
         model = MemberDetail
-        fields = ["id", "username", "profile_picture", "role", "hex_color"]
+        fields = ["id", "username", "profile_picture", "role", "hex_color", "role_hex"]
 
 
 class GroupSerializer(serializers.ModelSerializer):

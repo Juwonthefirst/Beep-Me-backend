@@ -46,6 +46,8 @@ class CustomUser(AbstractUser):
         self.save(update_fields=["last_online"])
 
     def is_friend_of(self, user_id):
+        # return self.followers.contains(user_id) and self.following.contains(user_id)
+
         return (
             self.followers.filter(id=user_id).exists()
             and self.following.filter(id=user_id).exists()

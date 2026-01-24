@@ -103,7 +103,7 @@ async def send_friend_request_notification(
         return
 
     if await cache.is_user_online(friend_id):
-        async_to_sync(channel_layer.group_send)(
+        await channel_layer.group_send(
             f"user_{friend_id}_notifications",
             {
                 "type": "notification.friend",

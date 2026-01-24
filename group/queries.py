@@ -40,3 +40,7 @@ def has_group_permission(
 
 def create_member(group: Group, member_id: int, role: Role):
     return MemberDetail.objects.create(group=group, member_id=member_id, role=role)
+
+
+def delete_group_member(group_id: int, member_id: int):
+    return MemberDetail.objects.filter(group_id=group_id, member_id=member_id).delete()

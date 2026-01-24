@@ -1,4 +1,3 @@
-from ctypes.wintypes import RGB
 from random import randint
 
 

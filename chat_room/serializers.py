@@ -1,8 +1,12 @@
 from rest_framework import serializers
 from chat_room.models import ChatRoom
-from user.serializers import RetrieveFriendSerializer
+from user.serializers import RetrieveUserSerializer
 from message.serializers import LastMessageSerializer
 from group.serializers import GroupSerializer
+from django.db.models import Exists, OuterRef
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class RoomDetailsSerializer(serializers.ModelSerializer):
@@ -34,5 +38,20 @@ class UserChatRoomSerializer(serializers.ModelSerializer):
         if obj.is_group:
             return None
         user_id = self.context.get("request").user.id
-        other_member = obj.members.exclude(id=user_id).first()
-        return RetrieveFriendSerializer(other_member, context=self.context).data
+        other_member = (
+            obj.members.exclude(id=user_id)
+            .annotate(
+                is_followed_by_me=Exists(
+                    User.following.through.objects.filter(
+                        from_customuser_id=user_id, to_customuser_id=OuterRef("pk")
+                    )
+                ),
+                is_following_me=Exists(
+                    User.following.through.objects.filter(
+                        from_customuser_id=OuterRef("pk"), to_customuser_id=user_id
+                    )
+                ),
+            )
+            .first()
+        )
+        return RetrieveUserSerializer(other_member, context=self.context).data

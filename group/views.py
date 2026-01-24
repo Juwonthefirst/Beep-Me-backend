@@ -1,6 +1,7 @@
 from ast import Is
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
+from group.queries import delete_group_member
 from notification import services
 from notification.serializers import NotificationSerializer
 from rest_framework.generics import (
@@ -125,6 +126,21 @@ def add_group_members(request, pk):
     except IntegrityError:
         return Response(
             {"error": "user_id does not exist or user already a member"},
+            status=bad_request,
+        )
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated, IsMember])
+def leave_group(request, pk):
+    try:
+        delete_group_member(pk, request.user.id)
+        return Response({"status": "success"})
+    except MemberDetail.DoesNotExist:
+        return Response({"error": "You aren't a member "}, status=bad_request)
+    except IntegrityError:
+        return Response(
+            {"error": "user_id does not exist"},
             status=bad_request,
         )
 

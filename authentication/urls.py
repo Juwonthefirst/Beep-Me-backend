@@ -16,11 +16,11 @@ urlpatterns = [
     path("user/rooms/<str:name>/", user_views.RetrieveUserChatRoomView.as_view()),
     path("user/notifications/", user_views.UserNotificationsView.as_view()),
     path("user/friends/", user_views.FriendListView.as_view()),
+    path("user/<str:username>/", user_views.RetrieveUserView.as_view()),
     path("user/friends/requests/sent/", user_views.SentFriendRequestView.as_view()),
     path("user/friends/requests/send/", user_views.sendFriendRequest),
     path(
         "user/friends/requests/receive/", user_views.receivedFriendRequestView.as_view()
     ),
     path("user/update/username/", user_views.update_username),
-    # path("", include("djoser.urls")),
 ]
