@@ -1,15 +1,21 @@
-import subprocess, sys
+import subprocess, os, sys
 
+from BeepMe.utils import load_enviroment_variables
 
+load_enviroment_variables()
 postgres_file_location = "C:\\Program Files\\PostgreSQL\\17\\data"
 
 
 def stop_database():
+    if os.getenv("ENV") != "development":
+        return
     print("stoping database server...")
     subprocess.run(["pg_ctl", "-D", postgres_file_location, "stop"])
 
 
 def start_database():
+    if os.getenv("ENV") != "development":
+        return
     print("starting database server...")
     subprocess.run(["pg_ctl", "-D", postgres_file_location, "start"])
 
