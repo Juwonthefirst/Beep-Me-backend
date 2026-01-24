@@ -18,7 +18,7 @@ schema_view = views.get_schema_view(
     ),
     public=True,
     url=(
-        "https://beep-me-api.onrender.com"
+        os.getenv("HOST_DOMAIN")
         if os.getenv("ENVIROMENT") == "production"
         else "http://localhost:8000"
     ),
