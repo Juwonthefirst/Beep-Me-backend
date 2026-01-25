@@ -18,6 +18,7 @@ def send_user_otp(otp, to):
             f"Your code is: {otp}",
             os.getenv("EMAIL_HOST_USER"),
             [to],
+            fail_silently=False,
         )
     except Exception as e:
         print(f"Failed to send OTP email to {to}: {e}")
