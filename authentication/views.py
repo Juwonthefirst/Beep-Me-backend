@@ -275,7 +275,7 @@ class RetrieveOTPView(APIView):
             email, otp_hash=otp_hash
         )
 
-        # send_user_otp(otp, to=email)
+        send_user_otp(otp, to=email)
         return Response({"status": "sent", "signup_session_id": session_id})
 
 

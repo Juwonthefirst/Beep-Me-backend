@@ -10,13 +10,17 @@ from BeepMe.cache import cache
 load_enviroment_variables()
 
 
+@background_task
 def send_user_otp(otp, to):
-    send_mail(
-        "Your verification code",
-        f"Your code is: {otp}",
-        os.getenv("EMAIL_HOST_USER"),
-        [to],
-    )
+    try:
+        send_mail(
+            "Your verification code",
+            f"Your code is: {otp}",
+            os.getenv("EMAIL_HOST_USER"),
+            [to],
+        )
+    except Exception as e:
+        print(f"Failed to send OTP email to {to}: {e}")
 
 
 def verify_google_id_token(token):
