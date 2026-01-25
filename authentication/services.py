@@ -10,7 +10,6 @@ from BeepMe.cache import cache
 load_enviroment_variables()
 
 
-@background_task
 def send_user_otp(otp, to):
     send_mail(
         "Your verification code",
