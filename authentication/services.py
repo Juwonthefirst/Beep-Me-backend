@@ -1,11 +1,13 @@
 from django.conf import settings
 from django.core.mail import send_mail
-from BeepMe.utils import background_task
+from BeepMe.utils import background_task, load_enviroment_variables
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import hashlib
-import secrets
+import secrets, os
 from BeepMe.cache import cache
+
+load_enviroment_variables()
 
 
 @background_task
@@ -13,7 +15,7 @@ def send_user_otp(otp, to):
     send_mail(
         "Your verification code",
         f"Your code is: {otp}",
-        "noreply@beep.com",
+        os.getenv("EMAIL_HOST_USER"),
         [to],
     )
 
