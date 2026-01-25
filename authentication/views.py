@@ -274,8 +274,8 @@ class RetrieveOTPView(APIView):
         session_id = async_to_sync(create_email_verification_session)(
             email, otp_hash=otp_hash
         )
-        print(f"User {email} new otp: {otp}")
-        # send_user_otp(otp, to=email)
+
+        send_user_otp(otp, to=email)
         return Response({"status": "sent", "signup_session_id": session_id})
 
 

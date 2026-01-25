@@ -7,7 +7,7 @@ postgres_file_location = "C:\\Program Files\\PostgreSQL\\17\\data"
 
 
 def stop_database():
-    if os.getenv("ENVIROMENT") != "development":
+    if os.getenv("ENVIROMENT") == "development":
         return
     print("stoping database server...")
     subprocess.run(["pg_ctl", "-D", postgres_file_location, "stop"])
