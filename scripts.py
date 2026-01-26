@@ -48,6 +48,8 @@ def run_production_server():
             "--proxy-headers",
             "-b",
             "0.0.0.0",
+            "-p",
+            "$PORT",
             "-v",
             "2",
             "BeepMe.asgi:application",
