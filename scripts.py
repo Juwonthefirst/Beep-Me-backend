@@ -42,7 +42,9 @@ def run_production_server():
     subprocess.run(["uv", "run", "createsuperuser.py"])
     make_migrations_and_migrate()
     collectstatic()
-    subprocess.run(["daphne", "BeepMe.asgi:application", "-b", "0.0.0.0"])
+    subprocess.run(
+        ["daphne", "--proxy-headers", "-b", "0.0.0.0", "BeepMe.asgi:application"]
+    )
 
 
 def run_tests():
