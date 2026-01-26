@@ -38,6 +38,9 @@ def run_development_server():
     run_devserver()
 
 
+port = int(os.getenv("PORT", "8000"))
+
+
 def run_production_server():
     subprocess.run(["uv", "run", "createsuperuser.py"])
     make_migrations_and_migrate()
@@ -49,7 +52,7 @@ def run_production_server():
             "-b",
             "0.0.0.0",
             "-p",
-            "$PORT",
+            port,
             "-v",
             "2",
             "BeepMe.asgi:application",
