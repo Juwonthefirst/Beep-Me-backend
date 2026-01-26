@@ -202,7 +202,7 @@ def loginView(request):
     )
 
 
-@csrf_protect
+# @csrf_protect
 @api_view(["GET"])
 def logoutView(request):
     refresh_token = request.COOKIES.get("refresh_token")
@@ -222,7 +222,7 @@ def logoutView(request):
 
 
 @method_decorator(cookify_auth_tokens, name="post")
-@method_decorator(csrf_protect, name="dispatch")
+# @method_decorator(csrf_protect, name="dispatch")
 class CustomTokenRefreshView(TokenRefreshView):
     permission_classes = [AllowAny]
 
@@ -279,7 +279,7 @@ class RetrieveOTPView(APIView):
         return Response({"status": "sent", "signup_session_id": session_id})
 
 
-@method_decorator(csrf_protect, name="post")
+# @method_decorator(csrf_protect, name="post")
 class VerifyOTPView(APIView):
     permission_classes = [AllowAny]
 
@@ -319,7 +319,7 @@ class VerifyOTPView(APIView):
 
 
 @method_decorator(cookify_auth_tokens, name="post")
-@method_decorator(csrf_protect, name="post")
+# @method_decorator(csrf_protect, name="post")
 class CompleteSignupView(APIView):
     permission_classes = [AllowAny]
 
