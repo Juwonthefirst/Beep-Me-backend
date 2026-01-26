@@ -43,7 +43,15 @@ def run_production_server():
     make_migrations_and_migrate()
     collectstatic()
     subprocess.run(
-        ["daphne", "--proxy-headers", "-b", "0.0.0.0", "BeepMe.asgi:application"]
+        [
+            "daphne",
+            "--proxy-headers",
+            "-b",
+            "0.0.0.0",
+            "-v",
+            "2",
+            "BeepMe.asgi:application",
+        ]
     )
 
 
