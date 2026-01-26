@@ -38,7 +38,7 @@ def run_development_server():
     run_devserver()
 
 
-port = int(os.getenv("PORT", "8000"))
+port = os.getenv("PORT", "8000")
 
 
 def run_production_server():
