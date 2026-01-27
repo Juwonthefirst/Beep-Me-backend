@@ -226,7 +226,7 @@ CHANNEL_LAYERS = {
 USERNAME_REGEX = r"^[a-zA-Z](?:[a-zA-Z0-9]*(?:[-_][a-zA-Z0-9])?)*[a-zA-Z0-9]+$"
 OTP_EXPIRY_TIME = 600
 
-if os.getenv("ENVIRONMENT") == "production":
+if os.getenv("ENVIROMENT") == "production":
     DEBUG = False
     STORAGES = {
         "staticfiles": {

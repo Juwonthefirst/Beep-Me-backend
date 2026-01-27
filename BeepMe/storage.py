@@ -93,8 +93,12 @@ class PublicStorage(Storage):
 
 
 private_storage = (
-    DevelopmentStorage() if os.getenv("MODE") == "development" else PrivateStorage()
+    DevelopmentStorage()
+    if os.getenv("ENVIROMENT") == "development"
+    else PrivateStorage()
 )
 public_storage = (
-    DevelopmentStorage() if os.getenv("MODE") == "development" else PublicStorage()
+    DevelopmentStorage()
+    if os.getenv("ENVIROMENT") == "development"
+    else PublicStorage()
 )
