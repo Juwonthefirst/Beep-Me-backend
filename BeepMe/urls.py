@@ -11,7 +11,7 @@ schema_view = views.get_schema_view(
     openapi.Info(
         title="Beep API",
         default_version="v1",
-        description="private API for using Beep chat",
+        description="private API for Beep chat",
         terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(email="ajibolajuwon5@gmail.com"),
         license=openapi.License(name="MIT license"),
