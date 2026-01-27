@@ -93,10 +93,9 @@ class PublicStorage(Storage):
     bucket_type = "public"
 
 
-private_storage = DevelopmentStorage()
-public_storage = DevelopmentStorage()
-
-
-if os.getenv("MODE") == "production":
-    private_storage = PrivateStorage()
-    public_storage = PublicStorage()
+private_storage = (
+    DevelopmentStorage() if os.getenv("MODE") == "development" else PrivateStorage()
+)
+public_storage = (
+    DevelopmentStorage() if os.getenv("MODE") == "development" else PublicStorage()
+)
