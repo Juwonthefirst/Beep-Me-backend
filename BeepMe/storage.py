@@ -4,7 +4,6 @@ from django.conf import settings
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
-from rest_framework.request import Request
 from BeepMe.utils import load_enviroment_variables
 from django.core.files.storage import default_storage
 
