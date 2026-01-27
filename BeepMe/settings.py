@@ -5,7 +5,6 @@ load_enviroment_variables()
 from pathlib import Path
 from datetime import timedelta
 import os, dj_database_url
-from redis.asyncio.connection import Connection
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -18,7 +17,7 @@ DEBUG = True
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-ALLOWED_HOSTS = [os.getenv("HOST_NAME"), "localhost"]
+ALLOWED_HOSTS = [os.getenv("HOST_NAME"), "localhost", os.getenv("FRONTEND_HOST_NAME")]
 
 
 # Application definition
