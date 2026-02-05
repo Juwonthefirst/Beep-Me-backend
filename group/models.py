@@ -1,7 +1,6 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
-
 from group.utils import create_random_color_hex
 from upload.utils import generate_group_avatar_url
 

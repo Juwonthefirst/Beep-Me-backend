@@ -179,20 +179,13 @@ async def sendFriendRequest(request):
     return Response({"error": serializer.errors}, status=bad_request)
 
 
-# @swagger_auto_schema(method="delete", request_body=FriendRequestSerializer)
-# @api_view(["DELETE"])
-# def deleteFriendRequest(request):
-#     serializer = FriendRequestSerializer(data=request.data)
-#     if serializer.is_valid():
-#         user_id = request.user.id
-#         friend_id = serializer.validated_data.get("friend_id")
-#         request.user.following.remove(friend_id)
-
-#         room_name = generate_chat_room_name(user_id, friend_id)
-#         ChatRoom.create_with_members(room_name)
-#         services.send_friend_request_notification(request.user, friend_id, action)
-#         return Response({"status": "ok"})
-#     return Response({"error": serializer.errors}, status=bad_request)
+@api_view(["DELETE"])
+def deleteFriendRequest(request, userId):
+    user_id = request.user.id
+    request.user.following.remove(userId)
+    room_name = generate_chat_room_name(user_id, userId)
+    ChatRoom.create_with_members(room_name)
+    return Response({"status": "ok"})
 
 
 @api_view(["PATCH"])
