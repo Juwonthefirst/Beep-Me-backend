@@ -1,93 +1,16 @@
-import json, re
+import re
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
-from asgiref.sync import sync_to_async
 from BeepMe.cache import cache
-from django.db import transaction
-
-
-@database_sync_to_async
-def save_message_to_db(
-    room, sender_id, message, attachment_id, reply_to_message_id, uuid
-):
-    from message.models import Message
-    from chat_room.queries import update_user_room_last_active_at
-
-    with transaction.atomic():
-
-        message = Message.objects.create(
-            room_id=room.id,
-            body=message,
-            sender_id=sender_id,
-            reply_to_id=reply_to_message_id,
-            attachment_id=attachment_id,
-            uuid=uuid,
-        )
-
-        room.last_message = message
-        room.last_room_activity = message.created_at
-        room.save(update_fields=["last_message", "last_room_activity"])
-        update_user_room_last_active_at(room, sender_id)
-
-    return message
-
-
-async def save_message(
-    room,
-    sender_id: int,
-    message: str,
-    reply_to_message_id: int,
-    attachment_id: int,
-    uuid: str,
-):
-    from message.serializers import LastMessageSerializer
-
-    message_model = await save_message_to_db(
-        room, sender_id, message, attachment_id, reply_to_message_id, uuid
-    )
-    serialized_message = await sync_to_async(
-        lambda: LastMessageSerializer(message_model).data
-    )()
-    jsonified_message = json.dumps(serialized_message)
-    await cache.cache_message(room.name, jsonified_message)
-    return serialized_message
-
-
-@database_sync_to_async
-def get_room(room_name):
-    from chat_room.models import ChatRoom
-
-    try:
-        return (
-            ChatRoom.objects.select_related("group")
-            .prefetch_related("members", "messages")
-            .get(name=room_name)
-        )
-    except ChatRoom.DoesNotExist:
-        return None
-
-
-@database_sync_to_async
-def create_notification(
-    notification_type, notification, receiver, time, group_id=None, sender=None
-):
-    from notification.models import Notification
-
-    return Notification.objects.create(
-        notification_type=notification_type,
-        notification=notification,
-        receiver=receiver,
-        sender=sender,
-        created_at=time,
-        group_id=group_id,
-    )
-
-
-@database_sync_to_async
-def is_group_member(group_id, user_id):
-    from group.models import MemberDetail
-
-    return MemberDetail.objects.filter(group_id=group_id, member_id=user_id).exists()
+from asgiref.sync import sync_to_async
+from chatsocket.queries import (
+    delete_message,
+    get_room,
+    is_group_member,
+    save_message,
+    update_message,
+)
+from message.serializers import MessagesSerializer
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
@@ -206,6 +129,51 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     },
                 )
 
+            case "update":
+                from notification.services import send_chat_notification
+
+                room = self.currentRoom
+                if not room:
+                    return await self.respond_with_error("You aren't in any room")
+
+                updated_message = await update_message(uuid, message)
+                if not updated_message:
+                    return
+                serialized_message = await sync_to_async(
+                    lambda: MessagesSerializer(updated_message).data
+                )()
+
+                await self.channel_layer.group_send(
+                    room.name,
+                    {
+                        "type": "chat.message",
+                        "room_name": room.name,
+                        **serialized_message,
+                    },
+                )
+
+                send_chat_notification(
+                    room,
+                    serialized_message,
+                    self.user,
+                )
+
+            case "delete":
+                room = self.currentRoom
+                if not room:
+                    return await self.respond_with_error("You aren't in any room")
+
+                await delete_message(uuid)
+
+                await self.channel_layer.group_send(
+                    room.name,
+                    {
+                        "type": "chat.delete",
+                        "room_name": room.name,
+                        "uuid": uuid,
+                    },
+                )
+
             case "chat":
                 from notification.services import send_chat_notification
 
@@ -241,6 +209,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def chat_message(self, event):
         await self.send_json(content={**event, "event": "chat"})
+
+    async def chat_delete(self, event):
+        await self.send_json(content={**event, "event": "delete"})
 
     async def chat_typing(self, event):
 
