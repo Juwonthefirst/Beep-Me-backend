@@ -121,6 +121,6 @@ def delete_message_from_db(message_uuid: str):
 async def delete_message(room_name: str, message_uuid: str):
     return_value = await delete_message_from_db(message_uuid)
 
-    if return_value != None:
+    if return_value != None and return_value[0] > 0:
         await cache.delete_message(room_name, message_uuid)
     return return_value

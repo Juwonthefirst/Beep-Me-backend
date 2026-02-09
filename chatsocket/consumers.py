@@ -165,7 +165,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
                 return_value = await delete_message(room.name, uuid)
 
-                if return_value:
+                if return_value and return_value[0] > 0:
                     await self.channel_layer.group_send(
                         room.name,
                         {
