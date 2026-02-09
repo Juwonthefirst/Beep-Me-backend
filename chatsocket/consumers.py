@@ -139,6 +139,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 updated_message = await update_message(uuid, message)
                 if not updated_message:
                     return
+                await cache.delete_cached_messages(room.name)
                 serialized_message = await sync_to_async(
                     lambda: MessagesSerializer(updated_message).data
                 )()
@@ -163,9 +164,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 if not room:
                     return await self.respond_with_error("You aren't in any room")
 
-                return_value = await delete_message(room.name, uuid)
+                return_value = await delete_message(uuid)
 
                 if return_value and return_value[0] > 0:
+                    await cache.delete_cached_messages(room.name)
                     await self.channel_layer.group_send(
                         room.name,
                         {

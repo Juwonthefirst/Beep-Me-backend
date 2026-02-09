@@ -95,8 +95,11 @@ def is_group_member(group_id: int, user_id: int):
 def update_message(message_uuid: str, new_body: str):
     from message.models import Message
 
+    edit_grace_period = timezone.now() - timedelta(minutes=30)
     try:
-        message = Message.objects.get(uuid=message_uuid)
+        message = Message.objects.get(
+            uuid=message_uuid, created_at__gte=edit_grace_period
+        )
         message.body = new_body
         message.is_edited = True
         message.save(update_fields=["body", "is_edited"])
@@ -106,7 +109,7 @@ def update_message(message_uuid: str, new_body: str):
 
 
 @database_sync_to_async
-def delete_message_from_db(message_uuid: str):
+def delete_message(message_uuid: str):
     from message.models import Message
 
     try:
@@ -118,9 +121,9 @@ def delete_message_from_db(message_uuid: str):
         return None
 
 
-async def delete_message(room_name: str, message_uuid: str):
-    return_value = await delete_message_from_db(message_uuid)
+# async def delete_message(room_name: str, message_uuid: str):
+#     return_value = await delete_message_from_db(message_uuid)
 
-    if return_value != None and return_value[0] > 0:
-        await cache.delete_message(room_name, message_uuid)
-    return return_value
+#     if return_value != None and return_value[0] > 0:
+#         await cache.delete_message(room_name, message_uuid)
+#     return return_value
