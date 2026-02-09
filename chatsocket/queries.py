@@ -1,5 +1,7 @@
+from datetime import timedelta
 from channels.db import database_sync_to_async
 from django.db import transaction
+from django.utils import timezone
 from asgiref.sync import sync_to_async
 import json
 from BeepMe.cache import cache
@@ -108,7 +110,10 @@ def delete_message_from_db(message_uuid: str):
     from message.models import Message
 
     try:
-        return Message.objects.filter(uuid=message_uuid).delete()
+        delete_grace_period = timezone.now() - timedelta(minutes=30)
+        return Message.objects.filter(
+            uuid=message_uuid, created_at__gte=delete_grace_period
+        ).delete()
     except Message.DoesNotExist:
         return None
 
@@ -118,3 +123,4 @@ async def delete_message(room_name: str, message_uuid: str):
 
     if return_value != None:
         await cache.delete_message(room_name, message_uuid)
+    return return_value

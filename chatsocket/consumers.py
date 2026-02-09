@@ -163,16 +163,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 if not room:
                     return await self.respond_with_error("You aren't in any room")
 
-                await delete_message(room.name, uuid)
+                return_value = await delete_message(room.name, uuid)
 
-                await self.channel_layer.group_send(
-                    room.name,
-                    {
-                        "type": "chat.delete",
-                        "room_name": room.name,
-                        "uuid": uuid,
-                    },
-                )
+                if return_value:
+                    await self.channel_layer.group_send(
+                        room.name,
+                        {
+                            "type": "chat.delete",
+                            "room_name": room.name,
+                            "uuid": uuid,
+                        },
+                    )
 
             case "chat":
                 from notification.services import send_chat_notification
