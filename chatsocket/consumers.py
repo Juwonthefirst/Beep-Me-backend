@@ -10,7 +10,6 @@ from chatsocket.queries import (
     save_message,
     update_message,
 )
-from message.serializers import MessagesSerializer
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
@@ -131,6 +130,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
             case "update":
                 from notification.services import send_chat_notification
+                from message.serializers import MessagesSerializer
 
                 room = self.currentRoom
                 if not room:
