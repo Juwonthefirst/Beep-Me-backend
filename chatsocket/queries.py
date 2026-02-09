@@ -83,14 +83,14 @@ def create_notification(
 
 
 @database_sync_to_async
-def is_group_member(group_id, user_id):
+def is_group_member(group_id: int, user_id: int):
     from group.models import MemberDetail
 
     return MemberDetail.objects.filter(group_id=group_id, member_id=user_id).exists()
 
 
 @database_sync_to_async
-def update_message(message_uuid, new_body):
+def update_message(message_uuid: str, new_body: str):
     from message.models import Message
 
     try:
@@ -104,10 +104,16 @@ def update_message(message_uuid, new_body):
 
 
 @database_sync_to_async
-def delete_message(message_uuid):
+def delete_message_from_db(message_uuid: str):
     from message.models import Message
 
     try:
         Message.objects.filter(uuid=message_uuid).delete()
     except Message.DoesNotExist:
         return None
+
+
+async def delete_message(room_name: str, message_uuid: str):
+    return_value = await delete_message_from_db(message_uuid)
+    if return_value is not None:
+        cache.delete_message(room_name, message_uuid)

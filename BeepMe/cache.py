@@ -1,5 +1,5 @@
 import redis.asyncio as async_redis
-import os
+import os, json
 from .utils import load_enviroment_variables
 
 load_enviroment_variables()
@@ -63,6 +63,17 @@ class Cache:
 
     async def get_cached_messages(self, room_name):
         return await self.redis.lrange(f"{room_name}:messages", 0, -1)
+
+    async def delete_message(self, room_name: str, message_uuid: str):
+        messages = await self.get_cached_messages(room_name)
+        filtered_messages = [
+            message
+            for message in messages
+            if json.loads(message)["uuid"] != message_uuid
+        ]
+        await self.redis.delete(f"{room_name}:messages")
+        if filtered_messages:
+            await self.cache_message(room_name, filtered_messages)
 
     async def add_user_online(self, user_id):
         await self.redis.sadd("online_users", user_id)
