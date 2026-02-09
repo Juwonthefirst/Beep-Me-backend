@@ -82,12 +82,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         print(content)
         message: str = content.get("message")
         attachment_id: int = content.get("attachment")
-        room_name = content.get("room_name")
-        reply_to_message_id = content.get("reply_to")
-        sender_username = self.user.username
-        action = content.get("action")
-        uuid = content.get("uuid")
-        call_id = content.get("call_id")
+        room_name: str = content.get("room_name")
+        reply_to_message_id: int = content.get("reply_to")
+        # sender_username: str = self.user.username
+        action: str = content.get("action")
+        uuid: str = content.get("uuid")
+        call_id: int = content.get("call_id")
 
         if action == "ping":
             return await self.ping_user_is_online()
@@ -125,7 +125,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     {
                         "type": "chat.typing",
                         "room_name": self.currentRoom.name,
-                        "sender_username": sender_username,
+                        "sender_username": self.user.username,
                     },
                 )
 
@@ -163,7 +163,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 if not room:
                     return await self.respond_with_error("You aren't in any room")
 
-                await delete_message(uuid)
+                await delete_message(room.name, uuid)
 
                 await self.channel_layer.group_send(
                     room.name,

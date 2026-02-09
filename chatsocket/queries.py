@@ -108,12 +108,13 @@ def delete_message_from_db(message_uuid: str):
     from message.models import Message
 
     try:
-        Message.objects.filter(uuid=message_uuid).delete()
+        return Message.objects.filter(uuid=message_uuid).delete()
     except Message.DoesNotExist:
         return None
 
 
 async def delete_message(room_name: str, message_uuid: str):
     return_value = await delete_message_from_db(message_uuid)
-    if return_value is not None:
-        cache.delete_message(room_name, message_uuid)
+
+    if return_value != None:
+        await cache.delete_message(room_name, message_uuid)
