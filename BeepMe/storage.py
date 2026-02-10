@@ -89,7 +89,7 @@ class PublicStorage(Storage):
     access_key = settings.PUBLIC_BUCKET_ACCESS_KEY
     secret_key = settings.PUBLIC_BUCKET_SECRET_KEY
     bucket_name = settings.PUBLIC_BUCKET_NAME
-    public_endpoint = settings.PUBLIC_BUCKET_ENDPOINT_URL
+    public_endpoint = settings.PUBLIC_BUCKET_PUBLIC_ENDPOINT_URL
     endpoint = settings.PUBLIC_BUCKET_ENDPOINT_URL
     bucket_type = "public"
 
