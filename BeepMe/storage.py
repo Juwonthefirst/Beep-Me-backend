@@ -28,6 +28,7 @@ class Storage:
     bucket_name: str | None = None
     bucket_type: Literal["private", "public"] = "private"
     endpoint: str | None = None
+    public_endpoint: str | None = None
 
     def __init__(self):
         self.client = boto3.client(
@@ -58,8 +59,8 @@ class Storage:
                     ExpiresIn=expiration_time,
                 )
             else:
-                seperator = "" if self.endpoint.endswith("/") else "/"
-                return self.endpoint + seperator + key
+                seperator = "" if self.public_endpoint.endswith("/") else "/"
+                return self.public_endpoint + seperator + key
         except Exception as e:
             print(e)
             return "failed"
@@ -88,6 +89,7 @@ class PublicStorage(Storage):
     access_key = settings.PUBLIC_BUCKET_ACCESS_KEY
     secret_key = settings.PUBLIC_BUCKET_SECRET_KEY
     bucket_name = settings.PUBLIC_BUCKET_NAME
+    public_endpoint = settings.PUBLIC_BUCKET_ENDPOINT_URL
     endpoint = settings.PUBLIC_BUCKET_ENDPOINT_URL
     bucket_type = "public"
 

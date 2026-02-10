@@ -361,13 +361,18 @@ class CompleteSignupView(APIView):
 
                 refresh_token = RefreshToken.for_user(user)
                 new_user = CurrentUserSerializer(user).data
+                profile_picture_upload_link = public_storage.generate_upload_url(
+                    key=user.profile_picture
+                )
                 response = Response(
                     {
                         "refresh_token": str(refresh_token),
                         "access_token": str(refresh_token.access_token),
                         "user": new_user,
-                        "avatar_upload_link": request.build_absolute_uri(
-                            public_storage.generate_upload_url(key=user.profile_picture)
+                        "avatar_upload_link": (
+                            request.build_absolute_uri(profile_picture_upload_link)
+                            if settings.DEBUG
+                            else profile_picture_upload_link
                         ),
                     }
                 )

@@ -167,6 +167,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 return_value = await delete_message(uuid)
 
                 if return_value and return_value[0] > 0:
+                    last_message = await database_sync_to_async(room.messages.last)()
+                    if last_message.uuid != uuid:
+                        room.last_message = last_message
+                        await database_sync_to_async(room.save)(
+                            update_fields=["last_message"]
+                        )
                     await cache.delete_cached_messages(room.name)
                     await self.channel_layer.group_send(
                         room.name,
