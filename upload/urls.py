@@ -3,8 +3,8 @@ from django.conf import settings
 from . import views
 
 urlpatterns = [
-    path("attachment/url/", views.CreateUploadAttachmentURLView.as_view()),
-    path("url/", views.GetUploadURLView.as_view()),
+    path("attachment/", views.CreateAttachmentView.as_view()),
+    path("attachment/<int:pk>/", views.DeleteAttachmentView.as_view()),
 ]
 
 if settings.DEBUG:
