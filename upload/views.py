@@ -3,13 +3,19 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from rest_framework.generics import CreateAPIView, DestroyAPIView
+from rest_framework.generics import CreateAPIView
 from django.core.files.storage import default_storage
 from django.core.exceptions import SuspiciousFileOperation
 from django.core.files.base import ContentFile
 from BeepMe.storage import private_storage
+from BeepMe.utils import build_absolute_uri
 from upload.models import Attachment
-from upload.serializers import AttachmentSerializer, GetUploadURLSerializer
+from upload.serializers import (
+    AttachmentIDSSerializer,
+    AttachmentSerializer,
+)
+from django.utils.decorators import method_decorator
+from drf_yasg.utils import swagger_auto_schema
 from upload.utils import (
     generate_group_avatar_url,
     generate_profile_picture_url,
@@ -29,14 +35,26 @@ class CreateAttachmentView(CreateAPIView):
         if response.status_code == 201 and isinstance(response.data, dict):
             url = private_storage.generate_upload_url(response.data["path"])
             response.data["upload_url"] = (
-                request.build_absolute_uri(url) if settings.DEBUG else url
+                build_absolute_uri(url) if settings.DEBUG else url
             )
         return response
 
 
-class DeleteAttachmentView(DestroyAPIView):
-    queryset = Attachment.objects.all()
-    serializer_class = AttachmentSerializer
+@method_decorator(
+    swagger_auto_schema(request_body=AttachmentIDSSerializer),
+    name="post",
+)
+class DeleteAttachmentView(APIView):
+    def post(self, request):
+        serializer = AttachmentIDSSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=bad_request)
+        try:
+            attachment_ids = serializer.validated_data.get("attachment_ids")
+            Attachment.objects.filter(id__in=attachment_ids, message=None).delete()
+            return Response({"status": "ok"})
+        except Exception as e:
+            return Response({"error": str(e)}, status=bad_request)
 
 
 # class GetUploadURLView(APIView):

@@ -82,3 +82,9 @@ def generate_chat_room_name(user_id: int | str, friend_id: int | str):
         room_name = f"chat-{friend_id}-{user_id}"
 
     return room_name
+
+
+def build_absolute_uri(path=""):
+    host = os.getenv("HOST_DOMAIN")
+    sep = "" if host.endswith("/") else "/"
+    return f"{host}{sep}{path.lstrip('/')}"

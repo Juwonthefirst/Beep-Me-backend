@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     path("attachment/", views.CreateAttachmentView.as_view()),
-    path("attachment/<int:pk>/", views.DeleteAttachmentView.as_view()),
+    path("attachment/delete/", views.DeleteAttachmentView.as_view()),
 ]
 
 if settings.DEBUG:

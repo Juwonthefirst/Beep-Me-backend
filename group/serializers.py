@@ -2,6 +2,7 @@ from django.conf import settings
 from rest_framework import serializers
 
 from BeepMe.storage import public_storage
+from BeepMe.utils import build_absolute_uri
 from group.queries import create_member
 from group.models import Group, MemberDetail, Role, GroupPermission
 from chat_room.models import ChatRoom
@@ -52,7 +53,7 @@ class GroupSerializer(serializers.ModelSerializer):
         if data.get("avatar"):
             data["avatar"] = public_storage.generate_file_url(key=data["avatar"])
             if settings.DEBUG and request:
-                data["avatar"] = request.build_absolute_uri(data["avatar"])
+                data["avatar"] = build_absolute_uri(data["avatar"])
 
         return data
 
@@ -63,8 +64,8 @@ class GroupSerializer(serializers.ModelSerializer):
         ) == "failed" or (request and request.method not in ("POST", "PATCH")):
             return
 
-        if settings.DEBUG and request:
-            return request.build_absolute_uri(upload_link)
+        if settings.DEBUG:
+            return build_absolute_uri(upload_link)
 
         return upload_link
 

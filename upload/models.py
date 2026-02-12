@@ -1,5 +1,7 @@
 from django.db import models
 
+from message.models import Message
+
 
 class Attachment(models.Model):
     path = models.CharField(max_length=240)
@@ -12,6 +14,12 @@ class Attachment(models.Model):
             ("audio", "audio"),
             ("document", "document"),
         ]
+    )
+    message = models.ForeignKey(
+        Message,
+        related_name="attachments",
+        on_delete=models.CASCADE,
+        null=True,
     )
     size = models.PositiveIntegerField()
     uploaded_at = models.DateTimeField(auto_now_add=True)

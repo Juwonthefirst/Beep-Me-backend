@@ -6,12 +6,6 @@ from django.contrib.auth import get_user_model
 class Message(models.Model):
     body = models.TextField()
     uuid = models.UUIDField(default=uuid4)
-    attachment = models.OneToOneField(
-        "upload.Attachment",
-        related_name="message_parent",
-        on_delete=models.CASCADE,
-        null=True,
-    )
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     sender = models.ForeignKey(
         get_user_model(),

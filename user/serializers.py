@@ -4,7 +4,11 @@ from asgiref.sync import async_to_sync
 from BeepMe.cache import cache
 from django.contrib.auth import get_user_model
 from BeepMe.storage import public_storage
-from BeepMe.utils import load_enviroment_variables, generate_chat_room_name
+from BeepMe.utils import (
+    build_absolute_uri,
+    load_enviroment_variables,
+    generate_chat_room_name,
+)
 
 load_enviroment_variables()
 User = get_user_model()
@@ -19,10 +23,8 @@ class ProfilePictureUrlSerializer(serializers.ModelSerializer):
             data["profile_picture"] = public_storage.generate_file_url(
                 key=data["profile_picture"]
             )
-            if settings.DEBUG and request:
-                data["profile_picture"] = request.build_absolute_uri(
-                    data["profile_picture"]
-                )
+            if settings.DEBUG:
+                data["profile_picture"] = build_absolute_uri(data["profile_picture"])
 
         return data
 

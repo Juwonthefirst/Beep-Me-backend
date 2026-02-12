@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from channels.db import database_sync_to_async
 from BeepMe.utils import (
     async_background_task,
-    background_task,
+    build_absolute_uri,
     load_enviroment_variables,
 )
 from chat_room.pagination import MessagePagination, create_next_cursor
@@ -40,7 +40,7 @@ load_enviroment_variables()
 @block_non_members
 async def get_room_messages(request: Request, room_name: str, room_object: ChatRoom):
     paginator = MessagePagination()
-    paginator.base_url = request.build_absolute_uri(request.path)
+    paginator.base_url = build_absolute_uri(request.path)
     cursor = request.query_params.get("cursor", None)
 
     if not cursor:

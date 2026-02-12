@@ -1,19 +1,22 @@
+from urllib import request
 from rest_framework import serializers
 from message.models import Message
 from upload.serializers import AttachmentSerializer
 
 
 class ReplyToMessagesSerializer(serializers.ModelSerializer):
-    attachment = AttachmentSerializer()
+    attachments = AttachmentSerializer(many=True)
     sender = serializers.ReadOnlyField(source="sender.username")
 
     class Meta:
         model = Message
-        fields = ["body", "attachment", "sender", "is_deleted"]
+        fields = ["body", "attachments", "sender", "is_deleted"]
 
 
 class MessagesSerializer(serializers.ModelSerializer):
-    attachment = AttachmentSerializer()
+    attachments = AttachmentSerializer(
+        many=True,
+    )
     reply_to = serializers.SerializerMethodField()
     sender_username = serializers.ReadOnlyField(source="sender.username")
 

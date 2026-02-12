@@ -1,5 +1,6 @@
 from django.conf import settings
 from rest_framework import serializers
+from BeepMe.utils import build_absolute_uri
 from upload.models import Attachment
 from BeepMe.storage import private_storage
 from upload.utils import generate_attachment_path
@@ -46,10 +47,10 @@ class AttachmentSerializer(serializers.ModelSerializer):
 
     def get_url(self, obj: Attachment):
         url = private_storage.generate_file_url(obj.path)
-        request = self.context.get("request")
-        return request.build_absolute_uri(url) if settings.DEBUG else url
+        return build_absolute_uri(url)
 
 
-class GetUploadURLSerializer(serializers.Serializer):
-    owner_id = serializers.IntegerField()
-    upload_type = serializers.ChoiceField(choices=["profile_picture", "group_avatar"])
+class AttachmentIDSSerializer(serializers.Serializer):
+    attachment_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1), allow_empty=False
+    )

@@ -80,7 +80,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def receive_json(self, content: dict):
         print(content)
         message: str = content.get("message")
-        attachment_id: int = content.get("attachment")
+        attachments_id: list[int] = content.get("attachmentsId")
         room_name: str = content.get("room_name")
         reply_to_message_id: int = content.get("reply_to")
         # sender_username: str = self.user.username
@@ -194,7 +194,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
                 serialized_message = await save_message(
                     room=room,
-                    attachment_id=attachment_id,
+                    attachments_id=attachments_id,
                     reply_to_message_id=reply_to_message_id,
                     message=message,
                     sender_id=self.user.id,

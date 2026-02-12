@@ -9,10 +9,11 @@ from BeepMe.cache import cache
 
 @database_sync_to_async
 def save_message_to_db(
-    room, sender_id, message, attachment_id, reply_to_message_id, uuid
+    room, sender_id, message, attachments_id, reply_to_message_id, uuid
 ):
     from message.models import Message
     from chat_room.queries import update_user_room_last_active_at
+    from upload.models import Attachment
 
     with transaction.atomic():
 
@@ -21,9 +22,12 @@ def save_message_to_db(
             body=message,
             sender_id=sender_id,
             reply_to_id=reply_to_message_id,
-            attachment_id=attachment_id,
             uuid=uuid,
         )
+        if isinstance(attachments_id, list):
+            Attachment.objects.filter(id__in=attachments_id, message=None).update(
+                message=message
+            )
 
         room.last_message = message
         room.last_room_activity = message.created_at
@@ -38,13 +42,13 @@ async def save_message(
     sender_id: int,
     message: str,
     reply_to_message_id: int,
-    attachment_id: int,
+    attachments_id: list[int],
     uuid: str,
 ):
     from message.serializers import LastMessageSerializer
 
     message_model = await save_message_to_db(
-        room, sender_id, message, attachment_id, reply_to_message_id, uuid
+        room, sender_id, message, attachments_id, reply_to_message_id, uuid
     )
     serialized_message = await sync_to_async(
         lambda: LastMessageSerializer(message_model).data

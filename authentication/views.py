@@ -21,7 +21,7 @@ from authentication.services import (
     send_user_otp,
     verify_google_id_token,
 )
-from BeepMe.utils import cookify_response_tokens
+from BeepMe.utils import build_absolute_uri, cookify_response_tokens
 from BeepMe.storage import public_storage
 from user.models import CustomUser
 from user.serializers import CurrentUserSerializer
@@ -370,7 +370,7 @@ class CompleteSignupView(APIView):
                         "access_token": str(refresh_token.access_token),
                         "user": new_user,
                         "avatar_upload_link": (
-                            request.build_absolute_uri(profile_picture_upload_link)
+                            build_absolute_uri(profile_picture_upload_link)
                             if settings.DEBUG
                             else profile_picture_upload_link
                         ),
