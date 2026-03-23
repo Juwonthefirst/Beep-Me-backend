@@ -83,7 +83,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         attachments_id: list[int] = content.get("attachmentsId")
         room_name: str = content.get("room_name")
         reply_to_message_id: int = content.get("reply_to")
-        # sender_username: str = self.user.username
         action: str = content.get("action")
         uuid: str = content.get("uuid")
         call_id: int = content.get("call_id")
@@ -147,17 +146,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 await self.channel_layer.group_send(
                     room.name,
                     {
-                        "type": "chat.message",
+                        "type": "chat.edit",
                         "room_name": room.name,
                         **serialized_message,
                     },
                 )
 
-                send_chat_notification(
-                    room,
-                    serialized_message,
-                    self.user,
-                )
+                # send_chat_notification(
+                #     room,
+                #     serialized_message,
+                #     self.user,
+                # )
 
             case "delete":
                 room = self.currentRoom
@@ -218,6 +217,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def chat_message(self, event):
         await self.send_json(content={**event, "event": "chat"})
+
+    async def chat_edit(self, event):
+        await self.send_json(content={**event, "event": "edit"})
 
     async def chat_delete(self, event):
         await self.send_json(content={**event, "event": "delete"})

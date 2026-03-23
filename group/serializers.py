@@ -52,8 +52,6 @@ class GroupSerializer(serializers.ModelSerializer):
 
         if data.get("avatar"):
             data["avatar"] = public_storage.generate_file_url(key=data["avatar"])
-            if settings.DEBUG and request:
-                data["avatar"] = build_absolute_uri(data["avatar"])
 
         return data
 
@@ -63,9 +61,6 @@ class GroupSerializer(serializers.ModelSerializer):
             upload_link := public_storage.generate_upload_url(key=instance.avatar)
         ) == "failed" or (request and request.method not in ("POST", "PATCH")):
             return
-
-        if settings.DEBUG:
-            return build_absolute_uri(upload_link)
 
         return upload_link
 

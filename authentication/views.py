@@ -369,11 +369,7 @@ class CompleteSignupView(APIView):
                         "refresh_token": str(refresh_token),
                         "access_token": str(refresh_token.access_token),
                         "user": new_user,
-                        "avatar_upload_link": (
-                            build_absolute_uri(profile_picture_upload_link)
-                            if settings.DEBUG
-                            else profile_picture_upload_link
-                        ),
+                        "avatar_upload_link": profile_picture_upload_link,
                     }
                 )
                 response.delete_cookie("signup_session_id")

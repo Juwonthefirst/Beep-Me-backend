@@ -33,9 +33,8 @@ class CreateAttachmentView(CreateAPIView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == 201 and isinstance(response.data, dict):
-            url = private_storage.generate_upload_url(response.data["path"])
-            response.data["upload_url"] = (
-                build_absolute_uri(url) if settings.DEBUG else url
+            response.data["upload_url"] = private_storage.generate_upload_url(
+                response.data["path"]
             )
         return response
 

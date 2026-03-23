@@ -4,7 +4,7 @@ from django.conf import settings
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
-from BeepMe.utils import load_enviroment_variables
+from BeepMe.utils import build_absolute_uri, load_enviroment_variables
 from django.core.files.storage import default_storage
 
 load_enviroment_variables()
@@ -13,16 +13,16 @@ load_enviroment_variables()
 class DevelopmentStorage:
     def generate_upload_url(self, key: str):
         api_path = "/api/uploads/dev/"
-        return os.path.join(api_path, key)
+        return build_absolute_uri(os.path.join(api_path, key))
 
     def generate_file_url(self, key):
-        return os.path.join(settings.MEDIA_URL, key)
+        return build_absolute_uri(os.path.join(settings.MEDIA_URL, key))
 
     def delete_file(self, key):
         default_storage.delete(os.path.join(settings.MEDIA_ROOT, key))
 
 
-class Storage:
+class CloudStorage:
     access_key: str | None = None
     secret_key: str | None = None
     bucket_name: str | None = None
@@ -77,7 +77,7 @@ class Storage:
             return "failed"
 
 
-class PrivateStorage(Storage):
+class PrivateStorage(CloudStorage):
     access_key = settings.PRIVATE_BUCKET_ACCESS_KEY
     secret_key = settings.PRIVATE_BUCKET_SECRET_KEY
     bucket_name = settings.PRIVATE_BUCKET_NAME
@@ -85,7 +85,7 @@ class PrivateStorage(Storage):
     bucket_type = "private"
 
 
-class PublicStorage(Storage):
+class PublicStorage(CloudStorage):
     access_key = settings.PUBLIC_BUCKET_ACCESS_KEY
     secret_key = settings.PUBLIC_BUCKET_SECRET_KEY
     bucket_name = settings.PUBLIC_BUCKET_NAME

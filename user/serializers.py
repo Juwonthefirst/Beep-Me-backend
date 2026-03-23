@@ -1,11 +1,9 @@
-from django.conf import settings
 from rest_framework import serializers
 from asgiref.sync import async_to_sync
 from BeepMe.cache import cache
 from django.contrib.auth import get_user_model
 from BeepMe.storage import public_storage
 from BeepMe.utils import (
-    build_absolute_uri,
     load_enviroment_variables,
     generate_chat_room_name,
 )
@@ -17,15 +15,11 @@ User = get_user_model()
 class ProfilePictureUrlSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        request = self.context.get("request")
 
         if data.get("profile_picture"):
             data["profile_picture"] = public_storage.generate_file_url(
                 key=data["profile_picture"]
             )
-            if settings.DEBUG:
-                data["profile_picture"] = build_absolute_uri(data["profile_picture"])
-
         return data
 
 

@@ -13,7 +13,8 @@ from BeepMe.utils import (
     build_absolute_uri,
     load_enviroment_variables,
 )
-from chat_room.pagination import MessagePagination, create_next_cursor
+from chat_room.pagination import MessagePagination
+from chat_room.utils import create_next_cursor, load_cached_chat_messages
 from chat_room.parsers import LiveKitwebhookParser
 from chat_room.permissions import block_non_members
 from chat_room.models import CallHistory, ChatRoom
@@ -47,7 +48,7 @@ async def get_room_messages(request: Request, room_name: str, room_object: ChatR
         cached_messages = await cache.get_cached_messages(room_object.name)
 
         if cached_messages:
-            messages = [json.loads(message) for message in cached_messages]
+            messages = load_cached_chat_messages(cached_messages)
             messages_length = len(messages)
             return Response(
                 {

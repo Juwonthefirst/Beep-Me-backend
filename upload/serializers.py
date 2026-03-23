@@ -46,8 +46,7 @@ class AttachmentSerializer(serializers.ModelSerializer):
         )
 
     def get_url(self, obj: Attachment):
-        url = private_storage.generate_file_url(obj.path)
-        return build_absolute_uri(url)
+        return private_storage.generate_file_url(obj.path)
 
 
 class AttachmentIDSSerializer(serializers.Serializer):

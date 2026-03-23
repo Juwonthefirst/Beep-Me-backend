@@ -61,7 +61,7 @@ class Cache:
         except Exception as error:
             print(error)
 
-    async def get_cached_messages(self, room_name):
+    async def get_cached_messages(self, room_name) -> list[str]:
         return await self.redis.lrange(f"{room_name}:messages", 0, -1)
 
     async def delete_cached_messages(self, room_name: str):
